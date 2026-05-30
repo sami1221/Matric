@@ -1,107 +1,50 @@
 <!DOCTYPE html>
 <html lang="am">
 <head>
-  <meta charset="UTF-8">
-  <title>Ethiopian Exam Mini App</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f2f2f2; padding: 15px; text-align: center; }
-    .card { background: white; padding: 20px; border-radius: 12px; margin-top: 10px; box-shadow: 0px 4px 8px rgba(0,0,0,0.1); }
-    button { width: 100%; padding: 14px; margin-top: 10px; border: none; border-radius: 8px; background: #0088cc; color: white; font-size: 16px; cursor: pointer; transition: 0.3s; }
-    button:hover { background: #006699; }
-    .hidden { display:none; }
-    h2 { color: #333; }
-  </style>
+    <meta charset="UTF-8">
+    <title>Ethiopian Exam App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: Arial; padding: 20px; text-align: center; background: #f2f2f2; }
+        .card { background: white; padding: 20px; border-radius: 12px; margin-top: 10px; }
+        button { width: 100%; padding: 15px; margin: 8px 0; border: none; border-radius: 8px; background: #0088cc; color: white; cursor: pointer; }
+    </style>
 </head>
-
 <body>
 
-<div id="home" class="card">
-  <h2>🎓 Ethiopian Exam App</h2>
-  <p>የማትሪክ እና የክፍል ፈተናዎች</p>
-  <button onclick="startQuiz()">🚀 ፈተና ጀምር</button>
+<div id="view-home" class="card">
+    <h2>🎓 የፈተና ማዕከል</h2>
+    <button onclick="showGrades()">የዓመታት ኢንትራስ እና ሞዴል ፈተና</button>
 </div>
 
-<div id="quiz" class="card hidden">
-  <h3 id="question"></h3>
-  <div id="options"></div>
+<div id="view-grades" class="card" style="display:none;">
+    <h3>ክፍል ይምረጡ</h3>
+    <button onclick="selectGrade('grade9')">Grade 9</button>
+    <button onclick="selectGrade('grade10')">Grade 10</button>
+    <button onclick="showStream()">Grade 11 & 12</button>
 </div>
 
-<div id="result" class="card hidden">
-  <h2 id="resultText"></h2>
-  <p id="explanation"></p>
-  <button onclick="next()">➡️ ቀጣይ ጥያቄ</button>
+<div id="view-stream" class="card" style="display:none;">
+    <h3>ዘርፍ ይምረጡ</h3>
+    <button onclick="selectStream('natural')">Natural Science</button>
+    <button onclick="selectStream('social')">Social Science</button>
 </div>
 
 <script>
-const tg = window.Telegram.WebApp;
-tg.expand();
+    function showGrades() {
+        document.getElementById('view-home').style.display = 'none';
+        document.getElementById('view-grades').style.display = 'block';
+    }
 
-// ከፒዲኤፍ እና ከቀድሞው ኮድ የተዋሃዱ ጥያቄዎች
-const questions = [
-  { q: "የ 2³ ዋጋ ምንድን ነው?", options: ["6", "8", "9", "12"], answer: 1, explanation: "2³ = 2×2×2 = 8" },
-  { q: "x + 5 = 12 ከሆነ x = ?", options: ["5", "6", "7", "8"], answer: 2, explanation: "x = 12 - 5 = 7" },
-  { q: "የሦስት ማዕዘን ሁሉም ማዕዘናት ድምር ምን ያህል ነው?", options: ["90°", "180°", "270°", "360°"], answer: 1, explanation: "የሦስት ማዕዘን ሁሉም ማዕዘናት ድምር = 180°" },
-  { q: "√64 = ?", options: ["6", "7", "8", "9"], answer: 2, explanation: "√64 = 8" },
-  { q: "የሰውነት መሠረታዊ አሃድ ምንድን ነው?", options: ["ቲሹ", "ሴል (Cell)", "ኦርጋን", "ሞለኪውል"], answer: 1, explanation: "ሴል የሕይወት መሠረታዊ አሃድ ነው" },
-  { q: "F = ma ቀመር የትኛው ሕግ ነው?", options: ["የኒውተን 1ኛ ሕግ", "የኒውተን 2ኛ ሕግ", "የኒውተን 3ኛ ሕግ", "የኦህም ሕግ"], answer: 1, explanation: "F=ma የኒውተን 2ኛ ሕግ ነው" },
-  { q: "የብርሃን ፍጥነት በግምት ስንት ነው?", options: ["3×10⁶ m/s", "3×10⁸ m/s", "3×10¹⁰ m/s", "3×10⁴ m/s"], answer: 1, explanation: "የብርሃን ፍጥነት = 3×10⁸ m/s" },
-  { q: "ውሃ (H₂O) የሚፈጠረው ከምን ምን ነው?", options: ["H + O", "H₂ + O", "H + O₂", "H₂ + O₂"], answer: 3, explanation: "2H₂ + O₂ → 2H₂O" },
-  { q: "የአድዋ ጦርነት መቼ ተካሄደ?", options: ["1885", "1896", "1900", "1910"], answer: 1, explanation: "የአድዋ ጦርነት 1896 ተካሄደ" },
-  { q: "የኢትዮጵያ ዋና ከተማ ምንድን ነው?", options: ["ድሬዳዋ", "ጎንደር", "አዲስ አበባ", "ሐዋሳ"], answer: 2, explanation: "የኢትዮጵያ ዋና ከተማ አዲስ አበባ ናት" },
-  { q: "pH = 7 ማለት ምን ማለት ነው?", options: ["Acidic", "Neutral", "Basic", "Alkaline"], answer: 1, explanation: "pH 7 ማለት ገለልተኛ (Neutral) ማለት ነው" },
-  { q: "የዓለማችን ትልቁ ውቅያኖስ የትኛው ነው?", options: ["Atlantic", "Indian", "Pacific", "Arctic"], answer: 2, explanation: "Pacific Ocean" },
-  { q: "Mitosis ሲጠናቀቅ ስንት ሴሎች ይፈጠራሉ?", options: ["1", "2", "3", "4"], answer: 1, explanation: "Mitosis 2 identical daughter cells ይፈጥራል" },
-  { q: "የፈረንሳይ አብዮት የተካሄደው መቼ ነው?", options: ["1776", "1789", "1800", "1815"], answer: 1, explanation: "የፈረንሳይ አብዮት 1789 ተካሄደ" },
-  { q: "DNA ሙሉ ስሙ ምንድን ነው?", options: ["Deoxyribonucleic Acid", "Diribonucleic Acid", "Deoxyribose Nucleic Acid", "Double Nucleic Acid"], answer: 0, explanation: "DNA = Deoxyribonucleic Acid" }
-];
+    function showStream() {
+        document.getElementById('view-grades').style.display = 'none';
+        document.getElementById('view-stream').style.display = 'block';
+    }
 
-let current = 0;
-let score = 0;
-
-function startQuiz() {
-  document.getElementById("home").classList.add("hidden");
-  document.getElementById("quiz").classList.remove("hidden");
-  loadQuestion();
-}
-
-function loadQuestion() {
-  let q = questions[current];
-  document.getElementById("question").innerText = q.q;
-  let html = "";
-  q.options.forEach((opt, i) => { 
-    html += `<button onclick="answer(${i})">${opt}</button>`; 
-  });
-  document.getElementById("options").innerHTML = html;
-}
-
-function answer(i) {
-  let q = questions[current];
-  document.getElementById("quiz").classList.add("hidden");
-  document.getElementById("result").classList.remove("hidden");
-  
-  if (i === q.answer) {
-    score++;
-    document.getElementById("resultText").innerText = "✅ ትክክል ነው!";
-  } else {
-    document.getElementById("resultText").innerText = "❌ ስህተት! ትክክለኛው: " + q.options[q.answer];
-  }
-  document.getElementById("explanation").innerText = "ማብራሪያ: " + q.explanation;
-}
-
-function next() {
-  current++;
-  document.getElementById("result").classList.add("hidden");
-  if (current >= questions.length) {
-    document.getElementById("home").classList.remove("hidden");
-    alert("ፈተናው ተጠናቀቀ! ውጤትዎ: " + score + "/" + questions.length);
-    tg.sendData(JSON.stringify({ score: score, total: questions.length }));
-    current = 0; score = 0;
-    return;
-  }
-  document.getElementById("quiz").classList.remove("hidden");
-  loadQuestion();
-}
+    function selectStream(stream) {
+        // እዚህ ጋር የትምህርት ዝርዝር ወደሚታይበት ገጽ ይወስዳል
+        alert(stream + " ትምህርቶች ተከፍተዋል");
+    }
 </script>
 </body>
 </html>
