@@ -74,7 +74,8 @@ body {
 .prem-banner h3 { color:var(--gold); font-size:.98rem; margin-bottom:5px; }
 .prem-banner p { color:var(--muted); font-size:.8rem; }
 .pplan { display:flex; flex-direction:column; gap:9px; margin-bottom:14px; }
-.plan-row { display:flex; align-items:center; justify-content:space-between; background:var(--card2); border:1px solid var(--border); border-radius:9px; padding:12px 14px; }
+.plan-row { display:flex; align-items:center; justify-content:space-between; background:var(--card2); border:1px solid var(--border); border-radius:9px; padding:12px 14px; cursor:pointer; transition:all .16s; }
+.plan-row:hover { border-color:var(--gold); }
 .plan-row .pname { font-size:.86rem; font-weight:700; }
 .plan-row .pprice { font-size:.9rem; font-weight:800; color:var(--green); font-family:'JetBrains Mono',monospace; }
 .dpill { display:inline-flex; align-items:center; gap:6px; background:var(--card2); border:1px solid var(--border); border-radius:20px; padding:5px 12px; font-size:.72rem; color:var(--muted); margin-bottom:12px; }
@@ -82,11 +83,31 @@ body {
 .lwarn { background:rgba(255,71,87,.09); border:1px solid rgba(255,71,87,.25); border-radius:9px; padding:14px; text-align:center; margin-bottom:12px; font-size:.86rem; color:#ff8a95; line-height:1.7; }
 .screen { display:none; }
 .screen.active { display:block; }
+
+/* Admin panel styles */
+.admin-input { width:100%; background:var(--card2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:inherit; font-size:.88rem; padding:10px 13px; margin-bottom:10px; outline:none; transition:border .15s; }
+.admin-input:focus { border-color:var(--gold); }
+.admin-user-row { background:var(--card2); border:1px solid var(--border); border-radius:9px; padding:11px 13px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+.admin-user-info { font-size:.82rem; line-height:1.8; }
+.admin-user-info strong { color:var(--gold); }
+.admin-badge { font-size:.66rem; font-weight:700; padding:3px 8px; border-radius:20px; }
+.admin-badge.active { background:rgba(0,230,118,.15); border:1px solid rgba(0,230,118,.3); color:var(--green); }
+.admin-badge.expired { background:rgba(255,71,87,.12); border:1px solid rgba(255,71,87,.25); color:var(--red); }
+.admin-del-btn { background:transparent; border:1px solid var(--red); border-radius:7px; color:var(--red); font-family:inherit; font-size:.75rem; padding:5px 10px; cursor:pointer; }
+.admin-del-btn:hover { background:rgba(255,71,87,.12); }
+.seg { display:flex; gap:6px; margin-bottom:14px; }
+.seg-btn { flex:1; background:var(--card2); border:1px solid var(--border); border-radius:8px; color:var(--muted); font-family:inherit; font-size:.78rem; font-weight:700; padding:8px 6px; cursor:pointer; transition:all .15s; text-align:center; }
+.seg-btn.active { background:rgba(255,193,7,.12); border-color:var(--gold); color:var(--gold); }
+.info-box { background:rgba(41,121,255,.08); border:1px solid rgba(41,121,255,.2); border-radius:9px; padding:12px 14px; margin-bottom:12px; font-size:.83rem; color:#93b4ff; line-height:1.8; }
+.tg-link { color:var(--gold); text-decoration:none; font-weight:700; }
+.tg-link:hover { text-decoration:underline; }
 </style>
 </head>
 <body>
 <div id="app">
   <div class="hdr"><div class="ico">🇪🇹</div><h1>Ethiopian Exam Practice</h1><p>Grade 9–12 · All Subjects</p></div>
+
+  <!-- HOME -->
   <div id="s-home" class="screen active">
     <div class="stats" id="home-stats"></div>
     <div id="daily-pill"></div>
@@ -97,17 +118,25 @@ body {
       <button class="btn" onclick="go('s-help')">ℹ️ Help</button>
     </div></div>
   </div>
+
+  <!-- GRADE SELECT -->
   <div id="s-grade" class="screen"><div class="card"><div class="stitle">Select Your Grade</div><div class="grid2">
     <button class="btn" onclick="selGrade('g9')">9️⃣ Grade 9</button>
     <button class="btn" onclick="selGrade('g10')">🔟 Grade 10</button>
     <button class="btn" onclick="selGrade('g11')">1️⃣1️⃣ Grade 11</button>
     <button class="btn" onclick="selGrade('g12')">1️⃣2️⃣ Grade 12</button>
   </div><div style="margin-top:10px"><button class="btn danger" onclick="go('s-home')">← Back</button></div></div></div>
+
+  <!-- STREAM SELECT -->
   <div id="s-stream" class="screen"><div class="card"><div class="stitle" id="stream-title">Select Stream</div><div class="grid2">
     <button class="btn" onclick="selStream('nat')">🔬 Natural Science</button>
     <button class="btn" onclick="selStream('soc')">📖 Social Science</button>
   </div><div style="margin-top:10px"><button class="btn danger" onclick="go('s-grade')">← Back</button></div></div></div>
+
+  <!-- SUBJECT SELECT -->
   <div id="s-subj" class="screen"><div class="card"><div class="stitle" id="subj-title">Select Subject</div><div class="grid1" id="subj-grid"></div><div style="margin-top:10px"><button class="btn danger" id="subj-back">← Back</button></div></div></div>
+
+  <!-- QUIZ -->
   <div id="s-quiz" class="screen"><div class="card" id="quiz-card">
     <div class="qmeta"><span class="badge" id="q-grade-badge"></span><span class="badge blue" id="q-subj-badge"></span></div>
     <div class="qnav">
@@ -125,34 +154,104 @@ body {
       <button class="btn ghost" onclick="exitQuiz()">✕ Exit</button>
     </div>
   </div></div>
+
+  <!-- SCORE -->
   <div id="s-score" class="screen"><div class="card"><div class="stitle">Your Score</div><div class="bigpct" id="sc-pct">0%</div><div class="sgrade" id="sc-grade"></div><div class="stats" id="sc-stats"></div><button class="btn primary" onclick="go('s-home')" style="width:100%;margin-top:10px">🏠 Home</button></div></div>
+
+  <!-- PREMIUM -->
   <div id="s-prem" class="screen">
     <div class="prem-banner"><h3>💎 Premium Membership</h3><p>Unlimited questions — All subjects and grades</p></div>
-    <div class="card"><div class="stitle">Pricing</div>
+    <div class="card">
+      <div class="stitle">ፕሪሚየም ለመግዛት</div>
+      <div id="prem-status-box"></div>
       <div class="pplan">
-        <div class="plan-row"><span class="pname">📅 Daily</span><span class="pprice">20 ETB</span></div>
-        <div class="plan-row"><span class="pname">📆 Weekly</span><span class="pprice">100 ETB</span></div>
-        <div class="plan-row"><span class="pname">🗓️ Monthly</span><span class="pprice">250 ETB</span></div>
+        <div class="plan-row" onclick="openTelegram('daily')"><span class="pname">📅 Daily — 1 ቀን</span><span class="pprice">20 ETB</span></div>
+        <div class="plan-row" onclick="openTelegram('weekly')"><span class="pname">📆 Weekly — 7 ቀን</span><span class="pprice">100 ETB</span></div>
+        <div class="plan-row" onclick="openTelegram('monthly')"><span class="pname">🗓️ Monthly — 30 ቀን</span><span class="pprice">250 ETB</span></div>
       </div>
-      <div style="font-size:.84rem;color:var(--muted);line-height:2;">📲 To subscribe:<br>👤 Admin: <strong style="color:var(--text)">@evana219</strong><br>📱 Telebirr: <strong style="color:var(--text)">0921378547</strong><br>🧑 Name: <strong style="color:var(--text)">Asnake</strong><br><br>✅ Send screenshot after payment → activated immediately!</div>
-      <button class="btn danger" onclick="go('s-home')" style="width:100%;margin-top:14px">← Back</button>
+
+      <div class="info-box">
+        📲 ለመግዛት ከላይ ያለውን Plan ይምረጡ<br>
+        💸 ቴሌብር: <strong style="color:var(--text)">0921378547</strong> (Asnake)<br>
+        📤 ከፈሉ በኋላ <strong style="color:var(--gold)">Screenshot</strong> እና <strong style="color:var(--gold)">Telegram Username</strong> ላኩ<br>
+        ✅ Admin ካፈቀደ በኋላ <strong>Username</strong> ን ከታች አስገቡ
+      </div>
+
+      <div style="margin-bottom:10px;font-size:.78rem;color:var(--muted);font-weight:700;letter-spacing:.05em;">USERNAME አስገቡ ፕሪሚየም ለማግኘት</div>
+      <input class="admin-input" type="text" id="prem-username-input" placeholder="@YourTelegramUsername" />
+      <button class="btn primary" onclick="claimPremium()" style="width:100%;margin-bottom:10px">🔓 ፕሪሚየም አግኝ</button>
+      <div id="claim-msg" style="font-size:.82rem;text-align:center;min-height:18px;margin-bottom:10px;"></div>
+
+      <button class="btn danger" onclick="go('s-home')" style="width:100%;margin-top:4px">← Back</button>
     </div>
   </div>
+
+  <!-- HELP -->
   <div id="s-help" class="screen"><div class="card"><div class="stitle">Help</div>
     <div style="font-size:.86rem;line-height:2.1;color:var(--muted)">
-      📚 <strong style="color:var(--text)">Start Exam</strong> — Choose grade and subject<br>
-      📊 <strong style="color:var(--text)">My Score</strong> — See your performance<br>
-      💎 <strong style="color:var(--text)">Premium</strong> — Unlimited questions<br>
-      ← → <strong style="color:var(--text)">Prev / Next</strong> — Navigate questions<br>
-      ✕ <strong style="color:var(--text)">Exit</strong> — Leave quiz anytime<br>
-      🆓 <strong style="color:var(--text)">Free</strong>: 20 questions/day
+      📚 <strong style="color:var(--text)">Start Exam</strong> — Grade እና Subject ምረጥ<br>
+      📊 <strong style="color:var(--text)">My Score</strong> — ውጤትህን ተመልከት<br>
+      💎 <strong style="color:var(--text)">Premium</strong> — Unlimited ጥያቄዎች<br>
+      🆓 <strong style="color:var(--text)">Free</strong>: በቀን 5 ጥያቄ ብቻ<br>
+      ✕ <strong style="color:var(--text)">Exit</strong> — Quiz ን ለቀቅ
     </div>
-    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:.8rem;color:var(--muted)">📞 Contact: @evana219</div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:.8rem;color:var(--muted)">📞 Contact: <a href="https://t.me/evana219" target="_blank" class="tg-link">@evana219</a></div>
     <button class="btn danger" onclick="go('s-home')" style="width:100%;margin-top:14px">← Back</button>
   </div></div>
+
+  <!-- ADMIN PANEL -->
+  <div id="s-admin" class="screen">
+    <div class="card">
+      <div class="stitle">🔐 Admin Panel</div>
+      <div class="seg">
+        <button class="seg-btn active" id="atab-grant" onclick="adminTab('grant')">➕ ፕሪሚየም ስጥ</button>
+        <button class="seg-btn" id="atab-users" onclick="adminTab('users')">👥 Users</button>
+      </div>
+
+      <!-- Grant tab -->
+      <div id="admin-grant-tab">
+        <input class="admin-input" type="text" id="a-username" placeholder="@TelegramUsername (e.g. @evana219)" />
+        <div style="margin-bottom:8px;font-size:.78rem;color:var(--muted);font-weight:700;">Plan ምረጥ:</div>
+        <div class="grid2" style="margin-bottom:12px;">
+          <button class="btn" id="aplan-daily" onclick="selectAdminPlan('daily')" style="font-size:.8rem;">📅 Daily (1 ቀን)</button>
+          <button class="btn" id="aplan-weekly" onclick="selectAdminPlan('weekly')" style="font-size:.8rem;">📆 Weekly (7 ቀን)</button>
+          <button class="btn" id="aplan-monthly" onclick="selectAdminPlan('monthly')" style="font-size:.8rem;">🗓️ Monthly (30 ቀን)</button>
+          <button class="btn" id="aplan-custom" onclick="selectAdminPlan('custom')" style="font-size:.8rem;">✏️ Custom</button>
+        </div>
+        <div id="admin-custom-days" style="display:none;margin-bottom:10px;">
+          <input class="admin-input" type="number" id="a-custom-days" placeholder="ቀናት ቁጥር (e.g. 3)" min="1" />
+        </div>
+        <button class="btn primary" onclick="grantPremium()" style="width:100%;margin-bottom:8px;">✅ ፕሪሚየም ፍቀድ</button>
+        <div id="admin-msg" style="font-size:.82rem;text-align:center;min-height:18px;margin-bottom:4px;"></div>
+      </div>
+
+      <!-- Users tab -->
+      <div id="admin-users-tab" style="display:none;">
+        <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center;">
+          <input class="admin-input" type="text" id="a-search" placeholder="Search username..." oninput="renderAdminUsers()" style="margin-bottom:0;flex:1;" />
+        </div>
+        <div id="admin-users-list"></div>
+      </div>
+
+      <div style="margin-top:8px;">
+        <button class="btn danger" onclick="go('s-home')" style="width:100%">← Back</button>
+      </div>
+    </div>
+  </div>
+
 </div>
+
 <script>
-const FREE_LIMIT = 20;
+// ============================================================
+//  CONFIG
+// ============================================================
+const FREE_LIMIT = 5;          // ← Changed to 5 free questions per day
+const ADMIN_PASS = 'evana219'; // ← Admin password (change this!)
+const ADMIN_TG   = 'evana219'; // ← Your Telegram username
+
+// ============================================================
+//  DATABASE
+// ============================================================
 const QDB = {
   g9: {
     math: [
@@ -340,7 +439,8 @@ const QDB = {
     ],
   },
 };
-  const SUBJ_MAP = {
+
+const SUBJ_MAP = {
   g9: [['➕ Mathematics','math'],['🌍 English','english'],['🔬 Biology','biology'],['⚡ Physics','physics'],['🧪 Chemistry','chemistry'],['🏛️ Civics','civics'],['📜 History','history'],['🗺️ Geography','geography']],
   g10:[['➕ Mathematics','math'],['🌍 English','english'],['🔬 Biology','biology'],['⚡ Physics','physics'],['🧪 Chemistry','chemistry'],['🏛️ Civics','civics'],['📜 History','history'],['🗺️ Geography','geography']],
   nat:[['➕ Mathematics','math'],['⚡ Physics','physics'],['🧪 Chemistry','chemistry'],['🔬 Biology','biology'],['🌍 English','english']],
@@ -349,36 +449,151 @@ const QDB = {
 const GRADE_LABELS={g9:'Grade 9',g10:'Grade 10',nat:'Grade 11/12 Natural',soc:'Grade 11/12 Social'};
 const SUBJ_LABELS={math:'Mathematics',biology:'Biology',physics:'Physics',chemistry:'Chemistry',english:'English',history:'History',geography:'Geography',economics:'Economics',civics:'Civics',amharic:'Amharic',random:'Random'};
 
-function getS(){const d={score:0,total:0,dc:0,ld:'',prem:false};try{return Object.assign(d,JSON.parse(localStorage.getItem('etbot2')||'{}'));}catch(e){return d;}}
+// ============================================================
+//  STORAGE HELPERS
+// ============================================================
+function getS(){
+  const d={score:0,total:0,dc:0,ld:'',prem:false,premUntil:0,username:''};
+  try{return Object.assign(d,JSON.parse(localStorage.getItem('etbot2')||'{}'));}catch(e){return d;}
+}
 function saveS(s){localStorage.setItem('etbot2',JSON.stringify(s));}
+
+// Premium users storage (admin-managed, stored separately)
+function getPremUsers(){
+  try{return JSON.parse(localStorage.getItem('etbot_prem_users')||'{}');}catch(e){return {};}
+}
+function savePremUsers(u){localStorage.setItem('etbot_prem_users',JSON.stringify(u));}
+
 function today(){return new Date().toISOString().slice(0,10);}
-function canAns(){const s=getS();if(s.prem)return true;if(s.ld!==today())return true;return s.dc<FREE_LIMIT;}
-function incDC(){const s=getS();if(s.ld!==today()){s.dc=1;s.ld=today();}else s.dc++;saveS(s);}
-function remToday(){const s=getS();if(s.prem)return'∞';if(s.ld!==today())return FREE_LIMIT;return Math.max(0,FREE_LIMIT-s.dc);}
 
-let curGrade=null;
-function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');if(id==='s-home')renderHome();if(id==='s-score')renderScore();}
-
-function renderHome(){
-  const s=getS();const pct=s.total>0?Math.round(s.score/s.total*100):0;
-  document.getElementById('home-stats').innerHTML=`<div class="sbox"><div class="v">${s.total}</div><div class="l">Total</div></div><div class="sbox"><div class="v">${s.score}</div><div class="l">Correct</div></div><div class="sbox"><div class="v">${pct}%</div><div class="l">Score</div></div>`;
-  const rem=remToday();
-  document.getElementById('daily-pill').innerHTML=s.prem?`<div class="dpill">💎 Premium — <span>Unlimited</span> questions</div>`:`<div class="dpill">⚡ Today remaining: <span>${rem}/${FREE_LIMIT}</span> questions</div>`;
+// ---- Check if current user has premium ----
+function checkUserPremium(){
+  const s = getS();
+  if(!s.username) return false;
+  const users = getPremUsers();
+  const key = normalizeUsername(s.username);
+  if(!users[key]) return false;
+  const now = Date.now();
+  if(users[key].until < now){
+    // expired — revoke
+    return false;
+  }
+  return true;
 }
 
-function selGrade(g){curGrade=g;if(g==='g11'||g==='g12'){document.getElementById('stream-title').textContent=(g==='g11'?'Grade 11':'Grade 12')+' — Select Stream';go('s-stream');}else{buildSubjMenu(g);go('s-subj');}}
+function normalizeUsername(u){
+  return u.trim().toLowerCase().replace(/^@/,'');
+}
+
+function isPremium(){
+  const s = getS();
+  if(checkUserPremium()) return true;
+  // Legacy prem flag
+  if(s.prem && s.premUntil && s.premUntil > Date.now()) return true;
+  return false;
+}
+
+function canAns(){
+  if(isPremium()) return true;
+  const s=getS();
+  if(s.ld!==today()) return true;
+  return s.dc < FREE_LIMIT;
+}
+
+function incDC(){
+  const s=getS();
+  if(s.ld!==today()){s.dc=1;s.ld=today();}
+  else s.dc++;
+  saveS(s);
+}
+
+function remToday(){
+  if(isPremium()) return '∞';
+  const s=getS();
+  if(s.ld!==today()) return FREE_LIMIT;
+  return Math.max(0,FREE_LIMIT-s.dc);
+}
+
+// ============================================================
+//  NAVIGATION
+// ============================================================
+let curGrade=null;
+
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='s-home') renderHome();
+  if(id==='s-score') renderScore();
+  if(id==='s-prem') renderPremScreen();
+  if(id==='s-admin') renderAdminUsers();
+}
+
+// Secret admin entry: tap header title 7 times
+let hdrTaps=0,hdrTimer=null;
+document.querySelector('.hdr h1').addEventListener('click',()=>{
+  hdrTaps++;
+  clearTimeout(hdrTimer);
+  hdrTimer=setTimeout(()=>hdrTaps=0,2000);
+  if(hdrTaps>=7){
+    hdrTaps=0;
+    const pw=prompt('🔐 Admin Password:');
+    if(pw===ADMIN_PASS) go('s-admin');
+    else alert('Wrong password');
+  }
+});
+
+// ============================================================
+//  HOME
+// ============================================================
+function renderHome(){
+  const s=getS();
+  const pct=s.total>0?Math.round(s.score/s.total*100):0;
+  document.getElementById('home-stats').innerHTML=
+    `<div class="sbox"><div class="v">${s.total}</div><div class="l">Total</div></div>
+     <div class="sbox"><div class="v">${s.score}</div><div class="l">Correct</div></div>
+     <div class="sbox"><div class="v">${pct}%</div><div class="l">Score</div></div>`;
+  const rem=remToday();
+  document.getElementById('daily-pill').innerHTML= isPremium()
+    ?`<div class="dpill">💎 Premium — <span>Unlimited</span> questions</div>`
+    :`<div class="dpill">⚡ Today remaining: <span>${rem}/${FREE_LIMIT}</span> questions</div>`;
+}
+
+// ============================================================
+//  GRADE / STREAM / SUBJECT
+// ============================================================
+function selGrade(g){
+  curGrade=g;
+  if(g==='g11'||g==='g12'){
+    document.getElementById('stream-title').textContent=(g==='g11'?'Grade 11':'Grade 12')+' — Select Stream';
+    go('s-stream');
+  } else {
+    buildSubjMenu(g);go('s-subj');
+  }
+}
 function selStream(st){buildSubjMenu(st);go('s-subj');}
 function buildSubjMenu(key){
   const subs=SUBJ_MAP[key]||[];
   document.getElementById('subj-title').textContent=(GRADE_LABELS[key]||key)+' — Select Subject';
-  document.getElementById('subj-grid').innerHTML=subs.map(([lbl,k])=>`<button class="btn" onclick="startQuiz('${key}','${k}')">${lbl}</button>`).join('')+`<button class="btn" onclick="startQuiz('${key}','random')">🎲 Random (All)</button>`;
+  document.getElementById('subj-grid').innerHTML=
+    subs.map(([lbl,k])=>`<button class="btn" onclick="startQuiz('${key}','${k}')">${lbl}</button>`).join('')+
+    `<button class="btn" onclick="startQuiz('${key}','random')">🎲 Random (All)</button>`;
   document.getElementById('subj-back').onclick=()=>(key==='nat'||key==='soc')?go('s-stream'):go('s-grade');
 }
 
+// ============================================================
+//  QUIZ
+// ============================================================
 let qSession={questions:[],idx:0,grade:'',subject:'',answered:[]};
 
 function startQuiz(grade,subject){
-  if(!canAns()){go('s-quiz');document.getElementById('quiz-card').innerHTML=`<div class="lwarn">⛔ Daily limit reached (${FREE_LIMIT} questions/day)<br>Come back tomorrow or get Premium!</div><button class="btn primary" onclick="go('s-prem')" style="width:100%">💎 Get Premium</button><div style="margin-top:10px"><button class="btn danger" onclick="exitQuiz()">← Back</button></div>`;return;}
+  if(!canAns()){
+    go('s-quiz');
+    document.getElementById('quiz-card').innerHTML=
+      `<div class="lwarn">⛔ Daily limit reached (${FREE_LIMIT} ጥያቄ/ቀን)<br>ነገ ተመለስ ወይም Premium ግዛ!</div>
+       <button class="btn primary" onclick="go('s-prem')" style="width:100%">💎 Premium ግዛ</button>
+       <div style="margin-top:10px"><button class="btn danger" onclick="exitQuiz()">← Back</button></div>`;
+    return;
+  }
   let pool=[];
   if(subject==='random'){const g=QDB[grade]||{};Object.values(g).forEach(arr=>pool.push(...arr));}
   else{pool=(QDB[grade]||{})[subject]||[];}
@@ -411,7 +626,8 @@ function rebuildQuizCard(){
 
 function renderQ(){
   const {questions,idx,grade,subject,answered}=qSession;
-  const q=questions[idx];const s=getS();
+  const q=questions[idx];
+  const s=getS();
   document.getElementById('q-grade-badge').textContent=GRADE_LABELS[grade]||grade;
   document.getElementById('q-subj-badge').textContent=SUBJ_LABELS[subject]||subject;
   document.getElementById('q-num-lbl').textContent=`Q ${idx+1} / ${questions.length}`;
@@ -421,21 +637,46 @@ function renderQ(){
   document.getElementById('q-txt').textContent=q.q;
   const pb=document.getElementById('q-prev-btn');
   pb.disabled=(idx===0);pb.style.opacity=(idx===0)?'0.4':'1';
+
+  // Next → button: only visible to premium users (before answering)
+  const nb=document.getElementById('q-next-btn');
+  nb.style.display=isPremium()?'':'none';
+
   const alreadyAns=answered[idx];
-  document.getElementById('q-opts').innerHTML=q.o.map((opt,i)=>`<button class="opt${alreadyAns!==null?(i===q.a?' correct':(i===alreadyAns?' wrong':'')):''}
-  " id="opt-${i}" onclick="answerQ(${i})" ${alreadyAns!==null?'disabled':''}><span class="ltr">${'ABCD'[i]}</span><span>${opt}</span></button>`).join('');
+  document.getElementById('q-opts').innerHTML=q.o.map((opt,i)=>
+    `<button class="opt${alreadyAns!==null?(i===q.a?' correct':(i===alreadyAns?' wrong':'')):''}
+    " id="opt-${i}" onclick="answerQ(${i})" ${alreadyAns!==null?'disabled':''}>
+    <span class="ltr">${'ABCD'[i]}</span><span>${opt}</span></button>`).join('');
+
   const resultEl=document.getElementById('q-result');
   const anavEl=document.getElementById('q-anav');
+
   if(alreadyAns!==null){
     const correct=(alreadyAns===q.a);
     resultEl.style.display='block';
     resultEl.className='rbox '+(correct?'correct':'wrong');
     resultEl.innerHTML=`<div class="rtitle">${correct?'✅ Correct! 🎉':`❌ Wrong — Correct: ${q.o[q.a]}`}</div><div class="expl">📖 ${q.e}</div>`;
+
+    // Show Next button in bottom nav:
+    // - Premium: always show
+    // - Free: only show if daily limit not yet hit
+    const canContinue = isPremium() || canAns();
     anavEl.style.display='flex';
-    const nb=document.getElementById('q-next2-btn');
-    nb.textContent=idx<questions.length-1?'Next Question →':'🏠 Finish';
-    nb.onclick=()=>idx<questions.length-1?quizNext():exitQuiz();
-  } else {resultEl.style.display='none';anavEl.style.display='none';}
+    const nb2=document.getElementById('q-next2-btn');
+
+    if(canContinue){
+      nb2.textContent=idx<questions.length-1?'Next Question →':'🏠 Finish';
+      nb2.onclick=()=>idx<questions.length-1?quizNext():exitQuiz();
+      nb2.style.display='';
+    } else {
+      // Free limit reached — hide Next, show upgrade prompt
+      nb2.style.display='none';
+      resultEl.innerHTML+=`<div style="margin-top:10px;padding:10px;background:rgba(255,193,7,.08);border:1px solid rgba(255,193,7,.25);border-radius:8px;font-size:.82rem;color:var(--gold);text-align:center;">⛔ Daily limit reached!<br><button class="btn primary" onclick="go('s-prem')" style="margin-top:8px;width:100%">💎 Get Premium</button></div>`;
+    }
+  } else {
+    resultEl.style.display='none';
+    anavEl.style.display='none';
+  }
 }
 
 function answerQ(chosen){
@@ -445,16 +686,205 @@ function answerQ(chosen){
   const s=getS();s.total++;if(chosen===questions[idx].a)s.score++;saveS(s);
   renderQ();
 }
+
 function quizPrev(){if(qSession.idx>0){qSession.idx--;renderQ();}}
-function quizNext(){if(qSession.idx<qSession.questions.length-1){qSession.idx++;renderQ();}}
-function exitQuiz(){const k=qSession.grade;if(k==='nat'||k==='soc'||k==='g9'||k==='g10')go('s-subj');else go('s-home');}
+function quizNext(){
+  if(qSession.idx<qSession.questions.length-1){
+    // Free user: check limit before navigating to next unanswered
+    const nextIdx = qSession.idx+1;
+    const alreadyAnswered = qSession.answered[nextIdx]!==null;
+    if(!alreadyAnswered && !canAns()){
+      alert('⛔ Daily limit reached! Get Premium for unlimited questions.');
+      return;
+    }
+    qSession.idx=nextIdx;renderQ();
+  }
+}
+
+function exitQuiz(){
+  const k=qSession.grade;
+  if(k==='nat'||k==='soc'||k==='g9'||k==='g10')go('s-subj');
+  else go('s-home');
+}
+
+// ============================================================
+//  SCORE
+// ============================================================
 function renderScore(){
   const s=getS();const pct=s.total>0?Math.round(s.score/s.total*100):0;
-  let g='💪 Keep Going!';if(pct>=80)g='🏆 Excellent!';else if(pct>=60)g='👍 Good!';else if(pct>=40)g='📖 Keep Studying!';
+  let g='💪 Keep Going!';
+  if(pct>=80)g='🏆 Excellent!';
+  else if(pct>=60)g='👍 Good!';
+  else if(pct>=40)g='📖 Keep Studying!';
   document.getElementById('sc-pct').textContent=pct+'%';
   document.getElementById('sc-grade').textContent=g;
-  document.getElementById('sc-stats').innerHTML=`<div class="sbox"><div class="v">${s.score}</div><div class="l">✅ Correct</div></div><div class="sbox"><div class="v">${s.total-s.score}</div><div class="l">❌ Wrong</div></div><div class="sbox"><div class="v">${s.total}</div><div class="l">📝 Total</div></div>`;
+  document.getElementById('sc-stats').innerHTML=
+    `<div class="sbox"><div class="v">${s.score}</div><div class="l">✅ Correct</div></div>
+     <div class="sbox"><div class="v">${s.total-s.score}</div><div class="l">❌ Wrong</div></div>
+     <div class="sbox"><div class="v">${s.total}</div><div class="l">📝 Total</div></div>`;
 }
+
+// ============================================================
+//  PREMIUM SCREEN
+// ============================================================
+function renderPremScreen(){
+  const box = document.getElementById('prem-status-box');
+  if(isPremium()){
+    const users = getPremUsers();
+    const s = getS();
+    const key = normalizeUsername(s.username||'');
+    let untilStr = '';
+    if(users[key]){
+      const d = new Date(users[key].until);
+      untilStr = d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+    }
+    box.innerHTML=`<div style="background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.25);border-radius:9px;padding:12px;margin-bottom:12px;text-align:center;font-size:.86rem;">
+      💎 <strong style="color:var(--green)">Premium Active</strong> ${s.username?'— '+s.username:''}<br>
+      ${untilStr?'<span style="color:var(--muted);font-size:.78rem;">Expires: '+untilStr+'</span>':''}
+    </div>`;
+  } else {
+    box.innerHTML='';
+  }
+}
+
+function openTelegram(plan){
+  const planLabels={daily:'Daily (20 ETB)',weekly:'Weekly (100 ETB)',monthly:'Monthly (250 ETB)'};
+  const msg=encodeURIComponent(`ሰላም! ${planLabels[plan]} ፕሪሚየም ለመግዛት እፈልጋለሁ።\n\nስክሪን ሻት ዘጋጅቻለሁ።\nTelebirr: 0921378547`);
+  window.open(`https://t.me/${ADMIN_TG}?text=${msg}`,'_blank');
+}
+
+function claimPremium(){
+  const uInput=document.getElementById('prem-username-input').value.trim();
+  const msgEl=document.getElementById('claim-msg');
+  if(!uInput){msgEl.style.color='var(--red)';msgEl.textContent='❌ Username አስገቡ';return;}
+  const key=normalizeUsername(uInput);
+  const users=getPremUsers();
+  if(!users[key]){
+    msgEl.style.color='var(--red)';
+    msgEl.textContent='❌ Username ፕሪሚየም አልተፈቀደለትም። Admin ን ያነጋግሩ።';
+    return;
+  }
+  if(users[key].until < Date.now()){
+    msgEl.style.color='var(--red)';
+    msgEl.textContent='❌ ፕሪሚየምዎ ጊዜ አልቋል። ደግመው ይክፈሉ።';
+    return;
+  }
+  // Grant premium to this device
+  const s=getS();
+  s.username=uInput;
+  s.prem=true;
+  s.premUntil=users[key].until;
+  saveS(s);
+  msgEl.style.color='var(--green)';
+  msgEl.textContent='✅ ፕሪሚየም ተፈቅዷል! 🎉';
+  renderPremScreen();
+}
+
+// ============================================================
+//  ADMIN PANEL
+// ============================================================
+let adminSelectedPlan=null;
+
+function adminTab(tab){
+  document.getElementById('admin-grant-tab').style.display=tab==='grant'?'':'none';
+  document.getElementById('admin-users-tab').style.display=tab==='users'?'':'none';
+  document.getElementById('atab-grant').classList.toggle('active',tab==='grant');
+  document.getElementById('atab-users').classList.toggle('active',tab==='users');
+  if(tab==='users') renderAdminUsers();
+}
+
+function selectAdminPlan(plan){
+  adminSelectedPlan=plan;
+  ['daily','weekly','monthly','custom'].forEach(p=>{
+    const btn=document.getElementById('aplan-'+p);
+    if(btn) btn.classList.toggle('primary',p===plan);
+  });
+  document.getElementById('admin-custom-days').style.display=plan==='custom'?'':'none';
+}
+
+function grantPremium(){
+  const uRaw=document.getElementById('a-username').value.trim();
+  const msgEl=document.getElementById('admin-msg');
+  if(!uRaw){msgEl.style.color='var(--red)';msgEl.textContent='❌ Username ያስገቡ';return;}
+  if(!adminSelectedPlan){msgEl.style.color='var(--red)';msgEl.textContent='❌ Plan ይምረጡ';return;}
+
+  let days=0;
+  if(adminSelectedPlan==='daily') days=1;
+  else if(adminSelectedPlan==='weekly') days=7;
+  else if(adminSelectedPlan==='monthly') days=30;
+  else if(adminSelectedPlan==='custom'){
+    days=parseInt(document.getElementById('a-custom-days').value)||0;
+    if(days<=0){msgEl.style.color='var(--red)';msgEl.textContent='❌ ቀናት ቁጥር አስገቡ';return;}
+  }
+
+  const users=getPremUsers();
+  const key=normalizeUsername(uRaw);
+  const now=Date.now();
+  const existing=users[key];
+  // If already active, extend from expiry; otherwise from now
+  const base=(existing && existing.until > now)?existing.until:now;
+  users[key]={
+    username:uRaw,
+    plan:adminSelectedPlan,
+    days,
+    grantedAt:now,
+    until: base + days*24*60*60*1000,
+  };
+  savePremUsers(users);
+
+  msgEl.style.color='var(--green)';
+  const d=new Date(users[key].until);
+  msgEl.textContent=`✅ @${key} — ${days} ቀን ፕሪሚየም ፈቅደዋል (Expires: ${d.toLocaleDateString('en-GB')})`;
+
+  // Reset form
+  document.getElementById('a-username').value='';
+  adminSelectedPlan=null;
+  ['daily','weekly','monthly','custom'].forEach(p=>{
+    const btn=document.getElementById('aplan-'+p);
+    if(btn) btn.classList.remove('primary');
+  });
+  document.getElementById('admin-custom-days').style.display='none';
+  if(document.getElementById('atab-users').classList.contains('active'))renderAdminUsers();
+}
+
+function renderAdminUsers(){
+  const users=getPremUsers();
+  const search=(document.getElementById('a-search')?.value||'').toLowerCase();
+  const listEl=document.getElementById('admin-users-list');
+  if(!listEl)return;
+  const keys=Object.keys(users).filter(k=>k.includes(search));
+  if(!keys.length){listEl.innerHTML='<div style="color:var(--muted);font-size:.84rem;text-align:center;padding:16px;">ምንም User የለም</div>';return;}
+  const now=Date.now();
+  listEl.innerHTML=keys.sort((a,b)=>users[b].grantedAt-users[a].grantedAt).map(k=>{
+    const u=users[k];
+    const active=u.until>now;
+    const d=new Date(u.until);
+    const remaining=active?Math.ceil((u.until-now)/86400000):0;
+    return `<div class="admin-user-row">
+      <div class="admin-user-info">
+        <strong>@${k}</strong><br>
+        <span style="color:var(--muted);">Plan: ${u.plan||'?'} • ${u.days||'?'} ቀን</span><br>
+        <span style="color:var(--muted);font-size:.76rem;">${active?'⏳ '+remaining+' ቀን ቀርቷል':'Expired: '+d.toLocaleDateString('en-GB')}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+        <span class="admin-badge ${active?'active':'expired'}">${active?'✅ Active':'❌ Expired'}</span>
+        <button class="admin-del-btn" onclick="revokeUser('${k}')">🗑 Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function revokeUser(key){
+  if(!confirm(`@${key} ን ፕሪሚየም ትሰርዛለህ?`)) return;
+  const users=getPremUsers();
+  delete users[key];
+  savePremUsers(users);
+  renderAdminUsers();
+}
+
+// ============================================================
+//  INIT
+// ============================================================
 renderHome();
 </script>
 </body>
