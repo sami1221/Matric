@@ -1,50 +1,754 @@
 <!DOCTYPE html>
 <html lang="am">
 <head>
-    <meta charset="UTF-8">
-    <title>Ethiopian Exam App</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body { font-family: Arial; padding: 20px; text-align: center; background: #f2f2f2; }
-        .card { background: white; padding: 20px; border-radius: 12px; margin-top: 10px; }
-        button { width: 100%; padding: 15px; margin: 8px 0; border: none; border-radius: 8px; background: #0088cc; color: white; cursor: pointer; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎓 Ethiopian Exam Bot</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #1db954;
+    --gold: #f5c518;
+    --red: #e63946;
+    --dark: #0a0e1a;
+    --card: #121828;
+    --card2: #1a2236;
+    --border: #2a3550;
+    --text: #e8eaf0;
+    --muted: #6b7a99;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'Noto Sans Ethiopic', 'Space Mono', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(29,185,84,0.07) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(245,197,24,0.05) 0%, transparent 50%);
+  }
+
+  #app {
+    width: 100%;
+    max-width: 460px;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    padding: 28px 0 20px;
+  }
+  .header .flag { font-size: 2.4rem; margin-bottom: 6px; }
+  .header h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.03em;
+  }
+  .header p { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+  /* ── Card ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    margin-bottom: 14px;
+    animation: fadeUp 0.3s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Stats strip ── */
+  .stats {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .stat-box {
+    flex: 1;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .stat-box .val {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--gold);
+    font-family: 'Space Mono', monospace;
+  }
+  .stat-box .lbl { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+
+  /* ── Section title ── */
+  .section-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  /* ── Grid buttons ── */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .grid.one { grid-template-columns: 1fr; }
+
+  .btn {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.88rem;
+    padding: 13px 10px;
+    cursor: pointer;
+    transition: all 0.18s;
+    text-align: center;
+  }
+  .btn:hover {
+    border-color: var(--gold);
+    background: rgba(245,197,24,0.08);
+    transform: translateY(-1px);
+  }
+  .btn.primary {
+    background: var(--green);
+    border-color: var(--green);
+    color: #000;
+    font-weight: 700;
+  }
+  .btn.primary:hover { background: #17a845; border-color: #17a845; }
+  .btn.danger {
+    background: transparent;
+    border-color: var(--red);
+    color: var(--red);
+  }
+  .btn.danger:hover { background: rgba(230,57,70,0.1); }
+
+  /* ── Answer options ── */
+  .option-btn {
+    width: 100%;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.9rem;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.18s;
+    text-align: left;
+    margin-bottom: 9px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--gold);
+    background: rgba(245,197,24,0.07);
+  }
+  .option-btn .letter {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    font-family: 'Space Mono', monospace;
+  }
+  .option-btn.correct { border-color: var(--green); background: rgba(29,185,84,0.12); }
+  .option-btn.correct .letter { background: var(--green); color: #000; }
+  .option-btn.wrong { border-color: var(--red); background: rgba(230,57,70,0.1); }
+  .option-btn.wrong .letter { background: var(--red); color: #fff; }
+  .option-btn:disabled { cursor: default; }
+
+  /* ── Question text ── */
+  .question-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .badge {
+    background: rgba(245,197,24,0.15);
+    border: 1px solid rgba(245,197,24,0.3);
+    color: var(--gold);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+  .question-text {
+    font-size: 1.02rem;
+    line-height: 1.65;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+
+  /* ── Result box ── */
+  .result-box {
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+  .result-box.correct { background: rgba(29,185,84,0.12); border: 1px solid rgba(29,185,84,0.3); }
+  .result-box.wrong { background: rgba(230,57,70,0.1); border: 1px solid rgba(230,57,70,0.25); }
+  .result-box .result-title { font-weight: 700; font-size: 1rem; margin-bottom: 6px; }
+  .result-box .explanation { color: #c8d0e0; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08); }
+
+  /* ── Progress bar ── */
+  .progress-wrap { margin-bottom: 14px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--muted); margin-bottom: 5px; }
+  .progress-track { background: var(--border); border-radius: 99px; height: 5px; }
+  .progress-fill { height: 5px; border-radius: 99px; background: linear-gradient(90deg, var(--green), var(--gold)); transition: width 0.4s ease; }
+
+  /* ── Premium banner ── */
+  .premium-banner {
+    background: linear-gradient(135deg, rgba(245,197,24,0.15), rgba(245,197,24,0.05));
+    border: 1px solid rgba(245,197,24,0.3);
+    border-radius: var(--radius);
+    padding: 18px;
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  .premium-banner h3 { color: var(--gold); font-size: 1rem; margin-bottom: 6px; }
+  .premium-banner p { color: var(--muted); font-size: 0.82rem; line-height: 1.6; }
+
+  /* ── Score page ── */
+  .big-percent {
+    font-size: 3.2rem;
+    font-weight: 700;
+    font-family: 'Space Mono', monospace;
+    text-align: center;
+    margin: 10px 0;
+  }
+  .score-grade { text-align: center; font-size: 1rem; color: var(--muted); margin-bottom: 18px; }
+
+  /* ── Limit warning ── */
+  .limit-warn {
+    background: rgba(230,57,70,0.1);
+    border: 1px solid rgba(230,57,70,0.3);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+    margin-bottom: 14px;
+    font-size: 0.88rem;
+    color: #f09090;
+  }
+
+  /* ── Nav ── */
+  .nav-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .nav-row .btn { flex: 1; }
+
+  /* hidden */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ── Daily counter ── */
+  .daily-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .daily-pill span { color: var(--green); font-weight: 700; font-family: 'Space Mono', monospace; }
+</style>
 </head>
 <body>
+<div id="app">
 
-<div id="view-home" class="card">
-    <h2>🎓 የፈተና ማዕከል</h2>
-    <button onclick="showGrades()">የዓመታት ኢንትራስ እና ሞዴል ፈተና</button>
-</div>
+  <!-- ═══ HEADER ═══ -->
+  <div class="header">
+    <div class="flag">🇪🇹</div>
+    <h1>Ethiopian Exam Bot</h1>
+    <p>Grade 9–12 · ሁሉም ትምህርቶች</p>
+  </div>
 
-<div id="view-grades" class="card" style="display:none;">
-    <h3>ክፍል ይምረጡ</h3>
-    <button onclick="selectGrade('grade9')">Grade 9</button>
-    <button onclick="selectGrade('grade10')">Grade 10</button>
-    <button onclick="showStream()">Grade 11 & 12</button>
-</div>
+  <!-- ═══ HOME SCREEN ═══ -->
+  <div id="screen-home" class="screen active">
+    <div class="stats" id="home-stats"></div>
+    <div id="daily-counter"></div>
+    <div class="card">
+      <div class="section-title">ምናሌ</div>
+      <div class="grid">
+        <button class="btn primary" onclick="goTo('screen-grade')">📚 ፈተና ጀምር</button>
+        <button class="btn" onclick="goTo('screen-score')">📊 ውጤቴ</button>
+        <button class="btn" onclick="goTo('screen-premium')">💎 Premium</button>
+        <button class="btn" onclick="goTo('screen-help')">ℹ️ እርዳታ</button>
+      </div>
+    </div>
+  </div>
 
-<div id="view-stream" class="card" style="display:none;">
-    <h3>ዘርፍ ይምረጡ</h3>
-    <button onclick="selectStream('natural')">Natural Science</button>
-    <button onclick="selectStream('social')">Social Science</button>
+  <!-- ═══ GRADE SELECT ═══ -->
+  <div id="screen-grade" class="screen">
+    <div class="card">
+      <div class="section-title">ክፍልዎን ይምረጡ</div>
+      <div class="grid">
+        <button class="btn" onclick="selectGrade('grade9')">9️⃣ ክፍል 9</button>
+        <button class="btn" onclick="selectGrade('grade10')">🔟 ክፍል 10</button>
+        <button class="btn" onclick="selectGrade('grade11')">1️⃣1️⃣ ክፍል 11</button>
+        <button class="btn" onclick="selectGrade('grade12')">1️⃣2️⃣ ክፍል 12</button>
+      </div>
+      <div class="nav-row">
+        <button class="btn danger" onclick="goTo('screen-home')">← ተመለስ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ STREAM SELECT (11/12) ═══ -->
+  <div id="screen-stream" class="screen">
+    <div class="card">
+      <div class="section-title" id="stream-title">ዘርፍ ይምረጡ</div>
+      <div class="grid">
+        <button class="btn" onclick="selectStream('natural')">🔬 Natural Science</button>
+        <button class="btn" onclick="selectStream('social')">📖 Social Science</button>
+      </div>
+      <div class="nav-row">
+        <button class="btn danger" onclick="goTo('screen-grade')">← ተመለስ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SUBJECT SELECT ═══ -->
+  <div id="screen-subject" class="screen">
+    <div class="card">
+      <div class="section-title" id="subject-title">ትምህርት ምረጥ</div>
+      <div class="grid one" id="subject-grid"></div>
+      <div class="nav-row">
+        <button class="btn danger" id="subject-back">← ተመለስ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ QUIZ SCREEN ═══ -->
+  <div id="screen-quiz" class="screen">
+    <div class="card">
+      <div class="question-meta">
+        <div class="badge" id="quiz-badge">ክፍል 9</div>
+        <div class="badge" id="quiz-subject-badge">ሒሳብ</div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span>ትክክለኛ</span>
+          <span id="progress-frac">0/0</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="question-text" id="quiz-question"></div>
+      <div id="quiz-options"></div>
+      <div id="quiz-result" style="display:none"></div>
+      <div class="nav-row" id="quiz-nav" style="display:none">
+        <button class="btn primary" id="next-btn">➡️ ሌላ ጥያቄ</button>
+        <button class="btn" onclick="goTo('screen-home')">🏠 ዋና ምናሌ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCORE SCREEN ═══ -->
+  <div id="screen-score" class="screen">
+    <div class="card">
+      <div class="section-title">የእርስዎ ውጤት</div>
+      <div class="big-percent" id="score-percent">0%</div>
+      <div class="score-grade" id="score-grade"></div>
+      <div class="stats" id="score-stats"></div>
+      <button class="btn primary" onclick="goTo('screen-home')" style="width:100%;margin-top:8px">🏠 ዋና ምናሌ</button>
+    </div>
+  </div>
+
+  <!-- ═══ PREMIUM SCREEN ═══ -->
+  <div id="screen-premium" class="screen">
+    <div class="premium-banner">
+      <h3>💎 Premium አባልነት</h3>
+      <p>ያልተወሰነ ጥያቄ — ሁሉም ትምህርቶች</p>
+    </div>
+    <div class="card">
+      <div class="section-title">ዝርዝር</div>
+      <p style="font-size:0.88rem;line-height:1.8;color:var(--muted)">
+        🆓 ነፃ: ቀን ቀን <strong style="color:var(--text)">5 ጥያቄ</strong><br>
+        💎 Premium: <strong style="color:var(--gold)">ያልተወሰነ ጥያቄ</strong><br>
+        💰 ዋጋ: <strong style="color:var(--green)">50 ብር/ወር</strong>
+      </p>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:0.85rem;color:var(--muted);line-height:1.9">
+        📲 ለመክፈል:<br>
+        👤 Admin: <strong style="color:var(--text)">@YourUsername</strong><br>
+        📱 Telebirr: <strong style="color:var(--text)">09XXXXXXXX</strong><br><br>
+        ✅ ከፍለህ screenshot ላክ → ወዲያው ይከፈታል!
+      </div>
+      <button class="btn danger" onclick="goTo('screen-home')" style="width:100%;margin-top:14px">← ተመለስ</button>
+    </div>
+  </div>
+
+  <!-- ═══ HELP SCREEN ═══ -->
+  <div id="screen-help" class="screen">
+    <div class="card">
+      <div class="section-title">ℹ️ እርዳታ</div>
+      <div style="font-size:0.88rem;line-height:2;color:var(--muted)">
+        📚 <strong style="color:var(--text)">ፈተና ጀምር</strong> — ክፍልና ትምህርት ምረጥ<br>
+        📊 <strong style="color:var(--text)">ውጤቴ</strong> — ስንት ትክክል እንደሆነ ይሳያል<br>
+        💎 <strong style="color:var(--text)">Premium ግዛ</strong> — ያልተወሰነ ጥያቄ<br>
+        🎲 <strong style="color:var(--text)">Random</strong> — ሁሉም ትምህርቶች ቀላቅሎ
+      </div>
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-size:0.82rem;color:var(--muted)">
+        📞 ለጥያቄ: @YourUsername
+      </div>
+      <button class="btn danger" onclick="goTo('screen-home')" style="width:100%;margin-top:14px">← ተመለስ</button>
+    </div>
+  </div>
+
 </div>
 
 <script>
-    function showGrades() {
-        document.getElementById('view-home').style.display = 'none';
-        document.getElementById('view-grades').style.display = 'block';
-    }
+// ═══════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════
+const FREE_DAILY_LIMIT = 5;
 
-    function showStream() {
-        document.getElementById('view-grades').style.display = 'none';
-        document.getElementById('view-stream').style.display = 'block';
-    }
+const questions = {
+  grade9: {
+    math: [
+      { q: 'የ 2³ ዋጋ ምንድን ነው?', options: ['6','8','9','12'], answer: 1, explanation: '2³ = 2×2×2 = 8' },
+      { q: 'x + 5 = 12 ከሆነ x = ?', options: ['5','6','7','8'], answer: 2, explanation: 'x = 12 - 5 = 7' },
+      { q: 'የሦስት ማዕዘን ሁሉም ማዕዘናት ድምር ምን ያህል ነው?', options: ['90°','180°','270°','360°'], answer: 1, explanation: 'የሦስት ማዕዘን ሁሉም ማዕዘናት ድምር = 180°' },
+      { q: '√64 = ?', options: ['6','7','8','9'], answer: 2, explanation: '√64 = 8 ምክንያቱም 8×8 = 64' },
+      { q: '15% of 200 = ?', options: ['25','30','35','40'], answer: 1, explanation: '200 × 15/100 = 30' },
+    ],
+    english: [
+      { q: 'Choose the correct form: She ___ to school every day.', options: ['go','goes','going','gone'], answer: 1, explanation: '"She" is third person singular, so we add "s" → goes' },
+      { q: 'What is the plural of "child"?', options: ['childs','childes','children','childrens'], answer: 2, explanation: 'The irregular plural of "child" is "children"' },
+      { q: 'Choose the antonym of "ancient":', options: ['old','modern','historical','traditional'], answer: 1, explanation: 'Ancient means very old. Its antonym is "modern"' },
+    ],
+    biology: [
+      { q: 'የሰውነት መሠረታዊ አሃድ ምንድን ነው?', options: ['ቲሹ','ሴል (Cell)','ኦርጋን','ሞለኪውል'], answer: 1, explanation: 'Cell (ሴል) የሕይወት መሠረታዊ አሃድ ነው' },
+      { q: 'Photosynthesis የሚካሄደው የዕፅዋት የትኛው ክፍል ውስጥ ነው?', options: ['Root','Stem','Chloroplast','Mitochondria'], answer: 2, explanation: 'Photosynthesis የሚካሄደው Chloroplast ውስጥ ነው' },
+      { q: 'DNA ሙሉ ስሙ ምንድን ነው?', options: ['Deoxyribonucleic Acid','Diribonucleic Acid','Deoxyribose Nucleic Acid','Double Nucleic Acid'], answer: 0, explanation: 'DNA = Deoxyribonucleic Acid' },
+    ],
+    physics: [
+      { q: 'F = ma ቀመር ምን ሕግ ነው?', options: ['የኒውተን 1ኛ ሕግ','የኒውተን 2ኛ ሕግ','የኒውተን 3ኛ ሕግ','የኦህም ሕግ'], answer: 1, explanation: 'F=ma የኒውተን 2ኛ ሕግ ነው — ኃይል = ብዛት × ፍጥነት ለውጥ' },
+      { q: 'የብርሃን ፍጥነት ምን ያህል ነው?', options: ['3×10⁶ m/s','3×10⁸ m/s','3×10¹⁰ m/s','3×10⁴ m/s'], answer: 1, explanation: 'የብርሃን ፍጥነት = 3×10⁸ m/s (300,000 km/s)' },
+    ],
+    chemistry: [
+      { q: 'ውሃ የሚፈጠረው ከምን ምን ነው?', options: ['H + O','H₂ + O','H + O₂','H₂ + O₂'], answer: 3, explanation: '2H₂ + O₂ → 2H₂O' },
+      { q: 'የሃይድሮጂን atomic number ምንድን ነው?', options: ['1','2','3','4'], answer: 0, explanation: 'Hydrogen atomic number = 1 (ቀላሉ ንጥረ ነገር)' },
+    ],
+    history: [
+      { q: 'የአድዋ ጦርነት የተካሄደው መቼ ነው?', options: ['1885','1896','1900','1910'], answer: 1, explanation: 'የአድዋ ጦርነት መጋቢት 2, 1888 ዓ.ም (1896 ዓ.ክ) ተካሄደ' },
+      { q: 'ኢትዮጵያ ከጣሊያን ወረራ ነፃ የወጣችው መቼ ነው?', options: ['1935','1941','1945','1950'], answer: 1, explanation: 'ኢትዮጵያ ከጣሊያን ወረራ ነፃ የወጣችው 1941 ነው' },
+    ],
+    geography: [
+      { q: 'የኢትዮጵያ ዋና ከተማ ምንድን ነው?', options: ['ድሬዳዋ','ጎንደር','አዲስ አበባ','ሐዋሳ'], answer: 2, explanation: 'የኢትዮጵያ ዋና ከተማ አዲስ አበባ ነች' },
+      { q: 'አባይ ወንዝ ምን ከሆነ ሐይቅ ይወጣል?', options: ['ጣና','ሐዋሳ','ዚዋይ','አባይጃታ'], answer: 0, explanation: 'አባይ ወንዝ ከጣና ሐይቅ ይወጣል' },
+    ],
+  },
+  grade10: {
+    math: [
+      { q: 'log₁₀(100) = ?', options: ['1','2','10','100'], answer: 1, explanation: 'log₁₀(100) = log₁₀(10²) = 2' },
+      { q: 'sin(90°) = ?', options: ['0','0.5','1','√2/2'], answer: 2, explanation: 'sin(90°) = 1' },
+      { q: 'የ quadratic equation ax²+bx+c=0 መፍትሔ ቀመር?', options: ['x = -b ± √(b²-4ac) / 2a','x = b ± √(b²-4ac) / 2a','x = -b ± √(b²+4ac) / 2a','x = -b / 2a'], answer: 0, explanation: 'x = (-b ± √(b²-4ac)) / 2a — Quadratic formula' },
+    ],
+    english: [
+      { q: 'The passive voice of "He wrote the letter" is:', options: ['The letter wrote by him','The letter was written by him','The letter is written by him','The letter has written by him'], answer: 1, explanation: 'Past passive = was/were + past participle' },
+    ],
+    biology: [
+      { q: 'Mitosis ሲጠናቀቅ ስንት ሴሎች ይፈጠራሉ?', options: ['1','2','3','4'], answer: 1, explanation: 'Mitosis 2 identical daughter cells ይፈጥራል' },
+      { q: 'Meiosis ሲጠናቀቅ ስንት ሴሎች ይፈጠራሉ?', options: ['1','2','3','4'], answer: 3, explanation: 'Meiosis 4 haploid cells ይፈጥራል' },
+    ],
+    physics: [
+      { q: 'የኦህም ሕግ ቀመር ምንድን ነው?', options: ['V = IR','V = I/R','V = I+R','V = I-R'], answer: 0, explanation: 'V = IR — Voltage = Current × Resistance' },
+    ],
+    chemistry: [
+      { q: 'pH = 7 ማለት ምን ማለት ነው?', options: ['Acidic','Neutral','Basic','Alkaline'], answer: 1, explanation: 'pH 7 = Neutral, pH < 7 = Acidic, pH > 7 = Basic' },
+    ],
+    history: [
+      { q: 'የመጀመሪያው የዓለም ጦርነት የተጀመረው መቼ ነው?', options: ['1910','1914','1918','1920'], answer: 1, explanation: 'WWI የተጀመረው 1914 ነው' },
+    ],
+    geography: [
+      { q: 'የዓለማችን ትልቁ ውቅያኖስ ምንድን ነው?', options: ['Atlantic','Indian','Pacific','Arctic'], answer: 2, explanation: 'Pacific Ocean — የዓለማችን ትልቁ ውቅያኖስ' },
+    ],
+  },
+  natural: {
+    math: [
+      { q: 'dy/dx of x³ = ?', options: ['x²','2x²','3x²','3x'], answer: 2, explanation: 'd/dx(xⁿ) = nxⁿ⁻¹ → d/dx(x³) = 3x²' },
+      { q: '∫x dx = ?', options: ['x','x²','x²/2 + C','2x + C'], answer: 2, explanation: '∫x dx = x²/2 + C' },
+      { q: 'lim(x→0) sin(x)/x = ?', options: ['0','1','∞','undefined'], answer: 1, explanation: 'lim(x→0) sin(x)/x = 1 — ታዋቂ limit' },
+    ],
+    physics: [
+      { q: 'E = mc² ቀመር ምን ያሳያል?', options: ['ኃይልና ፍጥነት ግንኙነት','ኃይልና ብዛት ግንኙነት','ብዛት ወደ ኃይል መቀየር','የብርሃን ፍጥነት'], answer: 2, explanation: 'E=mc² — ብዛት ወደ ኃይል ሊቀየር ይችላል (አንስታይን)' },
+      { q: "Boyle's Law ምን ይገልፃል?", options: ['P ∝ T (constant V)','V ∝ T (constant P)','PV = constant (constant T)','P/T = constant'], answer: 2, explanation: "Boyle's Law: PV = constant (temperature constant ሲሆን)" },
+    ],
+    chemistry: [
+      { q: "Avogadro's number ምን ያህል ነው?", options: ['6.02×10²¹','6.02×10²³','6.02×10²⁵','6.02×10²⁰'], answer: 1, explanation: "Avogadro's number = 6.02×10²³ mol⁻¹" },
+      { q: 'Ionic bond የሚፈጠረው እንዴት ነው?', options: ['electron sharing ሲኖር','electron transfer ሲኖር','proton sharing ሲኖር','neutron transfer ሲኖር'], answer: 1, explanation: 'Ionic bond = electron transfer (metal → non-metal)' },
+    ],
+    biology: [
+      { q: 'ATP ሙሉ ስሙ ምንድን ነው?', options: ['Adenosine Triphosphate','Adenine Triphosphate','Adenosine Triprotein','Amino Triphosphate'], answer: 0, explanation: 'ATP = Adenosine Triphosphate — የሕይወት ኃይል ምንጭ' },
+      { q: 'Cellular respiration equation:', options: ['C₆H₁₂O₆ + O₂ → CO₂ + H₂O + ATP','CO₂ + H₂O → C₆H₁₂O₆ + O₂','C₆H₁₂O₆ → CO₂ + H₂O','O₂ + H₂O → CO₂ + ATP'], answer: 0, explanation: 'C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + ATP' },
+    ],
+    english: [
+      { q: 'Choose the correct conditional: If it rains, I ___ stay home.', options: ['will','would','should','shall'], answer: 0, explanation: '1st conditional (real): If + present simple, will + base verb' },
+    ],
+  },
+  social: {
+    history: [
+      { q: 'የፈረንሳይ አብዮት የተካሄደው መቼ ነው?', options: ['1776','1789','1800','1815'], answer: 1, explanation: 'የፈረንሳይ አብዮት 1789 ተካሄደ' },
+      { q: 'የሁለተኛው ዓለም ጦርነት ያበቃው መቼ ነው?', options: ['1943','1944','1945','1946'], answer: 2, explanation: 'WWII 1945 አበቃ (Europe: May, Japan: September)' },
+    ],
+    geography: [
+      { q: 'የዓለማችን ትልቁ ሀገር (በስፋት) ምንድን ነው?', options: ['China','USA','Canada','Russia'], answer: 3, explanation: 'Russia — 17.1 million km² — የዓለማችን ትልቁ ሀገር' },
+      { q: 'ኢኳቶር (Equator) ምን ያህል ዲግሪ ላቲቱድ ላይ ነው?', options: ['0°','23.5°','45°','90°'], answer: 0, explanation: 'Equator = 0° latitude — የምድር መሃል መስመር' },
+    ],
+    economics: [
+      { q: 'GDP ምን ማለት ነው?', options: ['General Domestic Product','Gross Domestic Product','Global Domestic Product','Growth Domestic Product'], answer: 1, explanation: 'GDP = Gross Domestic Product — አጠቃላይ የሀገር ውስጥ ምርት' },
+      { q: 'Inflation ማለት ምን ማለት ነው?', options: ['የዋጋ ቅናሽ','የዋጋ ጭማሪ','የገንዘብ ጭማሪ','የምርት ቅናሽ'], answer: 1, explanation: 'Inflation = የዋጋ ጭማሪ (የገንዘብ ዋጋ ሲቀንስ)' },
+    ],
+    civics: [
+      { q: 'ዴሞክራሲ ማለት ምን ማለት ነው?', options: ['የንጉሥ አገዛዝ','የሕዝብ አገዛዝ','የሠራዊት አገዛዝ','የሃይማኖት አገዛዝ'], answer: 1, explanation: 'Democracy (ዴሞክራሲ) = የሕዝብ አገዛዝ (ግሪክ: demos=ሕዝብ, kratos=አገዛዝ)' },
+    ],
+    english: [
+      { q: 'Choose the correct relative pronoun: The book ___ I read was interesting.', options: ['who','whom','which','whose'], answer: 2, explanation: '"which" ለዕቃ ነገሮች ይጠቀማል (things, not people)' },
+    ],
+    amharic: [
+      { q: 'ግስ ምንድን ነው?', options: ['ስምን የሚተካ ቃል','ድርጊትን፣ ሁኔታን ወይም መሆንን የሚገልፅ ቃል','ስምን የሚያሳድድ ቃል','ስምን የሚቀድም ቃል'], answer: 1, explanation: 'ግስ = ድርጊትን፣ ሁኔታን ወይም መሆንን የሚገልፅ ቃል' },
+    ],
+  },
+};
 
-    function selectStream(stream) {
-        // እዚህ ጋር የትምህርት ዝርዝር ወደሚታይበት ገጽ ይወስዳል
-        alert(stream + " ትምህርቶች ተከፍተዋል");
-    }
+const subjectsMap = {
+  grade9:   [['➕ ሒሳብ','math'],['🔬 ባዮሎጂ','biology'],['⚡ ፊዚክስ','physics'],['🧪 ኬሚስትሪ','chemistry'],['🌍 እንግሊዝኛ','english'],['📜 ታሪክ','history'],['🗺️ ጂኦግራፊ','geography']],
+  grade10:  [['➕ ሒሳብ','math'],['🔬 ባዮሎጂ','biology'],['⚡ ፊዚክስ','physics'],['🧪 ኬሚስትሪ','chemistry'],['🌍 እንግሊዝኛ','english'],['📜 ታሪክ','history'],['🗺️ ጂኦግራፊ','geography']],
+  natural:  [['➕ ሒሳብ','math'],['⚡ ፊዚክስ','physics'],['🧪 ኬሚስትሪ','chemistry'],['🔬 ባዮሎጂ','biology'],['🌍 እንግሊዝኛ','english']],
+  social:   [['📜 ታሪክ','history'],['🗺️ ጂኦግራፊ','geography'],['💰 ኢኮኖሚክስ','economics'],['🏛️ Civics','civics'],['🌍 እንግሊዝኛ','english'],['✍️ አማርኛ','amharic']],
+};
+
+const gradeLabels = { grade9:'9ኛ ክፍል', grade10:'10ኛ ክፍል', natural:'11/12 Natural', social:'11/12 Social' };
+const subjectLabels = { math:'ሒሳብ', biology:'ባዮሎጂ', physics:'ፊዚክስ', chemistry:'ኬሚስትሪ', english:'እንግሊዝኛ', history:'ታሪክ', geography:'ጂኦግራፊ', economics:'ኢኮኖሚክስ', civics:'Civics', amharic:'አማርኛ', random:'Random' };
+
+// ═══════════════════════════════════════
+// STATE (localStorage)
+// ═══════════════════════════════════════
+function getState() {
+  const def = { score: 0, total: 0, dailyCount: 0, lastDate: '', premium: false };
+  try { return Object.assign(def, JSON.parse(localStorage.getItem('etbot') || '{}')); }
+  catch(e) { return def; }
+}
+function saveState(s) {
+  localStorage.setItem('etbot', JSON.stringify(s));
+}
+function todayStr() { return new Date().toISOString().slice(0,10); }
+function canAnswer() {
+  const s = getState();
+  if (s.premium) return true;
+  if (s.lastDate !== todayStr()) return true;
+  return s.dailyCount < FREE_DAILY_LIMIT;
+}
+function incrementCount() {
+  const s = getState();
+  if (s.lastDate !== todayStr()) {
+    s.dailyCount = 1; s.lastDate = todayStr();
+  } else { s.dailyCount++; }
+  saveState(s);
+}
+function remainingToday() {
+  const s = getState();
+  if (s.premium) return '∞';
+  if (s.lastDate !== todayStr()) return FREE_DAILY_LIMIT;
+  return Math.max(0, FREE_DAILY_LIMIT - s.dailyCount);
+}
+
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+let currentGrade = null;
+
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 'screen-home') renderHome();
+  if (id === 'screen-score') renderScore();
+}
+
+function renderHome() {
+  const s = getState();
+  const pct = s.total > 0 ? Math.round(s.score/s.total*100) : 0;
+  document.getElementById('home-stats').innerHTML = `
+    <div class="stat-box"><div class="val">${s.total}</div><div class="lbl">ጠቅላላ</div></div>
+    <div class="stat-box"><div class="val">${s.score}</div><div class="lbl">ትክክለኛ</div></div>
+    <div class="stat-box"><div class="val">${pct}%</div><div class="lbl">ፐርሰንት</div></div>
+  `;
+  const rem = remainingToday();
+  document.getElementById('daily-counter').innerHTML = s.premium
+    ? `<div class="daily-pill">💎 Premium — <span>ያልተወሰነ</span> ጥያቄ</div>`
+    : `<div class="daily-pill">⚡ ዛሬ የቀረ: <span>${rem}/${FREE_DAILY_LIMIT}</span> ጥያቄ</div>`;
+}
+
+function selectGrade(g) {
+  if (g === 'grade11' || g === 'grade12') {
+    document.getElementById('stream-title').textContent = (g==='grade11'?'11ኛ':'12ኛ') + ' ክፍል — ዘርፍ ይምረጡ';
+    goTo('screen-stream');
+  } else {
+    currentGrade = g;
+    renderSubjects(g);
+    goTo('screen-subject');
+  }
+}
+
+function selectStream(stream) {
+  currentGrade = stream;
+  renderSubjects(stream);
+  goTo('screen-subject');
+}
+
+function renderSubjects(grade) {
+  const subjects = subjectsMap[grade] || [];
+  document.getElementById('subject-title').textContent = gradeLabels[grade] + ' — ትምህርት ምረጥ';
+  const grid = document.getElementById('subject-grid');
+  grid.innerHTML = subjects.map(([label, key]) =>
+    `<button class="btn" onclick="startQuiz('${grade}','${key}')">${label}</button>`
+  ).join('') + `<button class="btn" onclick="startQuiz('${grade}','random')">🎲 ሁሉም (Random)</button>`;
+  document.getElementById('subject-back').onclick = () =>
+    grade === 'natural' || grade === 'social' ? goTo('screen-stream') : goTo('screen-grade');
+}
+
+// ═══════════════════════════════════════
+// QUIZ
+// ═══════════════════════════════════════
+let currentSession = null;
+
+function startQuiz(grade, subject) {
+  if (!canAnswer()) {
+    goTo('screen-quiz');
+    document.querySelector('#screen-quiz .card').innerHTML = `
+      <div class="limit-warn">
+        ⛔ ቀን ቀን ${FREE_DAILY_LIMIT} ጥያቄ ብቻ!<br>
+        ነገ ተመለስ ወይም Premium ግዛ።
+      </div>
+      <button class="btn primary" onclick="goTo('screen-premium')" style="width:100%">💎 Premium ግዛ</button>
+      <div class="nav-row"><button class="btn danger" onclick="goTo('screen-home')">← ተመለስ</button></div>
+    `;
+    return;
+  }
+
+  let pool = [];
+  if (subject === 'random') {
+    const gradeQs = questions[grade] || {};
+    Object.values(gradeQs).forEach(arr => pool.push(...arr));
+  } else {
+    pool = (questions[grade] || {})[subject] || [];
+  }
+
+  if (!pool.length) { alert('ጥያቄ አልተገኘም!'); return; }
+
+  const q = pool[Math.floor(Math.random() * pool.length)];
+  currentSession = { q, grade, subject, answered: false };
+  renderQuestion();
+  goTo('screen-quiz');
+}
+
+function renderQuestion() {
+  const { q, grade, subject } = currentSession;
+  const s = getState();
+
+  document.getElementById('quiz-badge').textContent = gradeLabels[grade] || grade;
+  document.getElementById('quiz-subject-badge').textContent = subjectLabels[subject] || subject;
+  document.getElementById('quiz-question').textContent = q.q;
+
+  const pct = s.total > 0 ? Math.round(s.score/s.total*100) : 0;
+  document.getElementById('progress-frac').textContent = `${s.score}/${s.total}`;
+  document.getElementById('progress-fill').style.width = pct + '%';
+
+  const opts = document.getElementById('quiz-options');
+  opts.innerHTML = q.options.map((opt, i) => `
+    <button class="option-btn" id="opt-${i}" onclick="answerQ(${i})">
+      <span class="letter">${'ABCD'[i]}</span>
+      <span>${opt}</span>
+    </button>
+  `).join('');
+
+  document.getElementById('quiz-result').style.display = 'none';
+  document.getElementById('quiz-nav').style.display = 'none';
+}
+
+function answerQ(chosen) {
+  if (!currentSession || currentSession.answered) return;
+  currentSession.answered = true;
+  incrementCount();
+
+  const { q, grade, subject } = currentSession;
+  const correct = q.answer;
+  const s = getState();
+  s.total++;
+  if (chosen === correct) s.score++;
+  saveState(s);
+
+  // style buttons
+  document.querySelectorAll('.option-btn').forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === correct) btn.classList.add('correct');
+    else if (i === chosen && chosen !== correct) btn.classList.add('wrong');
+  });
+
+  const isCorrect = chosen === correct;
+  const resultEl = document.getElementById('quiz-result');
+  resultEl.style.display = 'block';
+  resultEl.className = 'result-box ' + (isCorrect ? 'correct' : 'wrong');
+  resultEl.innerHTML = `
+    <div class="result-title">${isCorrect ? '✅ ትክክል ነው! 🎉' : `❌ ትክክል አይደለም — ትክክለኛ: ${q.options[correct]}`}</div>
+    <div class="explanation">📖 ${q.explanation}</div>
+  `;
+
+  const nav = document.getElementById('quiz-nav');
+  nav.style.display = 'flex';
+  document.getElementById('next-btn').onclick = () => startQuiz(grade, subject);
+}
+
+function renderScore() {
+  const s = getState();
+  const pct = s.total > 0 ? Math.round(s.score/s.total*100) : 0;
+  let grade = '💪 አትተው!';
+  if (pct >= 80) grade = '🏆 እጅግ ጥሩ!';
+  else if (pct >= 60) grade = '👍 ጥሩ!';
+  else if (pct >= 40) grade = '📖 ቀጥሉ!';
+  document.getElementById('score-percent').textContent = pct + '%';
+  document.getElementById('score-grade').textContent = grade;
+  document.getElementById('score-stats').innerHTML = `
+    <div class="stat-box"><div class="val">${s.score}</div><div class="lbl">✅ ትክክለኛ</div></div>
+    <div class="stat-box"><div class="val">${s.total - s.score}</div><div class="lbl">❌ ስህተት</div></div>
+    <div class="stat-box"><div class="val">${s.total}</div><div class="lbl">📝 ጠቅላላ</div></div>
+  `;
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+renderHome();
 </script>
 </body>
 </html>
