@@ -2,27 +2,37 @@
 <html lang="am">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matric Exam Prep</title>
+    <title>Matric Exam</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
-        .container { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h1 { color: #2c3e50; }
-        button { background: #3498db; color: white; border: none; padding: 15px 20px; border-radius: 10px; cursor: pointer; width: 100%; font-size: 16px; margin-top: 10px; }
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }
+        .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; background: #0088cc; color: white; border: none; border-radius: 8px; }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div id="app">
         <h1>🎓 የፈተና መግቢያ</h1>
-        <p>ወደ ማትሪክ ዝግጅት ቦት እንኳን በደህና መጡ!</p>
-        <button onclick="closeApp()">ወደ ቦቱ ተመለስ</button>
+        <div id="menu">
+            <button class="btn" onclick="fetchQuestions()">📚 ፈተና ጀምር</button>
+            <button class="btn" onclick="showScore()">📊 ውጤቴ</button>
+        </div>
+        <div id="quiz-area"></div>
     </div>
 
     <script>
-        let tg = window.Telegram.WebApp;
+        const tg = window.Telegram.WebApp;
         tg.expand();
-        function closeApp() { tg.close(); }
+
+        async function fetchQuestions() {
+            // የራስህን የRender/Railway ሊንክ እዚህ አስገባ
+            const response = await fetch('https://your-app-name.onrender.com/get_questions');
+            const data = await response.json();
+            document.getElementById('quiz-area').innerHTML = "ጥያቄዎች ተጭነዋል...";
+        }
+
+        function showScore() {
+            tg.showPopup({title: 'ውጤት', message: 'አሁናዊ ውጤትዎ፡ 0'});
+        }
     </script>
 </body>
 </html>
