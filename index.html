@@ -15,7 +15,8 @@
 body {
   background: var(--bg); color: var(--text); font-family: 'Sora', sans-serif;
   min-height: 100vh; display: flex; justify-content: center; padding: 12px;
-  background-image: radial-gradient(ellipse 60% 40% at 10% 10%, rgba(0,230,118,0.06) 0%, transparent 60%), radial-gradient(ellipse 50% 50% at 90% 90%, rgba(41,121,255,0.05) 0%, transparent 60%);
+  background-image: radial-gradient(ellipse 60% 40% at 10% 10%, rgba(0,230,118,0.06) 0%, transparent 60%),
+                    radial-gradient(ellipse 50% 50% at 90% 90%, rgba(41,121,255,0.05) 0%, transparent 60%);
 }
 #app { width: 100%; max-width: 480px; }
 .hdr { text-align:center; padding: 24px 0 16px; }
@@ -39,7 +40,7 @@ body {
 .btn.danger:hover { background:rgba(255,71,87,.1); }
 .btn.ghost { border-color:var(--border); color:var(--muted); }
 .btn.ghost:hover { border-color:var(--muted); color:var(--text); }
-.opt { width:100%; background:var(--card2); border:1px solid var(--border); border-radius:9px; color:var(--text); font-family:inherit; font-size:.88rem; padding:13px 14px; cursor:pointer; transition:all .16s; text-align:left; display:flex; align-items:center; gap:11px; margin-bottom:8px; }
+.opt { width:100%; background:var(--card2); border:1px solid var(--border); border-radius:9px; color:var(--text); font-family:inherit; font-size:.88rem; padding:13px 14px; cursor:pointer; transition:all .18s; text-align:left; display:flex; align-items:center; gap:11px; margin-bottom:8px; }
 .opt:hover:not(:disabled) { border-color:var(--gold); background:rgba(255,193,7,.06); }
 .opt .ltr { width:26px; height:26px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-size:.72rem; font-weight:800; flex-shrink:0; font-family:'JetBrains Mono',monospace; }
 .opt.correct { border-color:var(--green); background:rgba(0,230,118,.1); }
@@ -66,20 +67,50 @@ body {
 .rbox.wrong { background:rgba(255,71,87,.09); border:1px solid rgba(255,71,87,.22); }
 .rbox .rtitle { font-weight:800; font-size:.95rem; margin-bottom:6px; }
 .rbox .expl { color:#b0bcd4; margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,.07); font-size:.82rem; }
-.anav { display:flex; gap:8px; margin-top:12px; }
-.anav .btn { flex:1; }
+.next-auto-btn {
+  width:100%; margin-top:4px;
+  background: linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,230,118,.08));
+  border:1px solid rgba(0,230,118,.4); border-radius:9px;
+  color:var(--green); font-family:inherit; font-size:.9rem; font-weight:700;
+  padding:13px; cursor:pointer; transition:all .18s; display:flex;
+  align-items:center; justify-content:center; gap:8px;
+}
+.next-auto-btn:hover { background:rgba(0,230,118,.22); transform:translateY(-1px); }
+.next-auto-btn .arrow { font-size:1.1rem; transition:transform .18s; }
+.next-auto-btn:hover .arrow { transform:translateX(4px); }
 .bigpct { font-size:3rem; font-weight:800; font-family:'JetBrains Mono',monospace; text-align:center; margin:10px 0; }
 .sgrade { text-align:center; font-size:.95rem; color:var(--muted); margin-bottom:16px; }
-.prem-banner { background:linear-gradient(135deg,rgba(255,193,7,.14),rgba(255,193,7,.04)); border:1px solid rgba(255,193,7,.28); border-radius:var(--r); padding:18px; text-align:center; margin-bottom:12px; }
-.prem-banner h3 { color:var(--gold); font-size:.98rem; margin-bottom:5px; }
+.prem-banner {
+  background: linear-gradient(135deg,rgba(255,193,7,.18),rgba(255,193,7,.04));
+  border:1px solid rgba(255,193,7,.35); border-radius:var(--r);
+  padding:22px 18px; text-align:center; margin-bottom:12px;
+}
+.prem-banner .crown { font-size:2.4rem; margin-bottom:8px; }
+.prem-banner h3 { color:var(--gold); font-size:1.05rem; margin-bottom:5px; }
 .prem-banner p { color:var(--muted); font-size:.8rem; }
-.pplan { display:flex; flex-direction:column; gap:9px; margin-bottom:14px; }
+.pplan { display:flex; flex-direction:column; gap:9px; margin-bottom:16px; }
 .plan-row { display:flex; align-items:center; justify-content:space-between; background:var(--card2); border:1px solid var(--border); border-radius:9px; padding:12px 14px; }
 .plan-row .pname { font-size:.86rem; font-weight:700; }
 .plan-row .pprice { font-size:.9rem; font-weight:800; color:var(--green); font-family:'JetBrains Mono',monospace; }
+.admin-link {
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  width:100%;
+  background: linear-gradient(135deg,rgba(41,121,255,.2),rgba(41,121,255,.06));
+  border:1px solid rgba(41,121,255,.4); border-radius:10px;
+  color:#6fa8ff; font-family:inherit; font-size:.92rem; font-weight:700;
+  padding:15px; cursor:pointer; text-decoration:none; transition:all .18s;
+  margin-bottom:9px;
+}
+.admin-link:hover { background:rgba(41,121,255,.25); border-color:rgba(41,121,255,.7); transform:translateY(-1px); }
+.admin-link .tg-ico { font-size:1.3rem; }
+.pay-info { background:var(--card2); border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:12px; }
+.pay-info .pi-row { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--border); font-size:.85rem; }
+.pay-info .pi-row:last-child { border-bottom:none; }
+.pay-info .pi-ico { font-size:1rem; width:22px; text-align:center; }
+.pay-info .pi-lbl { color:var(--muted); flex:1; }
+.pay-info .pi-val { font-weight:700; color:var(--text); }
 .dpill { display:inline-flex; align-items:center; gap:6px; background:var(--card2); border:1px solid var(--border); border-radius:20px; padding:5px 12px; font-size:.72rem; color:var(--muted); margin-bottom:12px; }
 .dpill span { color:var(--green); font-weight:800; font-family:'JetBrains Mono',monospace; }
-.lwarn { background:rgba(255,71,87,.09); border:1px solid rgba(255,71,87,.25); border-radius:9px; padding:14px; text-align:center; margin-bottom:12px; font-size:.86rem; color:#ff8a95; line-height:1.7; }
 .screen { display:none; }
 .screen.active { display:block; }
 </style>
@@ -87,6 +118,8 @@ body {
 <body>
 <div id="app">
   <div class="hdr"><div class="ico">🇪🇹</div><h1>Ethiopian Exam Practice</h1><p>Grade 9–12 · All Subjects</p></div>
+
+  <!-- HOME -->
   <div id="s-home" class="screen active">
     <div class="stats" id="home-stats"></div>
     <div id="daily-pill"></div>
@@ -97,60 +130,98 @@ body {
       <button class="btn" onclick="go('s-help')">ℹ️ Help</button>
     </div></div>
   </div>
+
+  <!-- GRADE -->
   <div id="s-grade" class="screen"><div class="card"><div class="stitle">Select Your Grade</div><div class="grid2">
     <button class="btn" onclick="selGrade('g9')">9️⃣ Grade 9</button>
     <button class="btn" onclick="selGrade('g10')">🔟 Grade 10</button>
     <button class="btn" onclick="selGrade('g11')">1️⃣1️⃣ Grade 11</button>
     <button class="btn" onclick="selGrade('g12')">1️⃣2️⃣ Grade 12</button>
   </div><div style="margin-top:10px"><button class="btn danger" onclick="go('s-home')">← Back</button></div></div></div>
+
+  <!-- STREAM -->
   <div id="s-stream" class="screen"><div class="card"><div class="stitle" id="stream-title">Select Stream</div><div class="grid2">
     <button class="btn" onclick="selStream('nat')">🔬 Natural Science</button>
     <button class="btn" onclick="selStream('soc')">📖 Social Science</button>
   </div><div style="margin-top:10px"><button class="btn danger" onclick="go('s-grade')">← Back</button></div></div></div>
+
+  <!-- SUBJECT -->
   <div id="s-subj" class="screen"><div class="card"><div class="stitle" id="subj-title">Select Subject</div><div class="grid1" id="subj-grid"></div><div style="margin-top:10px"><button class="btn danger" id="subj-back">← Back</button></div></div></div>
+
+  <!-- QUIZ -->
   <div id="s-quiz" class="screen"><div class="card" id="quiz-card">
     <div class="qmeta"><span class="badge" id="q-grade-badge"></span><span class="badge blue" id="q-subj-badge"></span></div>
     <div class="qnav">
       <button class="qnav-btn" id="q-prev-btn" onclick="quizPrev()">← Prev</button>
       <span class="qnum" id="q-num-lbl"></span>
-      <button class="qnav-btn" id="q-next-btn" onclick="quizNext()">Next →</button>
-      <button class="qnav-btn exit" onclick="exitQuiz()">✕</button>
+      <button class="qnav-btn exit" onclick="exitQuiz()">✕ Exit</button>
     </div>
-    <div class="prog-wrap"><div class="prog-lbl"><span>Score</span><span id="prog-frac">0/0</span></div><div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div></div>
+    <div class="prog-wrap">
+      <div class="prog-lbl"><span>Progress</span><span id="prog-frac">0/0</span></div>
+      <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
     <div class="qtxt" id="q-txt"></div>
     <div id="q-opts"></div>
     <div id="q-result" style="display:none"></div>
-    <div class="anav" id="q-anav" style="display:none">
-      <button class="btn primary" id="q-next2-btn">Next Question →</button>
-      <button class="btn ghost" onclick="exitQuiz()">✕ Exit</button>
-    </div>
   </div></div>
-  <div id="s-score" class="screen"><div class="card"><div class="stitle">Your Score</div><div class="bigpct" id="sc-pct">0%</div><div class="sgrade" id="sc-grade"></div><div class="stats" id="sc-stats"></div><button class="btn primary" onclick="go('s-home')" style="width:100%;margin-top:10px">🏠 Home</button></div></div>
+
+  <!-- SCORE -->
+  <div id="s-score" class="screen"><div class="card"><div class="stitle">Your Score</div>
+    <div class="bigpct" id="sc-pct">0%</div>
+    <div class="sgrade" id="sc-grade"></div>
+    <div class="stats" id="sc-stats"></div>
+    <button class="btn primary" onclick="go('s-home')" style="width:100%;margin-top:10px">🏠 Home</button>
+  </div></div>
+
+  <!-- PREMIUM -->
   <div id="s-prem" class="screen">
-    <div class="prem-banner"><h3>💎 Premium Membership</h3><p>Unlimited questions — All subjects and grades</p></div>
-    <div class="card"><div class="stitle">Pricing</div>
+    <div class="prem-banner">
+      <div class="crown">👑</div>
+      <h3>Premium Membership</h3>
+      <p>Unlimited questions · All subjects and grades<br>ምንም ገደብ የለም — ሁሉም ጥያቄዎች ይክፈቱልዎ</p>
+    </div>
+    <div class="card">
+      <div class="stitle">Pricing</div>
       <div class="pplan">
         <div class="plan-row"><span class="pname">📅 Daily</span><span class="pprice">20 ETB</span></div>
         <div class="plan-row"><span class="pname">📆 Weekly</span><span class="pprice">100 ETB</span></div>
         <div class="plan-row"><span class="pname">🗓️ Monthly</span><span class="pprice">250 ETB</span></div>
       </div>
-      <div style="font-size:.84rem;color:var(--muted);line-height:2;">📲 To subscribe:<br>👤 Admin: <strong style="color:var(--text)">@evana219</strong><br>📱 Telebirr: <strong style="color:var(--text)">0921378547</strong><br>🧑 Name: <strong style="color:var(--text)">Asnake</strong><br><br>✅ Send screenshot after payment → activated immediately!</div>
-      <button class="btn danger" onclick="go('s-home')" style="width:100%;margin-top:14px">← Back</button>
+      <div class="stitle">How to Subscribe · እንዴት ይመዘገቡ</div>
+      <div class="pay-info">
+        <div class="pi-row"><span class="pi-ico">1️⃣</span><span class="pi-lbl">Pay via Telebirr</span></div>
+        <div class="pi-row"><span class="pi-ico">📱</span><span class="pi-lbl">Number</span><span class="pi-val">0921 378 547</span></div>
+        <div class="pi-row"><span class="pi-ico">🧑</span><span class="pi-lbl">Name</span><span class="pi-val">Asnake</span></div>
+      </div>
+      <div style="font-size:.8rem;color:var(--muted);margin-bottom:10px;text-align:center;">
+        2️⃣ After payment, send screenshot to admin → activated immediately ✅
+      </div>
+      <a class="admin-link" href="https://t.me/evana219" target="_blank">
+        <span class="tg-ico">✈️</span>
+        <span>Contact Admin on Telegram</span>
+        <span style="font-size:.78rem;opacity:.7;">@evana219</span>
+      </a>
+      <button class="btn danger" onclick="go('s-home')" style="width:100%;margin-top:6px">← Back</button>
     </div>
   </div>
+
+  <!-- HELP -->
   <div id="s-help" class="screen"><div class="card"><div class="stitle">Help</div>
     <div style="font-size:.86rem;line-height:2.1;color:var(--muted)">
       📚 <strong style="color:var(--text)">Start Exam</strong> — Choose grade and subject<br>
       📊 <strong style="color:var(--text)">My Score</strong> — See your performance<br>
       💎 <strong style="color:var(--text)">Premium</strong> — Unlimited questions<br>
-      ← → <strong style="color:var(--text)">Prev / Next</strong> — Navigate questions<br>
+      ← <strong style="color:var(--text)">Prev</strong> — Go to previous question<br>
+      ✅ <strong style="color:var(--text)">Answer</strong> — Tap option to auto-advance<br>
       ✕ <strong style="color:var(--text)">Exit</strong> — Leave quiz anytime<br>
       🆓 <strong style="color:var(--text)">Free</strong>: 20 questions/day
     </div>
-    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:.8rem;color:var(--muted)">📞 Contact: @evana219</div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:.8rem;color:var(--muted)">
+      📞 Contact: <a href="https://t.me/evana219" target="_blank" style="color:#6fa8ff;font-weight:700;text-decoration:none;">@evana219</a>
+    </div>
     <button class="btn danger" onclick="go('s-home')" style="width:100%;margin-top:14px">← Back</button>
   </div></div>
-</div>
+  </div>
 <script>
 const FREE_LIMIT = 5;
 const QDB = {
