@@ -1,38 +1,142 @@
 <!DOCTYPE html>
-<html lang="am">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Matric Exam</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }
-        .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; background: #0088cc; color: white; border: none; border-radius: 8px; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Exam Mini App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f4f4;
+      padding: 10px;
+    }
+    .card {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: none;
+      border-radius: 8px;
+      background: #0088cc;
+      color: white;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #0070aa;
+    }
+    .hidden { display:none; }
+  </style>
 </head>
+
 <body>
-    <div id="app">
-        <h1>🎓 የፈተና መግቢያ</h1>
-        <div id="menu">
-            <button class="btn" onclick="fetchQuestions()">📚 ፈተና ጀምር</button>
-            <button class="btn" onclick="showScore()">📊 ውጤቴ</button>
-        </div>
-        <div id="quiz-area"></div>
-    </div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+<div class="card" id="home">
+  <h2>📚 Ethiopian Exam Mini App</h2>
+  <p>Grade 9 - 12 Practice Questions</p>
+  <button onclick="startQuiz()">📖 Start Quiz</button>
+</div>
 
-        async function fetchQuestions() {
-            // የራስህን የRender/Railway ሊንክ እዚህ አስገባ
-            const response = await fetch('https://your-app-name.onrender.com/get_questions');
-            const data = await response.json();
-            document.getElementById('quiz-area').innerHTML = "ጥያቄዎች ተጭነዋል...";
-        }
+<div class="card hidden" id="quiz">
+  <h3 id="question"></h3>
+  <div id="options"></div>
+</div>
 
-        function showScore() {
-            tg.showPopup({title: 'ውጤት', message: 'አሁናዊ ውጤትዎ፡ 0'});
-        }
-    </script>
+<div class="card hidden" id="result">
+  <h2 id="resultText"></h2>
+  <p id="explanation"></p>
+  <button onclick="nextQuestion()">➡️ Next Question</button>
+</div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+// ===== QUESTIONS (from your Python bot simplified) =====
+const questions = [
+  {
+    q: "2³ = ?",
+    options: ["6", "8", "9", "12"],
+    answer: 1,
+    explanation: "2×2×2 = 8"
+  },
+  {
+    q: "x + 5 = 12, x = ?",
+    options: ["5", "6", "7", "8"],
+    answer: 2,
+    explanation: "x = 12 - 5 = 7"
+  },
+  {
+    q: "√64 = ?",
+    options: ["6", "7", "8", "9"],
+    answer: 2,
+    explanation: "8×8 = 64"
+  }
+];
+
+let current = 0;
+let score = 0;
+
+// ===== START QUIZ =====
+function startQuiz() {
+  document.getElementById("home").classList.add("hidden");
+  document.getElementById("quiz").classList.remove("hidden");
+  loadQuestion();
+}
+
+// ===== LOAD QUESTION =====
+function loadQuestion() {
+  let q = questions[current];
+
+  document.getElementById("question").innerText = q.q;
+
+  let optionsHTML = "";
+  q.options.forEach((opt, i) => {
+    optionsHTML += `<button onclick="answer(${i})">${opt}</button>`;
+  });
+
+  document.getElementById("options").innerHTML = optionsHTML;
+}
+
+// ===== ANSWER =====
+function answer(i) {
+  let q = questions[current];
+
+  document.getElementById("quiz").classList.add("hidden");
+  document.getElementById("result").classList.remove("hidden");
+
+  if (i === q.answer) {
+    score++;
+    document.getElementById("resultText").innerText = "✅ Correct!";
+  } else {
+    document.getElementById("resultText").innerText =
+      "❌ Wrong! Correct: " + q.options[q.answer];
+  }
+
+  document.getElementById("explanation").innerText = q.explanation;
+}
+
+// ===== NEXT =====
+function nextQuestion() {
+  current++;
+
+  document.getElementById("result").classList.add("hidden");
+
+  if (current >= questions.length) {
+    alert("Quiz Finished! Score: " + score + "/" + questions.length);
+    tg.sendData(JSON.stringify({score}));
+    tg.close();
+    return;
+  }
+
+  document.getElementById("quiz").classList.remove("hidden");
+  loadQuestion();
+}
+</script>
+
 </body>
 </html>
