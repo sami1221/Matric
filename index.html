@@ -15,8 +15,7 @@
 body {
   background: var(--bg); color: var(--text); font-family: 'Sora', sans-serif;
   min-height: 100vh; display: flex; justify-content: center; padding: 12px;
-  background-image: radial-gradient(ellipse 60% 40% at 10% 10%, rgba(0,230,118,0.06) 0%, transparent 60%),
-                    radial-gradient(ellipse 50% 50% at 90% 90%, rgba(41,121,255,0.05) 0%, transparent 60%);
+  background-image: radial-gradient(ellipse 60% 40% at 10% 10%, rgba(0,230,118,0.06) 0%, transparent 60%), radial-gradient(ellipse 50% 50% at 90% 90%, rgba(41,121,255,0.05) 0%, transparent 60%);
 }
 #app { width: 100%; max-width: 480px; }
 .hdr { text-align:center; padding: 24px 0 16px; }
@@ -40,7 +39,7 @@ body {
 .btn.danger:hover { background:rgba(255,71,87,.1); }
 .btn.ghost { border-color:var(--border); color:var(--muted); }
 .btn.ghost:hover { border-color:var(--muted); color:var(--text); }
-.opt { width:100%; background:var(--card2); border:1px solid var(--border); border-radius:9px; color:var(--text); font-family:inherit; font-size:.88rem; padding:13px 14px; cursor:pointer; transition:all .18s; text-align:left; display:flex; align-items:center; gap:11px; margin-bottom:8px; }
+.opt { width:100%; background:var(--card2); border:1px solid var(--border); border-radius:9px; color:var(--text); font-family:inherit; font-size:.88rem; padding:13px 14px; cursor:pointer; transition:all .16s; text-align:left; display:flex; align-items:center; gap:11px; margin-bottom:8px; }
 .opt:hover:not(:disabled) { border-color:var(--gold); background:rgba(255,193,7,.06); }
 .opt .ltr { width:26px; height:26px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-size:.72rem; font-weight:800; flex-shrink:0; font-family:'JetBrains Mono',monospace; }
 .opt.correct { border-color:var(--green); background:rgba(0,230,118,.1); }
@@ -67,50 +66,20 @@ body {
 .rbox.wrong { background:rgba(255,71,87,.09); border:1px solid rgba(255,71,87,.22); }
 .rbox .rtitle { font-weight:800; font-size:.95rem; margin-bottom:6px; }
 .rbox .expl { color:#b0bcd4; margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,.07); font-size:.82rem; }
-.next-auto-btn {
-  width:100%; margin-top:4px;
-  background: linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,230,118,.08));
-  border:1px solid rgba(0,230,118,.4); border-radius:9px;
-  color:var(--green); font-family:inherit; font-size:.9rem; font-weight:700;
-  padding:13px; cursor:pointer; transition:all .18s; display:flex;
-  align-items:center; justify-content:center; gap:8px;
-}
-.next-auto-btn:hover { background:rgba(0,230,118,.22); transform:translateY(-1px); }
-.next-auto-btn .arrow { font-size:1.1rem; transition:transform .18s; }
-.next-auto-btn:hover .arrow { transform:translateX(4px); }
+.anav { display:flex; gap:8px; margin-top:12px; }
+.anav .btn { flex:1; }
 .bigpct { font-size:3rem; font-weight:800; font-family:'JetBrains Mono',monospace; text-align:center; margin:10px 0; }
 .sgrade { text-align:center; font-size:.95rem; color:var(--muted); margin-bottom:16px; }
-.prem-banner {
-  background: linear-gradient(135deg,rgba(255,193,7,.18),rgba(255,193,7,.04));
-  border:1px solid rgba(255,193,7,.35); border-radius:var(--r);
-  padding:22px 18px; text-align:center; margin-bottom:12px;
-}
-.prem-banner .crown { font-size:2.4rem; margin-bottom:8px; }
-.prem-banner h3 { color:var(--gold); font-size:1.05rem; margin-bottom:5px; }
+.prem-banner { background:linear-gradient(135deg,rgba(255,193,7,.14),rgba(255,193,7,.04)); border:1px solid rgba(255,193,7,.28); border-radius:var(--r); padding:18px; text-align:center; margin-bottom:12px; }
+.prem-banner h3 { color:var(--gold); font-size:.98rem; margin-bottom:5px; }
 .prem-banner p { color:var(--muted); font-size:.8rem; }
-.pplan { display:flex; flex-direction:column; gap:9px; margin-bottom:16px; }
+.pplan { display:flex; flex-direction:column; gap:9px; margin-bottom:14px; }
 .plan-row { display:flex; align-items:center; justify-content:space-between; background:var(--card2); border:1px solid var(--border); border-radius:9px; padding:12px 14px; }
 .plan-row .pname { font-size:.86rem; font-weight:700; }
 .plan-row .pprice { font-size:.9rem; font-weight:800; color:var(--green); font-family:'JetBrains Mono',monospace; }
-.admin-link {
-  display:flex; align-items:center; justify-content:center; gap:10px;
-  width:100%;
-  background: linear-gradient(135deg,rgba(41,121,255,.2),rgba(41,121,255,.06));
-  border:1px solid rgba(41,121,255,.4); border-radius:10px;
-  color:#6fa8ff; font-family:inherit; font-size:.92rem; font-weight:700;
-  padding:15px; cursor:pointer; text-decoration:none; transition:all .18s;
-  margin-bottom:9px;
-}
-.admin-link:hover { background:rgba(41,121,255,.25); border-color:rgba(41,121,255,.7); transform:translateY(-1px); }
-.admin-link .tg-ico { font-size:1.3rem; }
-.pay-info { background:var(--card2); border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:12px; }
-.pay-info .pi-row { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--border); font-size:.85rem; }
-.pay-info .pi-row:last-child { border-bottom:none; }
-.pay-info .pi-ico { font-size:1rem; width:22px; text-align:center; }
-.pay-info .pi-lbl { color:var(--muted); flex:1; }
-.pay-info .pi-val { font-weight:700; color:var(--text); }
 .dpill { display:inline-flex; align-items:center; gap:6px; background:var(--card2); border:1px solid var(--border); border-radius:20px; padding:5px 12px; font-size:.72rem; color:var(--muted); margin-bottom:12px; }
 .dpill span { color:var(--green); font-weight:800; font-family:'JetBrains Mono',monospace; }
+.lwarn { background:rgba(255,71,87,.09); border:1px solid rgba(255,71,87,.25); border-radius:9px; padding:14px; text-align:center; margin-bottom:12px; font-size:.86rem; color:#ff8a95; line-height:1.7; }
 .screen { display:none; }
 .screen.active { display:block; }
 </style>
@@ -118,8 +87,6 @@ body {
 <body>
 <div id="app">
   <div class="hdr"><div class="ico">🇪🇹</div><h1>Ethiopian Exam Practice</h1><p>Grade 9–12 · All Subjects</p></div>
-
-  <!-- HOME -->
   <div id="s-home" class="screen active">
     <div class="stats" id="home-stats"></div>
     <div id="daily-pill"></div>
@@ -130,317 +97,365 @@ body {
       <button class="btn" onclick="go('s-help')">ℹ️ Help</button>
     </div></div>
   </div>
-
-  <!-- GRADE -->
   <div id="s-grade" class="screen"><div class="card"><div class="stitle">Select Your Grade</div><div class="grid2">
     <button class="btn" onclick="selGrade('g9')">9️⃣ Grade 9</button>
     <button class="btn" onclick="selGrade('g10')">🔟 Grade 10</button>
     <button class="btn" onclick="selGrade('g11')">1️⃣1️⃣ Grade 11</button>
     <button class="btn" onclick="selGrade('g12')">1️⃣2️⃣ Grade 12</button>
   </div><div style="margin-top:10px"><button class="btn danger" onclick="go('s-home')">← Back</button></div></div></div>
-
-  <!-- STREAM -->
   <div id="s-stream" class="screen"><div class="card"><div class="stitle" id="stream-title">Select Stream</div><div class="grid2">
     <button class="btn" onclick="selStream('nat')">🔬 Natural Science</button>
     <button class="btn" onclick="selStream('soc')">📖 Social Science</button>
   </div><div style="margin-top:10px"><button class="btn danger" onclick="go('s-grade')">← Back</button></div></div></div>
-
-  <!-- SUBJECT -->
   <div id="s-subj" class="screen"><div class="card"><div class="stitle" id="subj-title">Select Subject</div><div class="grid1" id="subj-grid"></div><div style="margin-top:10px"><button class="btn danger" id="subj-back">← Back</button></div></div></div>
-
-  <!-- QUIZ -->
   <div id="s-quiz" class="screen"><div class="card" id="quiz-card">
     <div class="qmeta"><span class="badge" id="q-grade-badge"></span><span class="badge blue" id="q-subj-badge"></span></div>
     <div class="qnav">
       <button class="qnav-btn" id="q-prev-btn" onclick="quizPrev()">← Prev</button>
       <span class="qnum" id="q-num-lbl"></span>
-      <button class="qnav-btn exit" onclick="exitQuiz()">✕ Exit</button>
+      <button class="qnav-btn" id="q-next-btn" onclick="quizNext()">Next →</button>
+      <button class="qnav-btn exit" onclick="exitQuiz()">✕</button>
     </div>
-    <div class="prog-wrap">
-      <div class="prog-lbl"><span>Progress</span><span id="prog-frac">0/0</span></div>
-      <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
-    </div>
+    <div class="prog-wrap"><div class="prog-lbl"><span>Score</span><span id="prog-frac">0/0</span></div><div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div></div>
     <div class="qtxt" id="q-txt"></div>
     <div id="q-opts"></div>
     <div id="q-result" style="display:none"></div>
-  </div></div>
-
-  <!-- SCORE -->
-  <div id="s-score" class="screen"><div class="card"><div class="stitle">Your Score</div>
-    <div class="bigpct" id="sc-pct">0%</div>
-    <div class="sgrade" id="sc-grade"></div>
-    <div class="stats" id="sc-stats"></div>
-    <button class="btn primary" onclick="go('s-home')" style="width:100%;margin-top:10px">🏠 Home</button>
-  </div></div>
-
-  <!-- PREMIUM -->
-  <div id="s-prem" class="screen">
-    <div class="prem-banner">
-      <div class="crown">👑</div>
-      <h3>Premium Membership</h3>
-      <p>Unlimited questions · All subjects and grades<br>ምንም ገደብ የለም — ሁሉም ጥያቄዎች ይክፈቱልዎ</p>
+    <div class="anav" id="q-anav" style="display:none">
+      <button class="btn primary" id="q-next2-btn">Next Question →</button>
+      <button class="btn ghost" onclick="exitQuiz()">✕ Exit</button>
     </div>
-    <div class="card">
-      <div class="stitle">Pricing</div>
+  </div></div>
+  <div id="s-score" class="screen"><div class="card"><div class="stitle">Your Score</div><div class="bigpct" id="sc-pct">0%</div><div class="sgrade" id="sc-grade"></div><div class="stats" id="sc-stats"></div><button class="btn primary" onclick="go('s-home')" style="width:100%;margin-top:10px">🏠 Home</button></div></div>
+  <div id="s-prem" class="screen">
+    <div class="prem-banner"><h3>💎 Premium Membership</h3><p>Unlimited questions — All subjects and grades</p></div>
+    <div class="card"><div class="stitle">Pricing</div>
       <div class="pplan">
         <div class="plan-row"><span class="pname">📅 Daily</span><span class="pprice">20 ETB</span></div>
         <div class="plan-row"><span class="pname">📆 Weekly</span><span class="pprice">100 ETB</span></div>
         <div class="plan-row"><span class="pname">🗓️ Monthly</span><span class="pprice">250 ETB</span></div>
       </div>
-      <div class="stitle">How to Subscribe · እንዴት ይመዘገቡ</div>
-      <div class="pay-info">
-        <div class="pi-row"><span class="pi-ico">1️⃣</span><span class="pi-lbl">Pay via Telebirr</span></div>
-        <div class="pi-row"><span class="pi-ico">📱</span><span class="pi-lbl">Number</span><span class="pi-val">0921 378 547</span></div>
-        <div class="pi-row"><span class="pi-ico">🧑</span><span class="pi-lbl">Name</span><span class="pi-val">Asnake</span></div>
-      </div>
-      <div style="font-size:.8rem;color:var(--muted);margin-bottom:10px;text-align:center;">
-        2️⃣ After payment, send screenshot to admin → activated immediately ✅
-      </div>
-      <a class="admin-link" href="https://t.me/evana219" target="_blank">
-        <span class="tg-ico">✈️</span>
-        <span>Contact Admin on Telegram</span>
-        <span style="font-size:.78rem;opacity:.7;">@evana219</span>
-      </a>
-      <button class="btn danger" onclick="go('s-home')" style="width:100%;margin-top:6px">← Back</button>
+      <div style="font-size:.84rem;color:var(--muted);line-height:2;">📲 To subscribe:<br>👤 Admin: <strong style="color:var(--text)">@evana219</strong><br>📱 Telebirr: <strong style="color:var(--text)">0921378547</strong><br>🧑 Name: <strong style="color:var(--text)">Asnake</strong><br><br>✅ Send screenshot after payment → activated immediately!</div>
+      <button class="btn danger" onclick="go('s-home')" style="width:100%;margin-top:14px">← Back</button>
     </div>
   </div>
-
-  <!-- HELP -->
   <div id="s-help" class="screen"><div class="card"><div class="stitle">Help</div>
     <div style="font-size:.86rem;line-height:2.1;color:var(--muted)">
       📚 <strong style="color:var(--text)">Start Exam</strong> — Choose grade and subject<br>
       📊 <strong style="color:var(--text)">My Score</strong> — See your performance<br>
       💎 <strong style="color:var(--text)">Premium</strong> — Unlimited questions<br>
-      ← <strong style="color:var(--text)">Prev</strong> — Go to previous question<br>
-      ✅ <strong style="color:var(--text)">Answer</strong> — Tap option to auto-advance<br>
+      ← → <strong style="color:var(--text)">Prev / Next</strong> — Navigate questions<br>
       ✕ <strong style="color:var(--text)">Exit</strong> — Leave quiz anytime<br>
       🆓 <strong style="color:var(--text)">Free</strong>: 20 questions/day
     </div>
-    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:.8rem;color:var(--muted)">
-      📞 Contact: <a href="https://t.me/evana219" target="_blank" style="color:#6fa8ff;font-weight:700;text-decoration:none;">@evana219</a>
-    </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:.8rem;color:var(--muted)">📞 Contact: @evana219</div>
     <button class="btn danger" onclick="go('s-home')" style="width:100%;margin-top:14px">← Back</button>
   </div></div>
 </div>
-
 <script>
-const state = { grade:'', stream:'', subject:'', qs:[], idx:0, score:0, answered:0, total:0 };
 const FREE_LIMIT = 20;
-
 const QDB = {
-  g9:{ nat:{ math:[
-    {q:"What is the value of x in 2x + 5 = 13?",opts:["x = 3","x = 4","x = 9","x = 6"],ans:1,exp:"2x = 13-5 = 8, x = 4"},
-    {q:"Which of the following is a prime number?",opts:["9","15","17","21"],ans:2,exp:"17 is only divisible by 1 and itself"},
-    {q:"What is √144?",opts:["11","12","13","14"],ans:1,exp:"12 × 12 = 144"},
-    {q:"What is 15% of 200?",opts:["25","30","35","20"],ans:1,exp:"200 × 0.15 = 30"},
-    {q:"Simplify: 3(x + 4) - 2x",opts:["x + 12","x + 4","5x + 12","x - 4"],ans:0,exp:"3x + 12 - 2x = x + 12"},
-  ], physics:[
-    {q:"What is the SI unit of force?",opts:["Watt","Joule","Newton","Pascal"],ans:2,exp:"Newton (N) is the SI unit of force"},
-    {q:"Speed = Distance / ?",opts:["Mass","Time","Force","Volume"],ans:1,exp:"Speed = Distance / Time"},
-    {q:"Which of these is a vector quantity?",opts:["Speed","Temperature","Mass","Velocity"],ans:3,exp:"Velocity has both magnitude and direction"},
-  ]}, soc:{ history:[
-    {q:"When did Ethiopia adopt its first written constitution?",opts:["1931","1955","1974","1987"],ans:0,exp:"Ethiopia's first written constitution was adopted in 1931 under Emperor Haile Selassie I"},
-    {q:"The Battle of Adwa took place in which year?",opts:["1889","1896","1900","1936"],ans:1,exp:"The Battle of Adwa was fought on March 1, 1896"},
-  ], geography:[
-    {q:"What is the capital city of Ethiopia?",opts:["Dire Dawa","Hawassa","Addis Ababa","Bahir Dar"],ans:2,exp:"Addis Ababa is the capital and largest city of Ethiopia"},
-    {q:"Lake Tana is the source of which river?",opts:["Awash","Omo","Blue Nile","Wabe Shebelle"],ans:2,exp:"Lake Tana is the source of the Blue Nile (Abay) River"},
-  ]}},
-  g10:{ nat:{ math:[
-    {q:"If f(x) = 2x² - 3x + 1, find f(2).",opts:["3","4","5","6"],ans:0,exp:"f(2) = 2(4) - 3(2) + 1 = 8 - 6 + 1 = 3"},
-    {q:"What is the solution set of |x - 3| = 5?",opts:["{-2, 8}","{ 2, 8}","{ -2, -8}","{ 8}"],ans:0,exp:"x - 3 = 5 → x = 8; x - 3 = -5 → x = -2"},
-    {q:"The slope of the line 3x - 2y = 6 is:",opts:["3","2","3/2","2/3"],ans:2,exp:"Rewrite: y = (3/2)x - 3, slope = 3/2"},
-  ], biology:[
-    {q:"Which organelle is known as the powerhouse of the cell?",opts:["Nucleus","Ribosome","Mitochondria","Golgi body"],ans:2,exp:"Mitochondria produce ATP through cellular respiration"},
-    {q:"DNA stands for:",opts:["Deoxyribonucleic Acid","Diribonucleic Acid","Deoxyribonitric Acid","Deoxyribonuclear Acid"],ans:0,exp:"DNA = Deoxyribonucleic Acid, the molecule of heredity"},
-  ]}, soc:{}},
-  g11:{ nat:{ math:[
-    {q:"log₂(32) = ?",opts:["4","5","6","3"],ans:1,exp:"2⁵ = 32, so log₂(32) = 5"},
-    {q:"The derivative of sin(x) is:",opts:["cos(x)","-cos(x)","tan(x)","-sin(x)"],ans:0,exp:"d/dx[sin(x)] = cos(x)"},
-    {q:"What is the sum of the arithmetic series 1+3+5+...+19?",opts:["81","100","91","121"],ans:1,exp:"10 terms, sum = (10/2)(1+19) = 100"},
-  ], physics:[
-    {q:"Ohm's Law states V = ?",opts:["I/R","IR","I+R","I²R"],ans:1,exp:"V = IR where I is current and R is resistance"},
-    {q:"What is the unit of electric charge?",opts:["Ampere","Volt","Coulomb","Ohm"],ans:2,exp:"The SI unit of electric charge is the Coulomb (C)"},
-  ]}, soc:{}},
-  g12:{ nat:{ math:[
-    {q:"∫2x dx = ?",opts:["x²","x² + C","2x² + C","x + C"],ans:1,exp:"∫2x dx = x² + C (power rule)"},
-    {q:"The equation of a circle with center (0,0) and radius 5 is:",opts:["x² + y² = 5","x² + y² = 25","x + y = 5","x² - y² = 25"],ans:1,exp:"Standard form: x² + y² = r² = 25"},
-  ], chemistry:[
-    {q:"What is the atomic number of Carbon?",opts:["6","12","8","14"],ans:0,exp:"Carbon has 6 protons, so atomic number = 6"},
-    {q:"pH of a neutral solution at 25°C is:",opts:["0","7","14","10"],ans:1,exp:"A neutral solution has pH = 7"},
-    {q:"Which gas is produced when zinc reacts with dilute HCl?",opts:["O₂","CO₂","H₂","Cl₂"],ans:2,exp:"Zn + 2HCl → ZnCl₂ + H₂↑"},
-  ]}, soc:{}}
+  g9: {
+    math: [
+      {q:'What is the value of 2³?',o:['6','8','9','12'],a:1,e:'2³ = 2×2×2 = 8'},
+      {q:'If x + 5 = 12, then x = ?',o:['5','6','7','8'],a:2,e:'x = 12 − 5 = 7'},
+      {q:'The sum of all angles of a triangle is:',o:['90°','180°','270°','360°'],a:1,e:'Sum of angles in a triangle = 180°'},
+      {q:'√64 = ?',o:['6','7','8','9'],a:2,e:'√64 = 8 because 8×8 = 64'},
+      {q:'15% of 200 = ?',o:['25','30','35','40'],a:1,e:'200 × 15/100 = 30'},
+      {q:'What is the value of 3² + 4²?',o:['25','20','14','49'],a:0,e:'3²+4² = 9+16 = 25'},
+      {q:'Simplify: 2(3x + 4)',o:['6x+4','6x+8','5x+8','6x+6'],a:1,e:'2×3x + 2×4 = 6x + 8'},
+      {q:'If a square has side 5 cm, its area is:',o:['10 cm²','20 cm²','25 cm²','15 cm²'],a:2,e:'Area = side² = 5² = 25 cm²'},
+    ],
+    english: [
+      {q:'Choose the correct form: She ___ to school every day.',o:['go','goes','going','gone'],a:1,e:'"She" is 3rd person singular → goes'},
+      {q:'What is the plural of "child"?',o:['childs','childes','children','childrens'],a:2,e:'Irregular plural of "child" is "children"'},
+      {q:'Choose the antonym of "ancient":',o:['old','modern','historical','traditional'],a:1,e:'Ancient = very old. Antonym is "modern"'},
+      {q:'Which sentence is correct?',o:["He don't like coffee","He doesn't likes coffee","He doesn't like coffee","He not like coffee"],a:2,e:"3rd person singular negative: doesn't + base verb"},
+      {q:'The synonym of "happy" is:',o:['sad','angry','joyful','tired'],a:2,e:'Joyful means happy'},
+      {q:'"She is taller ___ her brother." Choose the correct word:',o:['then','that','than','though'],a:2,e:'Comparatives use "than"'},
+    ],
+    biology: [
+      {q:'The basic unit of life is:',o:['Tissue','Cell','Organ','Molecule'],a:1,e:'Cell is the basic unit of life'},
+      {q:'Photosynthesis occurs in which part of a plant cell?',o:['Root','Stem','Chloroplast','Mitochondria'],a:2,e:'Photosynthesis occurs in Chloroplasts'},
+      {q:'DNA stands for:',o:['Deoxyribonucleic Acid','Diribonucleic Acid','Deoxyribose Nucleic Acid','Double Nucleic Acid'],a:0,e:'DNA = Deoxyribonucleic Acid'},
+      {q:'Which organ pumps blood throughout the body?',o:['Lungs','Kidney','Heart','Liver'],a:2,e:'The heart pumps blood through the circulatory system'},
+      {q:'Which of the following is NOT a function of the skeleton?',o:['Support','Protection','Digestion','Movement'],a:2,e:'Digestion is performed by the digestive system, not skeleton'},
+    ],
+    physics: [
+      {q:'F = ma is known as:',o:["Newton's 1st Law","Newton's 2nd Law","Newton's 3rd Law","Ohm's Law"],a:1,e:'F=ma is Newton\'s 2nd Law: Force = mass × acceleration'},
+      {q:'The speed of light is:',o:['3×10⁶ m/s','3×10⁸ m/s','3×10¹⁰ m/s','3×10⁴ m/s'],a:1,e:'Speed of light = 3×10⁸ m/s'},
+      {q:'The SI unit of force is:',o:['Joule','Watt','Newton','Pascal'],a:2,e:'The SI unit of force is Newton (N)'},
+      {q:'Which type of energy does a moving car possess?',o:['Potential energy','Chemical energy','Kinetic energy','Nuclear energy'],a:2,e:'Moving objects have kinetic energy'},
+    ],
+    chemistry: [
+      {q:'Water is formed from which elements?',o:['H + O','H₂ + O','H + O₂','H₂ + O₂'],a:3,e:'2H₂ + O₂ → 2H₂O'},
+      {q:'The atomic number of Hydrogen is:',o:['1','2','3','4'],a:0,e:'Hydrogen atomic number = 1'},
+      {q:'Which of the following is a chemical change?',o:['Melting ice','Burning wood','Dissolving salt','Cutting paper'],a:1,e:'Burning wood is a chemical change (combustion)'},
+      {q:'The chemical symbol for Gold is:',o:['Go','Gd','Au','Ag'],a:2,e:'Gold symbol is Au (from Latin "Aurum")'},
+    ],
+    civics: [
+      {q:'What does democracy mean?',o:['Rule by king','Rule by people','Rule by military','Rule by religion'],a:1,e:'Democracy = rule by the people'},
+      {q:'The Ethiopian constitution was adopted in:',o:['1991','1993','1995','2000'],a:2,e:'FDRE Constitution was adopted in 1995'},
+      {q:'Which body makes laws in Ethiopia?',o:['The President','The Prime Minister',"House of Peoples' Representatives",'The Cabinet'],a:2,e:"House of Peoples' Representatives is the legislative body"},
+      {q:'Human rights are:',o:['Given by the government','Rights earned through work','Rights all people have from birth','Rights only for citizens'],a:2,e:'Human rights are inherent rights all humans have from birth'},
+      {q:'The capital city of Ethiopia is:',o:['Dire Dawa','Gondar','Addis Ababa','Hawassa'],a:2,e:'Addis Ababa is the capital city of Ethiopia'},
+    ],
+    history: [
+      {q:'The Battle of Adwa took place in:',o:['1885','1896','1900','1910'],a:1,e:'Battle of Adwa: March 2, 1896 — Ethiopia defeated Italy'},
+      {q:'Ethiopia was liberated from Italian occupation in:',o:['1935','1941','1945','1950'],a:1,e:'Ethiopia was liberated in 1941'},
+      {q:'Who was the Ethiopian emperor during the Battle of Adwa?',o:['Tewodros II','Yohannes IV','Menelik II','Haile Selassie'],a:2,e:'Emperor Menelik II led Ethiopia to victory at Adwa'},
+    ],
+    geography: [
+      {q:'The capital city of Ethiopia is:',o:['Dire Dawa','Gondar','Addis Ababa','Hawassa'],a:2,e:'Addis Ababa is the capital of Ethiopia'},
+      {q:'The Blue Nile (Abay) originates from which lake?',o:['Lake Tana','Lake Hawassa','Lake Ziway','Lake Abyata'],a:0,e:'The Blue Nile originates from Lake Tana'},
+      {q:'Ethiopia is located in which continent?',o:['Asia','Europe','Africa','Australia'],a:2,e:'Ethiopia is in Africa (East Africa)'},
+    ],
+  },
+  g10: {
+    math: [
+      {q:'log₁₀(100) = ?',o:['1','2','10','100'],a:1,e:'log₁₀(100) = log₁₀(10²) = 2'},
+      {q:'sin(90°) = ?',o:['0','0.5','1','√2/2'],a:2,e:'sin(90°) = 1'},
+      {q:'The quadratic formula for ax²+bx+c=0 is:',o:['x=(−b±√(b²−4ac))/2a','x=(b±√(b²−4ac))/2a','x=(−b±√(b²+4ac))/2a','x=−b/2a'],a:0,e:'Quadratic formula: x = (−b ± √(b²−4ac)) / 2a'},
+      {q:'The slope of y = 3x + 5 is:',o:['5','3','−3','−5'],a:1,e:'In y = mx + b, m is the slope → m = 3'},
+      {q:'cos(0°) = ?',o:['0','0.5','1','−1'],a:2,e:'cos(0°) = 1'},
+      {q:'If f(x) = x² + 1, then f(3) = ?',o:['7','8','9','10'],a:3,e:'f(3) = 3² + 1 = 10'},
+    ],
+    english: [
+      {q:'The passive voice of "He wrote the letter" is:',o:['The letter wrote by him','The letter was written by him','The letter is written by him','The letter has written by him'],a:1,e:'Past passive = was/were + past participle'},
+      {q:'Choose the correct conditional: If I study hard, I ___ pass.',o:['will','would','should','might'],a:0,e:'1st conditional: If + present, will + base'},
+      {q:'The word "beautiful" is a/an:',o:['Noun','Verb','Adjective','Adverb'],a:2,e:'Beautiful describes a noun → adjective'},
+    ],
+    biology: [
+      {q:'How many cells are produced at the end of Mitosis?',o:['1','2','3','4'],a:1,e:'Mitosis produces 2 identical daughter cells'},
+      {q:'How many cells are produced at the end of Meiosis?',o:['1','2','3','4'],a:3,e:'Meiosis produces 4 haploid cells'},
+      {q:'The powerhouse of the cell is:',o:['Nucleus','Ribosome','Mitochondria','Cell membrane'],a:2,e:'Mitochondria produces ATP — "powerhouse of the cell"'},
+    ],
+    physics: [
+      {q:"Ohm's Law formula is:",o:['V = IR','V = I/R','V = I+R','V = I−R'],a:0,e:'V = IR — Voltage = Current × Resistance'},
+      {q:'The unit of electric current is:',o:['Volt','Ohm','Ampere','Watt'],a:2,e:'Electric current is measured in Amperes (A)'},
+      {q:'Which of the following is a vector quantity?',o:['Speed','Mass','Temperature','Velocity'],a:3,e:'Velocity has both magnitude and direction → vector'},
+    ],
+    chemistry: [
+      {q:'pH = 7 means the solution is:',o:['Acidic','Neutral','Basic','Alkaline'],a:1,e:'pH 7 = Neutral; pH < 7 = Acidic; pH > 7 = Basic'},
+      {q:'The chemical formula for table salt is:',o:['NaOH','KCl','NaCl','CaCl₂'],a:2,e:'Table salt = Sodium Chloride = NaCl'},
+      {q:'Which gas is produced during photosynthesis?',o:['CO₂','N₂','O₂','H₂'],a:2,e:'Photosynthesis produces Oxygen (O₂)'},
+    ],
+    civics: [
+      {q:'What is the role of the judiciary in Ethiopia?',o:['Make laws','Enforce laws','Interpret laws','Collect taxes'],a:2,e:'The judiciary interprets and applies the law'},
+      {q:'Which of the following is a fundamental right in Ethiopia?',o:['Right to vote only for educated','Freedom of expression','Right to unlimited property','Freedom from taxation'],a:1,e:'Freedom of expression is a constitutional right'},
+      {q:'The rule of law means:',o:['Only rulers follow laws','Everyone including government is subject to the law','Laws apply only to citizens','Police enforce laws selectively'],a:1,e:'Rule of law = everyone must obey the law'},
+      {q:'Civil society organizations in Ethiopia are:',o:['Government agencies','Independent organizations serving the public','Political parties','Armed forces'],a:1,e:'Civil society = independent bodies serving public interest'},
+    ],
+    history: [
+      {q:'World War I began in:',o:['1910','1914','1918','1920'],a:1,e:'World War I began in 1914'},
+      {q:'World War II ended in:',o:['1943','1944','1945','1946'],a:2,e:'WWII ended in 1945'},
+    ],
+    geography: [
+      {q:'The largest ocean in the world is:',o:['Atlantic','Indian','Pacific','Arctic'],a:2,e:'Pacific Ocean is the world\'s largest ocean'},
+      {q:'The equator is located at:',o:['0° latitude','23.5° latitude','45° latitude','90° latitude'],a:0,e:'Equator = 0° latitude'},
+    ],
+  },
+  nat: {
+    math: [
+      {q:'d/dx of x³ = ?',o:['x²','2x²','3x²','3x'],a:2,e:'d/dx(xⁿ) = nxⁿ⁻¹ → d/dx(x³) = 3x²'},
+      {q:'∫x dx = ?',o:['x','x²','x²/2 + C','2x + C'],a:2,e:'∫x dx = x²/2 + C'},
+      {q:'lim(x→0) sin(x)/x = ?',o:['0','1','∞','undefined'],a:1,e:'lim(x→0) sin(x)/x = 1'},
+      {q:'Among 1620 students, 13 failed English, 14 failed Math, 6 failed both. How many passed both?',o:['1614','1599','1593','1587'],a:1,e:'1620 − (13+14−6) = 1599'},
+      {q:'A fair coin is tossed twice. Probability both outcomes are heads:',o:['1/3','1/4','1/2','1/6'],a:1,e:'P(HH) = 1/2 × 1/2 = 1/4'},
+      {q:'The volume of a cone with height 8cm and radius 3cm is:',o:['24π cm³','72π cm³','8π cm³','16π cm³'],a:0,e:'V = (1/3)πr²h = (1/3)π(9)(8) = 24π cm³'},
+      {q:'log₁₀(1000) = ?',o:['2','3','4','10'],a:1,e:'log₁₀(1000) = log₁₀(10³) = 3'},
+      {q:'The perimeter of a regular hexagon with radius 4cm is:',o:['48cm','24cm','24√3 cm','48√3 cm'],a:1,e:'Regular hexagon: perimeter = 6×4 = 24cm'},
+    ],
+    physics: [
+      {q:'E = mc² shows that:',o:['Energy and speed relationship','Energy and mass relationship','Mass can be converted to energy','Speed of light'],a:2,e:'E=mc² (Einstein): mass can be converted to energy'},
+      {q:"Boyle's Law states:",o:['P ∝ T (constant V)','V ∝ T (constant P)','PV = constant (constant T)','P/T = constant'],a:2,e:"Boyle's Law: PV = constant at constant temperature"},
+      {q:'Which quantity is a process variable, not a property of a system?',o:['Temperature','Internal energy','Heat','Mass'],a:2,e:'Heat is a process variable — energy in transit'},
+      {q:'At thermal equilibrium, which statement is true?',o:['Net heat transfer continues','Hotter object keeps losing energy','No net heat transfer occurs','Cooler object heats the hotter one'],a:2,e:'At thermal equilibrium, no net heat transfer occurs'},
+      {q:'In conduction, how is heat transferred?',o:['By movement of fluid','By electromagnetic waves','By chemical reactions','By particle collisions'],a:3,e:'Conduction transfers heat via direct particle collisions'},
+      {q:'Primary heat transfer near a campfire without contact is:',o:['Conduction','Convection','Radiation','Absorption'],a:2,e:'Radiation transfers heat without contact via electromagnetic waves'},
+      {q:'If 252 kJ raises water from 20°C to 50°C, what mass was heated? (c=4200)',o:['0.7 kg','3.0 kg','1.5 kg','2.0 kg'],a:3,e:'m = Q/(cΔT) = 252000/(4200×30) = 2.0 kg'},
+      {q:'During a phase change, what remains constant?',o:['Temperature','Volume','Density','Internal energy'],a:0,e:'During phase change, temperature stays constant'},
+      {q:'The half-life of radium is 1622 years. How long for 7/8 to decay?',o:['4866 years','811 years','6488 years','3244 years'],a:0,e:'7/8 decays = 3 half-lives → 3 × 1622 = 4866 years'},
+      {q:"What did Rutherford's atomic model fail to explain?",o:['Presence of electrons','Size of nucleus','Stability of electrons in orbit','Discovery of neutrons'],a:2,e:'Could not explain why orbiting electrons do not spiral into nucleus'},
+      {q:'A metal rod increases 0.15% when heated. If α=6.25×10⁻⁵/°C, find ΔT:',o:['12°C','18°C','30°C','24°C'],a:3,e:'ΔL/L = αΔT → ΔT = 0.0015/6.25×10⁻⁵ = 24°C'},
+      {q:'Fusion produces ___ than fission:',o:['Less energy, more waste','More energy, fewer radioactive waste products','Same energy, different waste','More dangerous byproducts'],a:1,e:'Fusion produces more energy and less radioactive waste than fission'},
+    ],
+    chemistry: [
+      {q:"Avogadro's number is:",o:['6.02×10²¹','6.02×10²³','6.02×10²⁵','6.02×10²⁰'],a:1,e:"Avogadro's number = 6.02×10²³ mol⁻¹"},
+      {q:'An ionic bond forms when:',o:['Electrons are shared','Electrons are transferred','Protons are shared','Neutrons are transferred'],a:1,e:'Ionic bond = electron transfer from metal to non-metal'},
+      {q:'The atomic number of Carbon is:',o:['4','6','8','12'],a:1,e:'Carbon has atomic number 6'},
+      {q:'pH = 7 means:',o:['Acidic','Neutral','Basic','Alkaline'],a:1,e:'pH 7 = Neutral'},
+    ],
+    biology: [
+      {q:'ATP stands for:',o:['Adenosine Triphosphate','Adenine Triphosphate','Adenosine Triprotein','Amino Triphosphate'],a:0,e:'ATP = Adenosine Triphosphate — energy currency of life'},
+      {q:'Cellular respiration equation:',o:['C₆H₁₂O₆ + O₂ → CO₂ + H₂O + ATP','CO₂ + H₂O → C₆H₁₂O₆ + O₂','C₆H₁₂O₆ → CO₂ + H₂O','O₂ + H₂O → CO₂ + ATP'],a:0,e:'C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + ATP'},
+      {q:'DNA replication occurs during which phase?',o:['G1','S phase','G2','M phase'],a:1,e:'DNA replication occurs during S (Synthesis) phase'},
+      {q:'Which organelle is responsible for protein synthesis?',o:['Mitochondria','Ribosome','Golgi body','Vacuole'],a:1,e:'Ribosomes are the site of protein synthesis'},
+    ],
+    english: [
+      {q:'Choose the correct conditional: If it rains, I ___ stay home.',o:['will','would','should','shall'],a:0,e:'1st conditional: If + present simple, will + base verb'},
+      {q:'The passive voice of "Scientists discovered a new planet" is:',o:['A new planet discovered by scientists','A new planet was discovered by scientists','A new planet is discovered by scientists','A new planet has discovered by scientists'],a:1,e:'Past passive: was/were + past participle'},
+    ],
+  },
+  soc: {
+    history: [
+      {q:'The French Revolution took place in:',o:['1776','1789','1800','1815'],a:1,e:'French Revolution began in 1789'},
+      {q:'World War II ended in:',o:['1943','1944','1945','1946'],a:2,e:'WWII ended in 1945'},
+      {q:'The Industrial Revolution started in:',o:['France','Germany','Britain','USA'],a:2,e:'Industrial Revolution began in Britain in the late 18th century'},
+      {q:'The United Nations was founded in:',o:['1943','1944','1945','1947'],a:2,e:'United Nations was founded on October 24, 1945'},
+    ],
+    geography: [
+      {q:'The largest country in the world by area is:',o:['China','USA','Canada','Russia'],a:3,e:'Russia — 17.1 million km²'},
+      {q:'The Equator is located at:',o:['0° latitude','23.5° latitude','45° latitude','90° latitude'],a:0,e:'Equator = 0° latitude'},
+      {q:'The Amazon River is located in:',o:['Africa','Asia','South America','North America'],a:2,e:'Amazon River flows through South America'},
+    ],
+    economics: [
+      {q:'GDP stands for:',o:['General Domestic Product','Gross Domestic Product','Global Domestic Product','Growth Domestic Product'],a:1,e:'GDP = Gross Domestic Product'},
+      {q:'Inflation means:',o:['Decrease in prices','Increase in prices','Increase in money supply','Decrease in production'],a:1,e:'Inflation = general increase in price levels'},
+      {q:'The general objective of macroeconomic policy is to achieve:',o:['Price stability only','Full employment only','Maximum output only','All of the above'],a:3,e:'Macro policy goals: price stability, full employment, maximum output'},
+      {q:'Which is NOT a feature of a command economy?',o:['Right to private property','Collective ownership','Central economic planning','Maximum social welfare'],a:0,e:'Right to private property belongs to market economies'},
+      {q:'When modern technology is introduced by a producer:',o:['Supply curve shifts inward','Supply curve shifts outward','Supply remains constant','Demand increases'],a:1,e:'Technology improves efficiency → supply curve shifts right'},
+      {q:'Goods whose demand increases with income are called:',o:['Complementary goods','Inferior goods','Substitute goods','Normal goods'],a:3,e:'Normal goods: demand rises as income rises'},
+      {q:'If MPC = 0.4, what is MPS?',o:['0.4','0.6','1.4','1.6'],a:1,e:'MPC + MPS = 1 → MPS = 0.6'},
+      {q:'When Total Utility is at maximum, Marginal Utility is:',o:['Negative','Zero','At minimum','Positive'],a:1,e:'When TU is maximum, MU = 0'},
+      {q:'A decrease in currency value under floating exchange rate is called:',o:['Appreciation','Depreciation','Devaluation','Revaluation'],a:1,e:'In floating system, currency losing value = Depreciation'},
+      {q:'The natural rate of unemployment is the sum of:',o:['Frictional and cyclical','Structural and cyclical','Frictional and structural','Seasonal and frictional'],a:2,e:'Natural rate = frictional + structural unemployment'},
+      {q:'Fiscal policy refers to:',o:['Control of money supply','Government spending and taxation decisions','Control of producer price index','Changes in interest rate'],a:1,e:'Fiscal policy = government use of spending and taxation'},
+      {q:'The Short-Run Aggregate Supply (SRAS) curve is:',o:['Upward sloping','Downward sloping','A vertical line','U-shaped'],a:0,e:'SRAS is upward sloping'},
+      {q:'A price ceiling is:',o:['Minimum price set by government','Maximum price a seller can charge','Natural market price','Price set by producers'],a:1,e:'Price ceiling = mandated maximum price'},
+    ],
+    civics: [
+      {q:'Democracy means:',o:['Rule by king','Rule by people','Rule by military','Rule by religion'],a:1,e:'Democracy = rule by the people'},
+      {q:'Which body interprets the constitution in Ethiopia?',o:['House of Federation',"House of Peoples' Representatives",'The President','The Prime Minister'],a:0,e:'The House of Federation interprets the Ethiopian constitution'},
+      {q:'Good governance includes:',o:['Transparency only','Accountability only','Rule of law only','All of the above'],a:3,e:'Good governance includes transparency, accountability, rule of law'},
+      {q:'A constitution is:',o:['A law made by police','The supreme law of the land','A presidential decree','A trade agreement'],a:1,e:'A constitution is the supreme law of the land'},
+      {q:'Civil rights are:',o:['Rights given only to soldiers','Rights of citizens in a state','Rights only for adults','Rights only in wartime'],a:1,e:'Civil rights = rights of individuals to receive equal treatment'},
+    ],
+    english: [
+      {q:'Choose the correct relative pronoun: The book ___ I read was interesting.',o:['who','whom','which','whose'],a:2,e:'"which" is used for things, not people'},
+      {q:'Identify the correct sentence:',o:["Neither the students nor the teacher are ready","Neither the students nor the teacher is ready","Neither the students nor the teacher were ready","Neither the students nor the teacher was ready"],a:1,e:'With "neither...nor", verb agrees with subject closest to it → "is"'},
+    ],
+    amharic: [
+      {q:'A verb (ግስ) refers to:',o:['A word that replaces a noun','A word expressing action, state, or being','A word that modifies a noun','A word that precedes a noun'],a:1,e:'A verb expresses action, state, or being'},
+      {q:'Which of the following is a pronoun in Amharic grammar?',o:['እሱ (he/him)','ቤት (house)','ሮጠ (ran)','ደስ (happy)'],a:0,e:'እሱ (he/him) is a pronoun — it replaces a noun'},
+    ],
+  },
 };
+  const SUBJ_MAP = {
+  g9: [['➕ Mathematics','math'],['🌍 English','english'],['🔬 Biology','biology'],['⚡ Physics','physics'],['🧪 Chemistry','chemistry'],['🏛️ Civics','civics'],['📜 History','history'],['🗺️ Geography','geography']],
+  g10:[['➕ Mathematics','math'],['🌍 English','english'],['🔬 Biology','biology'],['⚡ Physics','physics'],['🧪 Chemistry','chemistry'],['🏛️ Civics','civics'],['📜 History','history'],['🗺️ Geography','geography']],
+  nat:[['➕ Mathematics','math'],['⚡ Physics','physics'],['🧪 Chemistry','chemistry'],['🔬 Biology','biology'],['🌍 English','english']],
+  soc:[['📜 History','history'],['🗺️ Geography','geography'],['💰 Economics','economics'],['🏛️ Civics','civics'],['🌍 English','english'],['✍️ Amharic','amharic']],
+};
+const GRADE_LABELS={g9:'Grade 9',g10:'Grade 10',nat:'Grade 11/12 Natural',soc:'Grade 11/12 Social'};
+const SUBJ_LABELS={math:'Mathematics',biology:'Biology',physics:'Physics',chemistry:'Chemistry',english:'English',history:'History',geography:'Geography',economics:'Economics',civics:'Civics',amharic:'Amharic',random:'Random'};
 
-function go(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  if (id === 's-home') renderHome();
-  if (id === 's-score') renderScore();
+function getS(){const d={score:0,total:0,dc:0,ld:'',prem:false};try{return Object.assign(d,JSON.parse(localStorage.getItem('etbot2')||'{}'));}catch(e){return d;}}
+function saveS(s){localStorage.setItem('etbot2',JSON.stringify(s));}
+function today(){return new Date().toISOString().slice(0,10);}
+function canAns(){const s=getS();if(s.prem)return true;if(s.ld!==today())return true;return s.dc<FREE_LIMIT;}
+function incDC(){const s=getS();if(s.ld!==today()){s.dc=1;s.ld=today();}else s.dc++;saveS(s);}
+function remToday(){const s=getS();if(s.prem)return'∞';if(s.ld!==today())return FREE_LIMIT;return Math.max(0,FREE_LIMIT-s.dc);}
+
+let curGrade=null;
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');if(id==='s-home')renderHome();if(id==='s-score')renderScore();}
+
+function renderHome(){
+  const s=getS();const pct=s.total>0?Math.round(s.score/s.total*100):0;
+  document.getElementById('home-stats').innerHTML=`<div class="sbox"><div class="v">${s.total}</div><div class="l">Total</div></div><div class="sbox"><div class="v">${s.score}</div><div class="l">Correct</div></div><div class="sbox"><div class="v">${pct}%</div><div class="l">Score</div></div>`;
+  const rem=remToday();
+  document.getElementById('daily-pill').innerHTML=s.prem?`<div class="dpill">💎 Premium — <span>Unlimited</span> questions</div>`:`<div class="dpill">⚡ Today remaining: <span>${rem}/${FREE_LIMIT}</span> questions</div>`;
 }
 
-function renderHome() {
-  const done = +localStorage.getItem('dailyDone') || 0;
-  const left = Math.max(0, FREE_LIMIT - done);
-  document.getElementById('home-stats').innerHTML = `
-    <div class="sbox"><div class="v">${+localStorage.getItem('totalScore')||0}</div><div class="l">Total Score</div></div>
-    <div class="sbox"><div class="v">${+localStorage.getItem('totalQ')||0}</div><div class="l">Questions</div></div>
-    <div class="sbox"><div class="v" style="color:var(--green)">${left}</div><div class="l">Free Left</div></div>`;
-  document.getElementById('daily-pill').innerHTML =
-    `<div class="dpill">🗓️ Today's free questions: <span>${left}/${FREE_LIMIT}</span></div>`;
+function selGrade(g){curGrade=g;if(g==='g11'||g==='g12'){document.getElementById('stream-title').textContent=(g==='g11'?'Grade 11':'Grade 12')+' — Select Stream';go('s-stream');}else{buildSubjMenu(g);go('s-subj');}}
+function selStream(st){buildSubjMenu(st);go('s-subj');}
+function buildSubjMenu(key){
+  const subs=SUBJ_MAP[key]||[];
+  document.getElementById('subj-title').textContent=(GRADE_LABELS[key]||key)+' — Select Subject';
+  document.getElementById('subj-grid').innerHTML=subs.map(([lbl,k])=>`<button class="btn" onclick="startQuiz('${key}','${k}')">${lbl}</button>`).join('')+`<button class="btn" onclick="startQuiz('${key}','random')">🎲 Random (All)</button>`;
+  document.getElementById('subj-back').onclick=()=>(key==='nat'||key==='soc')?go('s-stream'):go('s-grade');
 }
 
-function selGrade(g) {
-  state.grade = g;
-  const num = g.replace('g','');
-  document.getElementById('stream-title').textContent = `Grade ${num} — Select Stream`;
-  go('s-stream');
-}
+let qSession={questions:[],idx:0,grade:'',subject:'',answered:[]};
 
-function selStream(s) {
-  state.stream = s;
-  const num = state.grade.replace('g','');
-  const pool = QDB[state.grade]?.[s] || {};
-  const subs = Object.keys(pool);
-  const labels = {math:'📐 Mathematics',physics:'🔬 Physics',biology:'🌿 Biology',chemistry:'🧪 Chemistry',history:'📜 History',geography:'🌍 Geography'};
-  document.getElementById('subj-title').textContent = `Grade ${num} ${s==='nat'?'Natural':'Social'} — Subject`;
-  const grid = document.getElementById('subj-grid');
-  if (!subs.length) {
-    grid.innerHTML = '<div style="color:var(--muted);font-size:.85rem;text-align:center;padding:10px">Coming soon!</div>';
-  } else {
-    grid.innerHTML = subs.map(sub =>
-      `<button class="btn" onclick="selSubject('${sub}')">${labels[sub]||sub}</button>`
-    ).join('');
-  }
-  document.getElementById('subj-back').onclick = () => go('s-stream');
-  go('s-subj');
-}
-
-function selSubject(sub) {
-  state.subject = sub;
-  const pool = QDB[state.grade]?.[state.stream]?.[sub] || [];
-  if (!pool.length) { alert('Questions coming soon!'); return; }
-  const done = +localStorage.getItem('dailyDone') || 0;
-  if (done >= FREE_LIMIT) { go('s-prem'); return; }
-  state.qs = shuffle([...pool]);
-  state.idx = 0; state.score = 0; state.answered = 0; state.total = state.qs.length;
+function startQuiz(grade,subject){
+  if(!canAns()){go('s-quiz');document.getElementById('quiz-card').innerHTML=`<div class="lwarn">⛔ Daily limit reached (${FREE_LIMIT} questions/day)<br>Come back tomorrow or get Premium!</div><button class="btn primary" onclick="go('s-prem')" style="width:100%">💎 Get Premium</button><div style="margin-top:10px"><button class="btn danger" onclick="exitQuiz()">← Back</button></div>`;return;}
+  let pool=[];
+  if(subject==='random'){const g=QDB[grade]||{};Object.values(g).forEach(arr=>pool.push(...arr));}
+  else{pool=(QDB[grade]||{})[subject]||[];}
+  if(!pool.length){alert('No questions found!');return;}
+  const shuffled=[...pool].sort(()=>Math.random()-.5);
+  qSession={questions:shuffled,idx:0,grade,subject,answered:new Array(shuffled.length).fill(null)};
+  rebuildQuizCard();
+  renderQ();
   go('s-quiz');
-  renderQuestion();
 }
 
-function renderQuestion() {
-  const q = state.qs[state.idx];
-  const total = state.qs.length;
-  const num = state.grade.replace('g','');
-  const labels = {math:'Mathematics',physics:'Physics',biology:'Biology',chemistry:'Chemistry',history:'History',geography:'Geography'};
-
-  document.getElementById('q-grade-badge').textContent = `Grade ${num}`;
-  document.getElementById('q-subj-badge').textContent = labels[state.subject] || state.subject;
-  document.getElementById('q-num-lbl').textContent = `Q ${state.idx+1} / ${total}`;
-  document.getElementById('q-txt').textContent = q.q;
-
-  const pct = Math.round((state.idx / total) * 100);
-  document.getElementById('prog-fill').style.width = pct + '%';
-  document.getElementById('prog-frac').textContent = `${state.idx}/${total}`;
-
-  // Prev button — disable on first question
-  const prevBtn = document.getElementById('q-prev-btn');
-  prevBtn.disabled = state.idx === 0;
-  prevBtn.style.opacity = state.idx === 0 ? '0.3' : '1';
-
-  const letters = ['A','B','C','D'];
-  document.getElementById('q-opts').innerHTML = q.opts.map((o, i) =>
-    `<button class="opt" onclick="pickOpt(${i})">
-       <span class="ltr">${letters[i]}</span><span>${o}</span>
-     </button>`
-  ).join('');
-
-  document.getElementById('q-result').style.display = 'none';
+function rebuildQuizCard(){
+  document.getElementById('quiz-card').innerHTML=`
+    <div class="qmeta"><span class="badge" id="q-grade-badge"></span><span class="badge blue" id="q-subj-badge"></span></div>
+    <div class="qnav">
+      <button class="qnav-btn" id="q-prev-btn" onclick="quizPrev()">← Prev</button>
+      <span class="qnum" id="q-num-lbl"></span>
+      <button class="qnav-btn" id="q-next-btn" onclick="quizNext()">Next →</button>
+      <button class="qnav-btn exit" onclick="exitQuiz()">✕</button>
+    </div>
+    <div class="prog-wrap"><div class="prog-lbl"><span>Score</span><span id="prog-frac">0/0</span></div><div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div></div>
+    <div class="qtxt" id="q-txt"></div>
+    <div id="q-opts"></div>
+    <div id="q-result" style="display:none"></div>
+    <div class="anav" id="q-anav" style="display:none">
+      <button class="btn primary" id="q-next2-btn">Next Question →</button>
+      <button class="btn ghost" onclick="exitQuiz()">✕ Exit</button>
+    </div>`;
 }
 
-function quizPrev() {
-  if (state.idx > 0) { state.idx--; renderQuestion(); }
+function renderQ(){
+  const {questions,idx,grade,subject,answered}=qSession;
+  const q=questions[idx];const s=getS();
+  document.getElementById('q-grade-badge').textContent=GRADE_LABELS[grade]||grade;
+  document.getElementById('q-subj-badge').textContent=SUBJ_LABELS[subject]||subject;
+  document.getElementById('q-num-lbl').textContent=`Q ${idx+1} / ${questions.length}`;
+  const pct=s.total>0?Math.round(s.score/s.total*100):0;
+  document.getElementById('prog-frac').textContent=`${s.score}/${s.total}`;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('q-txt').textContent=q.q;
+  const pb=document.getElementById('q-prev-btn');
+  pb.disabled=(idx===0);pb.style.opacity=(idx===0)?'0.4':'1';
+  const alreadyAns=answered[idx];
+  document.getElementById('q-opts').innerHTML=q.o.map((opt,i)=>`<button class="opt${alreadyAns!==null?(i===q.a?' correct':(i===alreadyAns?' wrong':'')):''}
+  " id="opt-${i}" onclick="answerQ(${i})" ${alreadyAns!==null?'disabled':''}><span class="ltr">${'ABCD'[i]}</span><span>${opt}</span></button>`).join('');
+  const resultEl=document.getElementById('q-result');
+  const anavEl=document.getElementById('q-anav');
+  if(alreadyAns!==null){
+    const correct=(alreadyAns===q.a);
+    resultEl.style.display='block';
+    resultEl.className='rbox '+(correct?'correct':'wrong');
+    resultEl.innerHTML=`<div class="rtitle">${correct?'✅ Correct! 🎉':`❌ Wrong — Correct: ${q.o[q.a]}`}</div><div class="expl">📖 ${q.e}</div>`;
+    anavEl.style.display='flex';
+    const nb=document.getElementById('q-next2-btn');
+    nb.textContent=idx<questions.length-1?'Next Question →':'🏠 Finish';
+    nb.onclick=()=>idx<questions.length-1?quizNext():exitQuiz();
+  } else {resultEl.style.display='none';anavEl.style.display='none';}
 }
 
-function pickOpt(chosen) {
-  const q = state.qs[state.idx];
-  const btns = document.querySelectorAll('.opt');
-  btns.forEach(b => b.disabled = true);
-
-  const correct = chosen === q.ans;
-  if (correct) state.score++;
-  state.answered++;
-
-  btns[q.ans].classList.add('correct');
-  if (!correct) btns[chosen].classList.add('wrong');
-
-  const rb = document.getElementById('q-result');
-  rb.style.display = 'block';
-  rb.className = 'rbox ' + (correct ? 'correct' : 'wrong');
-  rb.innerHTML = `
-    <div class="rtitle">${correct ? '✅ Correct!' : '❌ Wrong'}</div>
-    ${!correct ? `<div>Correct answer: <strong>${q.opts[q.ans]}</strong></div>` : ''}
-    ${q.exp ? `<div class="expl">💡 ${q.exp}</div>` : ''}`;
-
-  const done = (+localStorage.getItem('dailyDone') || 0) + 1;
-  localStorage.setItem('dailyDone', done);
-  const ts = (+localStorage.getItem('totalScore') || 0) + (correct ? 1 : 0);
-  const tq = (+localStorage.getItem('totalQ') || 0) + 1;
-  localStorage.setItem('totalScore', ts);
-  localStorage.setItem('totalQ', tq);
-
-  const isLast = state.idx >= state.qs.length - 1;
-  const nextBtn = document.createElement('button');
-  nextBtn.className = 'next-auto-btn';
-
-  if (done >= FREE_LIMIT && !isLast) {
-    nextBtn.innerHTML = `<span>💎 Get Premium for More</span>`;
-    nextBtn.onclick = () => go('s-prem');
-  } else if (isLast) {
-    nextBtn.innerHTML = `<span>📊 See Results</span> <span class="arrow">→</span>`;
-    nextBtn.onclick = () => go('s-score');
-  } else {
-    nextBtn.innerHTML = `<span>Next Question</span> <span class="arrow">→</span>`;
-    nextBtn.onclick = () => { state.idx++; renderQuestion(); };
-  }
-
-  rb.appendChild(nextBtn);
+function answerQ(chosen){
+  const {questions,idx,answered}=qSession;
+  if(answered[idx]!==null)return;
+  answered[idx]=chosen;incDC();
+  const s=getS();s.total++;if(chosen===questions[idx].a)s.score++;saveS(s);
+  renderQ();
 }
-
-function exitQuiz() {
-  if (state.answered > 0) go('s-score');
-  else go('s-home');
+function quizPrev(){if(qSession.idx>0){qSession.idx--;renderQ();}}
+function quizNext(){if(qSession.idx<qSession.questions.length-1){qSession.idx++;renderQ();}}
+function exitQuiz(){const k=qSession.grade;if(k==='nat'||k==='soc'||k==='g9'||k==='g10')go('s-subj');else go('s-home');}
+function renderScore(){
+  const s=getS();const pct=s.total>0?Math.round(s.score/s.total*100):0;
+  let g='💪 Keep Going!';if(pct>=80)g='🏆 Excellent!';else if(pct>=60)g='👍 Good!';else if(pct>=40)g='📖 Keep Studying!';
+  document.getElementById('sc-pct').textContent=pct+'%';
+  document.getElementById('sc-grade').textContent=g;
+  document.getElementById('sc-stats').innerHTML=`<div class="sbox"><div class="v">${s.score}</div><div class="l">✅ Correct</div></div><div class="sbox"><div class="v">${s.total-s.score}</div><div class="l">❌ Wrong</div></div><div class="sbox"><div class="v">${s.total}</div><div class="l">📝 Total</div></div>`;
 }
-
-function renderScore() {
-  const ts = +localStorage.getItem('totalScore') || 0;
-  const tq = +localStorage.getItem('totalQ') || 0;
-  const pct = tq ? Math.round((ts/tq)*100) : 0;
-  const grade = pct>=90?'🏆 Excellent':pct>=75?'🌟 Very Good':pct>=60?'👍 Good':pct>=50?'📚 Keep Studying':'💪 Need More Practice';
-  document.getElementById('sc-pct').textContent = pct + '%';
-  document.getElementById('sc-pct').style.color = pct>=75?'var(--green)':pct>=50?'var(--gold)':'var(--red)';
-  document.getElementById('sc-grade').textContent = grade;
-  document.getElementById('sc-stats').innerHTML = `
-    <div class="sbox"><div class="v">${ts}</div><div class="l">Correct</div></div>
-    <div class="sbox"><div class="v">${tq-ts}</div><div class="l">Wrong</div></div>
-    <div class="sbox"><div class="v">${tq}</div><div class="l">Total</div></div>`;
-}
-
-function shuffle(arr) {
-  for (let i = arr.length-1; i > 0; i--) {
-    const j = Math.floor(Math.random()*(i+1));
-    [arr[i],arr[j]] = [arr[j],arr[i]];
-  }
-  return arr;
-}
-
-(function() {
-  const today = new Date().toDateString();
-  if (localStorage.getItem('lastDay') !== today) {
-    localStorage.setItem('lastDay', today);
-    localStorage.setItem('dailyDone', 0);
-  }
-  renderHome();
-})();
+renderHome();
 </script>
 </body>
 </html>
