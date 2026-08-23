@@ -422,7 +422,7 @@
     <div class="hint am">Key ከሌለህ <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a> ላይ በነፃ ማግኘት ትችላለህ። Key ያለው በዚህ መሳሪያ ላይ ብቻ ተቀምጦ ይቆያል።</div>
 
     <button class="cta am" id="startBtn" disabled>ጀምር</button>
-    <div style="text-align:center; font-size:10.5px; opacity:0.35; margin-top:14px;">build: fixes-batch-4 · v16 (grammar/spoken/vocab = real books)</div>
+    <div style="text-align:center; font-size:10.5px; opacity:0.35; margin-top:14px;">build: fixes-batch-5 · v19 (YouTube key embedded, never asked)</div>
   </div>
 
   <!-- MAIN APP -->
@@ -582,8 +582,12 @@
   const tg = window.Telegram && window.Telegram.WebApp;
   if (tg) { tg.ready(); tg.expand(); }
 
+  // YouTube Data API v3 key — embedded so the app always has one, no need to ask the user.
+  const YOUTUBE_API_KEY = 'AIzaSyB7kBKlAPNUGc9KGurJPJt8DokvYpY1FQQ';
+
   const state = {
     apiKey: '',
+    youtubeKey: YOUTUBE_API_KEY,
     level: 'beginner',
     chatHistory: [] // {role:'user'|'model', text:string}
   };
@@ -595,7 +599,7 @@
   };
 
   const MODEL = 'gemini-3.1-flash-lite';
-  const GROUNDED_MODEL = 'gemini-3.1-flash'; // full model for Google Search-grounded discovery calls (lite tier doesn't reliably return search results)
+  const GROUNDED_MODEL = 'gemini-3.5-flash'; // valid GA flash model with free-tier Google Search grounding support
   const API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/';
 
   // ---------- Telegram CloudStorage helpers (used only if available; falls back to memory) ----------
@@ -706,7 +710,7 @@
     return /API_KEY_INVALID|API key not valid|400|401|403/i.test(message||'');
   }
 
-  // ---------- Settings modal (level only) ----------
+  // ---------- Settings modal (level + YouTube key) ----------
   const settingsModal = document.getElementById('settingsModal');
   const settingsLevelGrid = document.getElementById('settingsLevelGrid');
   document.getElementById('settingsBtn').addEventListener('click', ()=>{
@@ -717,7 +721,9 @@
     settingsModal.classList.remove('show');
   });
   settingsModal.addEventListener('click', (e)=>{
-    if (e.target === settingsModal) settingsModal.classList.remove('show');
+    if (e.target === settingsModal){
+      settingsModal.classList.remove('show');
+    }
   });
   settingsLevelGrid.querySelectorAll('.level-card').forEach(card=>{
     card.addEventListener('click', ()=>{
@@ -1073,7 +1079,7 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
     vocabulary: ()=> `Find 3 real, completely free and legal English vocabulary-building books (full books, not just articles) available to read online, suitable for an Amharic-speaking learner at ${state.level} level. Use Google Search to find their exact working page URL on a legitimate free site (e.g. Project Gutenberg, Standard Ebooks, Open Library, archive.org, British Council, or a publisher's free sample). For each, give the title, author, and one short sentence on why it fits this level. Respond only in English, and make sure every recommendation is backed by a real link you found via search to a page where the book can be read or downloaded for free and legally.`
   };
 
-  // Topics whose Google-Search links should be rendered as embedded YouTube players.
+  // Topics whose results should be rendered as embedded YouTube players.
   const VIDEO_TOPICS = new Set(['movies', 'music-pronounce', 'music-listen']);
 
   // Extract a YouTube video ID from watch/shorts/youtu.be/embed style URLs. Returns null if not a YouTube link.
@@ -1092,6 +1098,51 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
       }
       return null;
     }catch(e){ return null; }
+  }
+
+  // ---- YouTube Data API v3 path (used when the user supplies a free YouTube API key) ----
+  // This is far more reliable than asking Gemini to "find" YouTube links via search grounding:
+  // Gemini just picks good titles/queries (cheap, no grounding needed), then the real YouTube
+  // Search endpoint resolves each query to an actual, embeddable video ID.
+  const YOUTUBE_SEED_SCHEMA = {
+    type:'ARRAY',
+    items:{
+      type:'OBJECT',
+      properties:{
+        title:{type:'STRING'},
+        subtitle:{type:'STRING'},
+        reason:{type:'STRING'},
+        youtube_query:{type:'STRING'}
+      },
+      required:['title','reason','youtube_query']
+    }
+  };
+  const YOUTUBE_SEED_PROMPTS = {
+    movies: ()=> `Suggest 3 real English-language movies great for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. For each item return: title (the movie name), subtitle (release year), reason (one short sentence on why it helps this learner), and youtube_query (a precise YouTube search query to find its official trailer, e.g. "Movie Name official trailer"). Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
+    'music-pronounce': ()=> `Suggest 2-3 real English songs appropriate for ${state.level} level that are good for pronunciation practice (clear, slow-ish singing). For each item return: title (song title), subtitle (artist name), reason (one short tip), and youtube_query (a precise YouTube search query to find its official music or lyric video, e.g. "Song Title Artist official music video"). Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
+    'music-listen': ()=> `Suggest 2-3 real English songs appropriate for ${state.level} level that are good for general listening practice. For each item return: title (song title), subtitle (artist name), reason (one short reason), and youtube_query (a precise YouTube search query to find its official music or lyric video, e.g. "Song Title Artist official music video"). Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`
+  };
+
+  // Search the real YouTube Data API v3 for one embeddable video matching a query.
+  async function ytSearchVideo(query){
+    if (!state.youtubeKey) return null;
+    const url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&type=video&videoEmbeddable=true&safeSearch=strict&q='
+      + encodeURIComponent(query) + '&key=' + encodeURIComponent(state.youtubeKey);
+    const res = await fetch(url);
+    if (!res.ok){
+      const body = await res.json().catch(()=>({}));
+      const msg = (body.error && body.error.message) || ('HTTP ' + res.status);
+      const err = new Error('YouTube API error: ' + msg);
+      err.status = res.status;
+      throw err;
+    }
+    const data = await res.json();
+    const item = data.items && data.items[0];
+    if (!item || !item.id || !item.id.videoId) return null;
+    return { id: item.id.videoId, title: item.snippet && item.snippet.title };
+  }
+  function isYoutubeKeyError(message){
+    return /API key not valid|keyInvalid|403|API_KEY_INVALID/i.test(message||'');
   }
 
   // Topics that expand into a sub-menu before showing results.
@@ -1215,10 +1266,87 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
     discoveryBody.appendChild(list);
   }
 
+  // Render a list of {id, title, subtitle, reason} as embedded YouTube players.
+  function renderYoutubeList(videos){
+    const listWrap = document.createElement('div');
+    listWrap.className = 'yt-list';
+    videos.slice(0,4).forEach(v=>{
+      const item = document.createElement('div');
+      item.className = 'yt-item';
+      const embed = document.createElement('div');
+      embed.className = 'yt-embed';
+      const iframe = document.createElement('iframe');
+      iframe.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(v.id);
+      iframe.title = v.title || 'YouTube video';
+      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      iframe.allowFullscreen = true;
+      iframe.loading = 'lazy';
+      embed.appendChild(iframe);
+      const meta = document.createElement('div');
+      meta.className = 'yt-meta';
+      const titleLine = (v.subtitle) ? (v.title + ' — ' + v.subtitle) : v.title;
+      meta.innerHTML = '<div class="yt-title"></div><div class="yt-why"></div>';
+      meta.querySelector('.yt-title').textContent = titleLine || '';
+      meta.querySelector('.yt-why').textContent = v.reason || '';
+      item.appendChild(embed);
+      item.appendChild(meta);
+      listWrap.appendChild(item);
+    });
+    return listWrap;
+  }
+
+  // Video topics via the real YouTube Data API: Gemini picks good titles/queries (cheap, no
+  // grounding needed), then YouTube Search resolves each to a real, embeddable video ID.
+  async function runYoutubeApiDiscovery(topicKey){
+    const seedPromptFn = YOUTUBE_SEED_PROMPTS[topicKey];
+    const seedsRaw = await callGemini({
+      contents:[{ role:'user', parts:[{ text: seedPromptFn() }] }],
+      generationConfig:{ temperature:0.8, maxOutputTokens:500, responseMimeType:'application/json', responseSchema: YOUTUBE_SEED_SCHEMA }
+    });
+    const seeds = JSON.parse(seedsRaw);
+
+    const results = await Promise.all(seeds.map(async (s)=>{
+      try{
+        const found = await ytSearchVideo(s.youtube_query);
+        if (!found) return null;
+        return { id: found.id, title: s.title, subtitle: s.subtitle, reason: s.reason };
+      }catch(err){
+        if (isYoutubeKeyError(err.message)) throw err; // bubble up key errors so we can react once
+        return null;
+      }
+    }));
+
+    return results.filter(Boolean);
+  }
+
   async function runDiscoveryView(topicKey, label){
     if (!state.apiKey) return;
     discoveryTitle.textContent = label || TOPIC_TITLES[topicKey] || 'Discovery';
     discoveryBody.innerHTML = '<div class="discovery-loading am">እየፈለገ ነው...</div>';
+
+    // Prefer the real YouTube Data API path when the user has provided a key and this is a video topic.
+    if (VIDEO_TOPICS.has(topicKey) && state.youtubeKey){
+      try{
+        const videos = await runYoutubeApiDiscovery(topicKey);
+        discoveryBody.innerHTML = '';
+        if (videos.length){
+          discoveryBody.appendChild(renderYoutubeList(videos));
+          return;
+        }
+        // No results from YouTube this time — fall through to the Google-Search-grounded fallback below.
+      }catch(err){
+        if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
+        if (isYoutubeKeyError(err.message)){
+          const note = document.createElement('div');
+          note.className = 'discovery-loading am';
+          note.textContent = '⚠️ YouTube API Key ልክ ያልሆነ ይመስላል፣ Settings ውስጥ አረጋግጥ። ለጊዜው በGoogle Search ፍለጋ ቀጥያለሁ...';
+          discoveryBody.innerHTML = '';
+          discoveryBody.appendChild(note);
+        }
+        // fall through to the grounded fallback below on any other YouTube API error too
+      }
+    }
+
     const promptFn = TOPIC_PROMPTS[topicKey];
     if (!promptFn) return;
 
@@ -1247,29 +1375,7 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
         });
 
         if (videos.length){
-          const listWrap = document.createElement('div');
-          listWrap.className = 'yt-list';
-          videos.slice(0,4).forEach(v=>{
-            const item = document.createElement('div');
-            item.className = 'yt-item';
-            const embed = document.createElement('div');
-            embed.className = 'yt-embed';
-            const iframe = document.createElement('iframe');
-            iframe.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(v.id);
-            iframe.title = v.title || 'YouTube video';
-            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-            iframe.allowFullscreen = true;
-            iframe.loading = 'lazy';
-            embed.appendChild(iframe);
-            const meta = document.createElement('div');
-            meta.className = 'yt-meta';
-            meta.innerHTML = '<div class="yt-title"></div>';
-            meta.querySelector('.yt-title').textContent = v.title || '';
-            item.appendChild(embed);
-            item.appendChild(meta);
-            listWrap.appendChild(item);
-          });
-          discoveryBody.appendChild(listWrap);
+          discoveryBody.appendChild(renderYoutubeList(videos));
         } else {
           // No YouTube link came back from grounding this time — fall back to plain source links.
           const note = document.createElement('div');
