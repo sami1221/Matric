@@ -385,6 +385,22 @@
   .yt-meta{ padding:10px 12px 12px; }
   .yt-title{ font-size:13.5px; font-weight:600; line-height:1.4; }
   .yt-why{ font-size:12.5px; opacity:0.65; margin-top:4px; line-height:1.5; }
+
+  /* ---------- Grammar / Spoken / Vocabulary (books group) ---------- */
+  .gram-card .back{ display:block !important; }
+  .gram-row{ font-size:13.5px; line-height:1.5; margin-bottom:10px; }
+  .gram-row:last-child{ margin-bottom:0; }
+  .gen-controls{ display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+  .gen-progress{ font-size:12.5px; opacity:0.65; }
+  .spoken-item .opp{ margin-top:8px; padding-top:8px; border-top:1px dashed var(--line); opacity:0.85; not-italic; font-style:normal; }
+  .spoken-item .am-word{ font-size:13.5px; color:var(--ochre); font-weight:600; font-style:normal; margin-top:4px; }
+  .vocab-list{ display:flex; flex-direction:column; }
+  .vocab-item{
+    display:flex; justify-content:space-between; align-items:baseline; gap:10px;
+    padding:10px 2px; border-bottom:1px solid var(--line); font-size:14px;
+  }
+  .vocab-item .vword{ font-weight:600; font-family:'Fraunces',serif; }
+  .vocab-item .vmean{ color:var(--ochre); font-size:13px; text-align:right; }
 </style>
 </head>
 <body>
@@ -422,7 +438,7 @@
     <div class="hint am">Key ከሌለህ <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a> ላይ በነፃ ማግኘት ትችላለህ። Key ያለው በዚህ መሳሪያ ላይ ብቻ ተቀምጦ ይቆያል።</div>
 
     <button class="cta am" id="startBtn" disabled>ጀምር</button>
-    <div style="text-align:center; font-size:10.5px; opacity:0.35; margin-top:14px;">build: fixes-batch-5 · v19 (YouTube key embedded, never asked)</div>
+    <div style="text-align:center; font-size:10.5px; opacity:0.35; margin-top:14px;">build: fixes-batch-7 · v22 (grammar/spoken/vocabulary generated once then cached on-device via CloudStorage — no repeat API calls)</div>
   </div>
 
   <!-- MAIN APP -->
@@ -589,7 +605,16 @@
     apiKey: '',
     youtubeKey: YOUTUBE_API_KEY,
     level: 'beginner',
-    chatHistory: [] // {role:'user'|'model', text:string}
+    chatHistory: [], // {role:'user'|'model', text:string}
+    grammarData: null,
+    spokenData: [],
+    spokenRunning: false,
+    spokenCancel: false,
+    spokenLastBatchEn: [],
+    vocabData: [],
+    vocabRunning: false,
+    vocabCancel: false,
+    vocabLastBatchWords: []
   };
 
   const LEVEL_META = {
@@ -613,6 +638,36 @@
       if (tg && tg.CloudStorage) { tg.CloudStorage.getItem(key, (err, val)=> cb(val||'')); return; }
     }catch(e){}
     cb('');
+  }
+
+  // ---------- Chunked cache for large generated datasets (grammar / spoken / vocabulary) ----------
+  // Telegram CloudStorage caps each value at ~4096 chars, so large arrays are split into small
+  // fixed-size chunks (one CloudStorage key per chunk) plus a small "_meta" key holding the total
+  // item count and the chunk size, so once generated the content is saved forever on-device and
+  // the API never needs to be called again for it.
+  function saveChunk(chunkPrefix, chunkIndex, items){
+    cloudSet(chunkPrefix + '_' + chunkIndex, JSON.stringify(items));
+  }
+  function saveMeta(metaKey, count, chunkSize){
+    cloudSet(metaKey, JSON.stringify({ count, chunkSize }));
+  }
+  function loadChunkedCache(metaKey, chunkPrefix, cb){
+    cloudGet(metaKey, (metaVal)=>{
+      let meta = null;
+      if (metaVal){ try{ meta = JSON.parse(metaVal); }catch(e){} }
+      if (!meta || !meta.count){ cb([]); return; }
+      const chunkCount = Math.ceil(meta.count / meta.chunkSize);
+      if (chunkCount <= 0){ cb([]); return; }
+      const results = new Array(chunkCount);
+      let remaining = chunkCount;
+      for (let i=0;i<chunkCount;i++){
+        cloudGet(chunkPrefix + '_' + i, (val)=>{
+          try{ results[i] = val ? JSON.parse(val) : []; }catch(e){ results[i] = []; }
+          remaining--;
+          if (remaining === 0) cb([].concat(...results));
+        });
+      }
+    });
   }
 
   // ---------- Onboarding ----------
@@ -920,7 +975,7 @@ Rules:
     }catch(err){
       typingEl.remove();
       if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
-      addMsg('system', '⚠️ ' + err.message);
+      addMsg('system', friendlyErrorText(err.message));
     }finally{
       chatSend.disabled = false;
     }
@@ -978,7 +1033,7 @@ Return ONLY the JSON array matching the schema.`;
       renderCards(cards);
     }catch(err){
       if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
-      cardStack.innerHTML = '<div class="empty-note am">⚠️ ' + escapeHtml(err.message) + '</div>';
+      cardStack.innerHTML = '<div class="empty-note am">' + escapeHtml(friendlyErrorText(err.message)) + '</div>';
     }finally{
       genCardsBtn.disabled = false;
       genCardsBtn.textContent = 'ቃላት እና አጠቃቀም';
@@ -1053,7 +1108,7 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
     }catch(err){
       if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
       fixCorrected.textContent = '';
-      fixExplain.textContent = '⚠️ ' + err.message;
+      fixExplain.textContent = friendlyErrorText(err.message);
       fixResult.classList.add('show');
     }finally{
       fixBtn.disabled = false;
@@ -1071,12 +1126,9 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
 
   // Prompts for Gemini-driven (Google Search grounded) discovery topics.
   const TOPIC_PROMPTS = {
-    movies: ()=> `Find 3 real English-language movie trailers on YouTube (official trailers only) that are great for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. Use Google Search restricted to site:youtube.com to find their exact YouTube watch page URLs (format: https://www.youtube.com/watch?v=VIDEO_ID). For each, name the movie and give one short sentence on why it helps this learner. Respond only in English, and make sure every recommendation is backed by a real youtube.com/watch link you found via search.`,
-    'music-pronounce': ()=> `Find 2-3 real English songs' official music videos or lyric videos on YouTube that are appropriate for ${state.level} level and good for pronunciation practice (clear, slow-ish singing). Use Google Search restricted to site:youtube.com to find their exact YouTube watch page URLs (format: https://www.youtube.com/watch?v=VIDEO_ID). For each, give the song title, artist, and one short tip. Respond only in English, and make sure every recommendation is backed by a real youtube.com/watch link you found via search.`,
-    'music-listen': ()=> `Find 2-3 real English songs' official music videos or lyric videos on YouTube that are appropriate for ${state.level} level and good for general listening practice. Use Google Search restricted to site:youtube.com to find their exact YouTube watch page URLs (format: https://www.youtube.com/watch?v=VIDEO_ID). For each, give the song title, artist, and one short reason. Respond only in English, and make sure every recommendation is backed by a real youtube.com/watch link you found via search.`,
-    grammar: ()=> `Find 3 real, completely free and legal English grammar books or grammar guides (full books, not just articles) available to read online, suitable for an Amharic-speaking learner at ${state.level} level. Use Google Search to find their exact working page URL on a legitimate free site (e.g. Project Gutenberg, Standard Ebooks, Open Library, archive.org, British Council, or a publisher's free sample). For each, give the title, author, and one short sentence on why it fits this level. Respond only in English, and make sure every recommendation is backed by a real link you found via search to a page where the book can be read or downloaded for free and legally.`,
-    spoken: ()=> `Find 3 real, completely free and legal books about spoken English / everyday conversation / pronunciation (full books, not just articles) available to read online, suitable for an Amharic-speaking learner at ${state.level} level. Use Google Search to find their exact working page URL on a legitimate free site (e.g. Project Gutenberg, Standard Ebooks, Open Library, archive.org, British Council, or a publisher's free sample). For each, give the title, author, and one short sentence on why it fits this level. Respond only in English, and make sure every recommendation is backed by a real link you found via search to a page where the book can be read or downloaded for free and legally.`,
-    vocabulary: ()=> `Find 3 real, completely free and legal English vocabulary-building books (full books, not just articles) available to read online, suitable for an Amharic-speaking learner at ${state.level} level. Use Google Search to find their exact working page URL on a legitimate free site (e.g. Project Gutenberg, Standard Ebooks, Open Library, archive.org, British Council, or a publisher's free sample). For each, give the title, author, and one short sentence on why it fits this level. Respond only in English, and make sure every recommendation is backed by a real link you found via search to a page where the book can be read or downloaded for free and legally.`
+    movies: ()=> `Find 3 real English-language YouTube videos that help an Amharic-speaking English learner at ${state.level} level practice listening and vocabulary through movies — such as movie scene clips with real dialogue, "learn English through movies" clips, or short lesson videos built around a movie scene. Each video should be at least a few minutes long (NOT a 15-60 second trailer or teaser). Use Google Search restricted to site:youtube.com to find their exact YouTube watch page URLs (format: https://www.youtube.com/watch?v=VIDEO_ID). For each, name the movie/video and give one short sentence on why it helps this learner. Respond only in English, and make sure every recommendation is backed by a real youtube.com/watch link you found via search.`,
+    'music-pronounce': ()=> `Find 2-3 real English songs' official lyric videos on YouTube (videos that show the song's lyrics as on-screen text while it plays) that are appropriate for ${state.level} level and good for pronunciation practice (clear, slow-ish singing). The video MUST display lyrics as text on screen. Use Google Search restricted to site:youtube.com to find their exact YouTube watch page URLs (format: https://www.youtube.com/watch?v=VIDEO_ID). For each, give the song title, artist, and one short tip. Respond only in English, and make sure every recommendation is backed by a real youtube.com/watch link you found via search.`,
+    'music-listen': ()=> `Find 2-3 real English songs' normal official music videos on YouTube (the regular music video, NOT a lyrics video) that are appropriate for ${state.level} level and good for general listening practice. Use Google Search restricted to site:youtube.com to find their exact YouTube watch page URLs (format: https://www.youtube.com/watch?v=VIDEO_ID). For each, give the song title, artist, and one short reason. Respond only in English, and make sure every recommendation is backed by a real youtube.com/watch link you found via search.`
   };
 
   // Topics whose results should be rendered as embedded YouTube players.
@@ -1118,16 +1170,18 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
     }
   };
   const YOUTUBE_SEED_PROMPTS = {
-    movies: ()=> `Suggest 3 real English-language movies great for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. For each item return: title (the movie name), subtitle (release year), reason (one short sentence on why it helps this learner), and youtube_query (a precise YouTube search query to find its official trailer, e.g. "Movie Name official trailer"). Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
-    'music-pronounce': ()=> `Suggest 2-3 real English songs appropriate for ${state.level} level that are good for pronunciation practice (clear, slow-ish singing). For each item return: title (song title), subtitle (artist name), reason (one short tip), and youtube_query (a precise YouTube search query to find its official music or lyric video, e.g. "Song Title Artist official music video"). Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
-    'music-listen': ()=> `Suggest 2-3 real English songs appropriate for ${state.level} level that are good for general listening practice. For each item return: title (song title), subtitle (artist name), reason (one short reason), and youtube_query (a precise YouTube search query to find its official music or lyric video, e.g. "Song Title Artist official music video"). Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`
+    movies: ()=> `Suggest 3 real English-language movies great for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. For each item return: title (the movie name), subtitle (release year), reason (one short sentence on why it helps this learner), and youtube_query (a precise YouTube search query to find a LONGER video (several minutes, not a short trailer/teaser) useful for language practice — such as a movie scene clip with dialogue, a "learn English with [Movie Name]" video, or a best-scenes compilation, e.g. "Movie Name movie scene clip" or "Movie Name best scenes english subtitles"). Do NOT search for trailers or teasers. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
+    'music-pronounce': ()=> `Suggest 2-3 real English songs appropriate for ${state.level} level that are good for pronunciation practice (clear, slow-ish singing). For each item return: title (song title), subtitle (artist name), reason (one short tip), and youtube_query (a precise YouTube search query to find its LYRIC VIDEO — a video that shows the song's lyrics as on-screen text — e.g. "Song Title Artist lyrics"). The query must be aimed at finding a lyrics video, not a plain music video. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
+    'music-listen': ()=> `Suggest 2-3 real English songs appropriate for ${state.level} level that are good for general listening practice. For each item return: title (song title), subtitle (artist name), reason (one short reason), and youtube_query (a precise YouTube search query to find its NORMAL official music video, NOT a lyrics video, e.g. "Song Title Artist official music video"). Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`
   };
 
   // Search the real YouTube Data API v3 for one embeddable video matching a query.
-  async function ytSearchVideo(query){
+  // duration: optional YouTube "videoDuration" filter — 'short' (<4min), 'medium' (4-20min), 'long' (>20min), or omitted for any length.
+  async function ytSearchVideo(query, duration){
     if (!state.youtubeKey) return null;
-    const url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&type=video&videoEmbeddable=true&safeSearch=strict&q='
+    let url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&type=video&videoEmbeddable=true&safeSearch=strict&q='
       + encodeURIComponent(query) + '&key=' + encodeURIComponent(state.youtubeKey);
+    if (duration) url += '&videoDuration=' + encodeURIComponent(duration);
     const res = await fetch(url);
     if (!res.ok){
       const body = await res.json().catch(()=>({}));
@@ -1141,8 +1195,19 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
     if (!item || !item.id || !item.id.videoId) return null;
     return { id: item.id.videoId, title: item.snippet && item.snippet.title };
   }
+  // Duration filter per discovery topic: movies should be longer clips, not short trailers.
+  const TOPIC_VIDEO_DURATION = { movies: 'medium' };
   function isYoutubeKeyError(message){
     return /API key not valid|keyInvalid|403|API_KEY_INVALID/i.test(message||'');
+  }
+  function isRateLimitError(message){
+    return /429|RESOURCE_EXHAUSTED|exceeded your current quota/i.test(message||'');
+  }
+  function friendlyErrorText(message){
+    if (isRateLimitError(message)){
+      return '⚠️ በጣም ብዙ ጥያቄ ስለተላከ ለጊዜው ገደብ ላይ ደርሰሃል (quota)። እባክህ ጥቂት ደቂቃ ቆይተህ እንደገና ሞክር።';
+    }
+    return '⚠️ ' + message;
   }
 
   // Topics that expand into a sub-menu before showing results.
@@ -1240,6 +1305,10 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
         discoveryNavigate(()=>{
           if (groupKey === 'twister'){
             renderTwisterView(it.key, it.label);
+          } else if (groupKey === 'books'){
+            if (it.key === 'grammar') runGrammarView();
+            else if (it.key === 'spoken') renderSpokenBody();
+            else if (it.key === 'vocabulary') renderVocabBody();
           } else {
             runDiscoveryView(it.key, it.label);
           }
@@ -1264,6 +1333,328 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
     });
     discoveryBody.innerHTML = '';
     discoveryBody.appendChild(list);
+  }
+
+  // ============ GRAMMAR (12 tenses, generated once, structure + 3 examples each) ============
+  const GRAMMAR_SCHEMA = {
+    type:'ARRAY',
+    items:{
+      type:'OBJECT',
+      properties:{
+        tense:{type:'STRING'},
+        structure:{type:'STRING'},
+        positive_en:{type:'STRING'},
+        positive_am:{type:'STRING'},
+        negative_en:{type:'STRING'},
+        negative_am:{type:'STRING'},
+        question_en:{type:'STRING'},
+        question_am:{type:'STRING'}
+      },
+      required:['tense','structure','positive_en','positive_am','negative_en','negative_am','question_en','question_am']
+    }
+  };
+  function grammarPrompt(){
+    return `List all 12 English verb tenses in this exact order: Present Simple, Present Continuous, Present Perfect, Present Perfect Continuous, Past Simple, Past Continuous, Past Perfect, Past Perfect Continuous, Future Simple, Future Continuous, Future Perfect, Future Perfect Continuous.
+For each tense, give:
+- structure: the grammar formula (e.g. "Subject + am/is/are + verb-ing")
+- one positive example sentence in English (positive_en) with its accurate Amharic translation (positive_am)
+- one negative example sentence in English (negative_en) with its accurate Amharic translation (negative_am)
+- one question (interrogative) example sentence in English (question_en) with its accurate Amharic translation (question_am)
+Make the examples appropriate for a ${state.level} level Amharic-speaking learner (${LEVEL_META[state.level].desc}).
+Return ONLY the JSON array matching the schema, in the exact tense order listed above, no extra text.`;
+  }
+
+  async function runGrammarView(){
+    discoveryTitle.textContent = 'Grammar';
+    if (state.grammarData){ renderGrammarList(state.grammarData); return; }
+    discoveryBody.innerHTML = '<div class="discovery-loading am">እየተጫነ ነው...</div>';
+    cloudGet('grammar_data', async (cachedVal)=>{
+      if (cachedVal){
+        try{
+          const cached = JSON.parse(cachedVal);
+          if (cached && cached.length){
+            state.grammarData = cached;
+            renderGrammarList(cached);
+            return;
+          }
+        }catch(e){}
+      }
+      if (!state.apiKey) return;
+      discoveryBody.innerHTML = '<div class="discovery-loading am">እየተዘጋጀ ነው...</div>';
+      try{
+        const raw = await callGemini({
+          contents:[{ role:'user', parts:[{ text: grammarPrompt() }] }],
+          generationConfig:{ temperature:0.6, maxOutputTokens:4000, responseMimeType:'application/json', responseSchema: GRAMMAR_SCHEMA }
+        });
+        const data = JSON.parse(raw);
+        state.grammarData = data;
+        cloudSet('grammar_data', JSON.stringify(data));
+        renderGrammarList(data);
+      }catch(err){
+        if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
+        discoveryBody.innerHTML = '<div class="discovery-loading am">' + escapeHtml(friendlyErrorText(err.message)) + '</div>';
+      }
+    });
+  }
+
+  function renderGrammarList(data){
+    discoveryBody.innerHTML = '';
+    const wrap = document.createElement('div');
+    wrap.className = 'card-stack';
+    data.forEach(t=>{
+      const el = document.createElement('div');
+      el.className = 'flash gram-card';
+      el.innerHTML = `
+        <div class="word">${escapeHtml(t.tense)}</div>
+        <div class="pos">${escapeHtml(t.structure)}</div>
+        <div class="back">
+          <div class="gram-row"><b>+</b> ${escapeHtml(t.positive_en)}<div class="am-word">${escapeHtml(t.positive_am)}</div></div>
+          <div class="gram-row"><b>−</b> ${escapeHtml(t.negative_en)}<div class="am-word">${escapeHtml(t.negative_am)}</div></div>
+          <div class="gram-row"><b>?</b> ${escapeHtml(t.question_en)}<div class="am-word">${escapeHtml(t.question_am)}</div></div>
+        </div>
+      `;
+      wrap.appendChild(el);
+    });
+    discoveryBody.appendChild(wrap);
+  }
+
+  // ============ SPOKEN (batch-generated toward 1000 sentences, each with an opposite version) ============
+  const SPOKEN_SCHEMA = {
+    type:'ARRAY',
+    items:{
+      type:'OBJECT',
+      properties:{
+        en:{type:'STRING'}, am:{type:'STRING'}, opposite_en:{type:'STRING'}, opposite_am:{type:'STRING'}
+      },
+      required:['en','am','opposite_en','opposite_am']
+    }
+  };
+  const SPOKEN_TARGET = 1000;
+  const SPOKEN_BATCH = 10; // small so each generated batch fits safely in one CloudStorage value
+  const SPOKEN_CATEGORIES = [
+    'greetings and introductions','shopping','asking for directions','ordering food','talking about weather',
+    'work and office talk','making plans','expressing feelings','apologizing','giving opinions',
+    'phone conversations','travel and airport','doctor visit','family and daily routine','shopping for clothes',
+    'asking for help','giving advice','talking about hobbies','describing people','time and scheduling',
+    'complaints and problems','celebrations','money and banking','technology and internet','sports talk',
+    'weather and seasons','school and study','job interviews','social media','common idioms in conversation'
+  ];
+  function spokenPrompt(batchIndex, avoidList){
+    const cat = SPOKEN_CATEGORIES[batchIndex % SPOKEN_CATEGORIES.length];
+    return `Generate exactly ${SPOKEN_BATCH} short, common, everyday spoken English sentences used often in real conversation, on the topic/category "${cat}", appropriate for a ${state.level} Amharic-speaking learner.
+For each sentence provide:
+- en: the English sentence
+- am: its accurate Amharic translation
+- opposite_en: a natural opposite or contrasting/negated version of the same sentence in English
+- opposite_am: the accurate Amharic translation of that opposite sentence
+Do not repeat any of these sentences already used: ${avoidList && avoidList.length ? avoidList.join(' | ') : 'none'}.
+Return ONLY the JSON array matching the schema, no extra text.`;
+  }
+
+  function renderSpokenBody(){
+    discoveryTitle.textContent = 'Spoken';
+    if (state.spokenData.length){ renderSpokenControls(); return; }
+    discoveryBody.innerHTML = '<div class="discovery-loading am">እየተጫነ ነው...</div>';
+    loadChunkedCache('spoken_meta', 'spoken_chunk', (cached)=>{
+      state.spokenData = cached || [];
+      renderSpokenControls();
+    });
+  }
+
+  function renderSpokenControls(){
+    discoveryBody.innerHTML = '';
+
+    const controls = document.createElement('div');
+    controls.className = 'gen-controls';
+    const btn = document.createElement('button');
+    btn.className = 'btn-solid am';
+    btn.textContent = state.spokenData.length ? 'ቀጥል' : 'ጀምር';
+    if (state.spokenData.length >= SPOKEN_TARGET) btn.disabled = true;
+    const progress = document.createElement('div');
+    progress.className = 'gen-progress am';
+    progress.textContent = state.spokenData.length + ' / ' + SPOKEN_TARGET;
+    controls.appendChild(btn);
+    controls.appendChild(progress);
+    discoveryBody.appendChild(controls);
+
+    const list = document.createElement('div');
+    list.className = 'twister-list';
+    discoveryBody.appendChild(list);
+    renderSpokenItems(list, state.spokenData, 0);
+
+    btn.addEventListener('click', ()=>{
+      if (state.spokenRunning){
+        state.spokenCancel = true;
+        state.spokenRunning = false;
+        btn.textContent = 'ቀጥል';
+        return;
+      }
+      if (!state.apiKey) return;
+      state.spokenCancel = false;
+      state.spokenRunning = true;
+      btn.textContent = 'አቁም';
+      runSpokenLoop(btn, progress, list);
+    });
+  }
+
+  function renderSpokenItems(list, items, startIdx){
+    for (let i=startIdx; i<items.length; i++){
+      const it = items[i];
+      const div = document.createElement('div');
+      div.className = 'twister-item spoken-item';
+      div.style.fontStyle = 'normal';
+      div.innerHTML = `<div>${escapeHtml(it.en)}</div><div class="am-word">${escapeHtml(it.am)}</div><div class="opp">↔ ${escapeHtml(it.opposite_en)}</div><div class="am-word">${escapeHtml(it.opposite_am)}</div>`;
+      list.appendChild(div);
+    }
+  }
+
+  async function runSpokenLoop(btn, progressEl, list){
+    while (state.spokenData.length < SPOKEN_TARGET && !state.spokenCancel){
+      const batchIdx = Math.floor(state.spokenData.length / SPOKEN_BATCH);
+      try{
+        const raw = await callGemini({
+          contents:[{ role:'user', parts:[{ text: spokenPrompt(batchIdx, state.spokenLastBatchEn) }] }],
+          generationConfig:{ temperature:0.9, maxOutputTokens:2800, responseMimeType:'application/json', responseSchema: SPOKEN_SCHEMA }
+        });
+        const batch = JSON.parse(raw);
+        const startIdx = state.spokenData.length;
+        state.spokenData = state.spokenData.concat(batch);
+        state.spokenLastBatchEn = batch.map(b=>b.en).slice(0, SPOKEN_BATCH);
+        saveChunk('spoken_chunk', batchIdx, batch);
+        saveMeta('spoken_meta', state.spokenData.length, SPOKEN_BATCH);
+        renderSpokenItems(list, state.spokenData, startIdx);
+        progressEl.textContent = state.spokenData.length + ' / ' + SPOKEN_TARGET;
+      }catch(err){
+        if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
+        progressEl.textContent = friendlyErrorText(err.message);
+        break;
+      }
+    }
+    state.spokenRunning = false;
+    if (state.spokenData.length >= SPOKEN_TARGET){
+      btn.textContent = 'ተጠናቋል';
+      btn.disabled = true;
+    } else {
+      btn.textContent = 'ቀጥል';
+    }
+  }
+
+  // ============ VOCABULARY (batch-generated toward 2000 words) ============
+  const VOCAB_SCHEMA = {
+    type:'ARRAY',
+    items:{
+      type:'OBJECT',
+      properties:{ word:{type:'STRING'}, meaning_am:{type:'STRING'} },
+      required:['word','meaning_am']
+    }
+  };
+  const VOCAB_TARGET = 2000;
+  const VOCAB_BATCH = 40;
+  const VOCAB_CATEGORIES = [
+    'daily life','food and cooking','travel','emotions','business and work','technology','health',
+    'nature and weather','family and relationships','education','shopping','sports','hobbies',
+    'transportation','time and calendar','money and finance','communication','clothing','home and furniture',
+    'city and places','feelings and personality','science','environment','law and government',
+    'arts and entertainment','cooking verbs','common phrasal verbs','idioms','adjectives describing people',
+    'common verbs','common nouns','question words and connectors','directions','jobs and careers',
+    'celebrations and holidays','animals','colors and shapes','music and art','farming and agriculture',
+    'medicine and the body'
+  ];
+  function vocabPrompt(batchIndex, avoidList){
+    const cat = VOCAB_CATEGORIES[batchIndex % VOCAB_CATEGORIES.length];
+    return `Generate exactly ${VOCAB_BATCH} useful English vocabulary words (single words or short common phrases) on the topic/category "${cat}", appropriate for a ${state.level} Amharic-speaking learner.
+For each word provide:
+- word: the English word or phrase
+- meaning_am: its accurate Amharic meaning/translation
+Do not repeat any of these words already used: ${avoidList && avoidList.length ? avoidList.join(', ') : 'none'}.
+Return ONLY the JSON array matching the schema, no extra text.`;
+  }
+
+  function renderVocabBody(){
+    discoveryTitle.textContent = 'Vocabulary';
+    if (state.vocabData.length){ renderVocabControls(); return; }
+    discoveryBody.innerHTML = '<div class="discovery-loading am">እየተጫነ ነው...</div>';
+    loadChunkedCache('vocab_meta', 'vocab_chunk', (cached)=>{
+      state.vocabData = cached || [];
+      renderVocabControls();
+    });
+  }
+
+  function renderVocabControls(){
+    discoveryBody.innerHTML = '';
+
+    const controls = document.createElement('div');
+    controls.className = 'gen-controls';
+    const btn = document.createElement('button');
+    btn.className = 'btn-solid am';
+    btn.textContent = state.vocabData.length ? 'ቀጥል' : 'ጀምር';
+    if (state.vocabData.length >= VOCAB_TARGET) btn.disabled = true;
+    const progress = document.createElement('div');
+    progress.className = 'gen-progress am';
+    progress.textContent = state.vocabData.length + ' / ' + VOCAB_TARGET;
+    controls.appendChild(btn);
+    controls.appendChild(progress);
+    discoveryBody.appendChild(controls);
+
+    const list = document.createElement('div');
+    list.className = 'vocab-list';
+    discoveryBody.appendChild(list);
+    renderVocabItems(list, state.vocabData, 0);
+
+    btn.addEventListener('click', ()=>{
+      if (state.vocabRunning){
+        state.vocabCancel = true;
+        state.vocabRunning = false;
+        btn.textContent = 'ቀጥል';
+        return;
+      }
+      if (!state.apiKey) return;
+      state.vocabCancel = false;
+      state.vocabRunning = true;
+      btn.textContent = 'አቁም';
+      runVocabLoop(btn, progress, list);
+    });
+  }
+
+  function renderVocabItems(list, items, startIdx){
+    for (let i=startIdx; i<items.length; i++){
+      const it = items[i];
+      const div = document.createElement('div');
+      div.className = 'vocab-item';
+      div.innerHTML = `<span class="vword">${escapeHtml(it.word)}</span><span class="vmean">${escapeHtml(it.meaning_am)}</span>`;
+      list.appendChild(div);
+    }
+  }
+
+  async function runVocabLoop(btn, progressEl, list){
+    while (state.vocabData.length < VOCAB_TARGET && !state.vocabCancel){
+      const batchIdx = Math.floor(state.vocabData.length / VOCAB_BATCH);
+      try{
+        const raw = await callGemini({
+          contents:[{ role:'user', parts:[{ text: vocabPrompt(batchIdx, state.vocabLastBatchWords) }] }],
+          generationConfig:{ temperature:0.9, maxOutputTokens:2800, responseMimeType:'application/json', responseSchema: VOCAB_SCHEMA }
+        });
+        const batch = JSON.parse(raw);
+        const startIdx = state.vocabData.length;
+        state.vocabData = state.vocabData.concat(batch);
+        state.vocabLastBatchWords = batch.map(b=>b.word).slice(0, VOCAB_BATCH);
+        saveChunk('vocab_chunk', batchIdx, batch);
+        saveMeta('vocab_meta', state.vocabData.length, VOCAB_BATCH);
+        renderVocabItems(list, state.vocabData, startIdx);
+        progressEl.textContent = state.vocabData.length + ' / ' + VOCAB_TARGET;
+      }catch(err){
+        if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
+        progressEl.textContent = friendlyErrorText(err.message);
+        break;
+      }
+    }
+    state.vocabRunning = false;
+    if (state.vocabData.length >= VOCAB_TARGET){
+      btn.textContent = 'ተጠናቋል';
+      btn.disabled = true;
+    } else {
+      btn.textContent = 'ቀጥል';
+    }
   }
 
   // Render a list of {id, title, subtitle, reason} as embedded YouTube players.
@@ -1304,10 +1695,11 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
       generationConfig:{ temperature:0.8, maxOutputTokens:500, responseMimeType:'application/json', responseSchema: YOUTUBE_SEED_SCHEMA }
     });
     const seeds = JSON.parse(seedsRaw);
+    const duration = TOPIC_VIDEO_DURATION[topicKey];
 
     const results = await Promise.all(seeds.map(async (s)=>{
       try{
-        const found = await ytSearchVideo(s.youtube_query);
+        const found = await ytSearchVideo(s.youtube_query, duration);
         if (!found) return null;
         return { id: found.id, title: s.title, subtitle: s.subtitle, reason: s.reason };
       }catch(err){
@@ -1412,7 +1804,7 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
       }
     }catch(err){
       if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
-      discoveryBody.innerHTML = '<div class="discovery-loading am">⚠️ ' + escapeHtml(err.message) + '</div>';
+      discoveryBody.innerHTML = '<div class="discovery-loading am">' + escapeHtml(friendlyErrorText(err.message)) + '</div>';
     }
   }
 
