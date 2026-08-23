@@ -483,77 +483,19 @@
         </div>
         <div class="home-grid" id="homeGrid">
           <div class="home-btn" data-topic="movies">
-            <span class="ic">
-              <svg viewBox="0 0 48 48" width="26" height="26">
-                <defs>
-                  <linearGradient id="gradMovies" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#E8895F"/>
-                    <stop offset="100%" stop-color="#C4573B"/>
-                  </linearGradient>
-                </defs>
-                <rect x="5" y="12" width="38" height="26" rx="5" fill="url(#gradMovies)"/>
-                <rect x="5" y="12" width="38" height="7" fill="#00000022"/>
-                <path d="M11 12 L16 19 L11 19 Z" fill="#FFFFFF33"/>
-                <path d="M20 12 L25 19 L20 19 Z" fill="#FFFFFF33"/>
-                <path d="M29 12 L34 19 L29 19 Z" fill="#FFFFFF33"/>
-                <path d="M38 12 L43 19 L38 19 Z" fill="#FFFFFF33"/>
-                <polygon points="20,22 20,32 30,27" fill="#FFF8EF"/>
-              </svg>
-            </span>
+            <span class="ic">🎬</span>
             <span class="lbl">Movies</span>
           </div>
           <div class="home-btn" data-topic="music">
-            <span class="ic">
-              <svg viewBox="0 0 48 48" width="26" height="26">
-                <defs>
-                  <linearGradient id="gradMusic" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#57B37E"/>
-                    <stop offset="100%" stop-color="#3E7C59"/>
-                  </linearGradient>
-                </defs>
-                <rect x="26" y="8" width="4" height="24" rx="2" fill="url(#gradMusic)"/>
-                <path d="M30 8 C36 9 40 12 41 17 L37 18 C36 14.5 33.5 12.5 30 12 Z" fill="url(#gradMusic)"/>
-                <circle cx="20" cy="34" r="7" fill="url(#gradMusic)"/>
-                <circle cx="20" cy="34" r="2.4" fill="#16213E"/>
-              </svg>
-            </span>
+            <span class="ic">🎵</span>
             <span class="lbl">Music</span>
           </div>
           <div class="home-btn" data-topic="twister">
-            <span class="ic">
-              <svg viewBox="0 0 48 48" width="26" height="26">
-                <defs>
-                  <linearGradient id="gradTwister" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#E6BA6B"/>
-                    <stop offset="100%" stop-color="#B5822F"/>
-                  </linearGradient>
-                </defs>
-                <path d="M9 14 C9 26 14 33 24 33 C34 33 39 26 39 14" fill="none" stroke="url(#gradTwister)" stroke-width="6" stroke-linecap="round"/>
-                <circle cx="24" cy="33" r="5.5" fill="url(#gradTwister)"/>
-              </svg>
-            </span>
+            <span class="ic">👅</span>
             <span class="lbl">Twister</span>
           </div>
           <div class="home-btn" data-topic="books">
-            <span class="ic">
-              <svg viewBox="0 0 48 48" width="26" height="26">
-                <defs>
-                  <linearGradient id="gradBooks1" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#F0C77F"/>
-                    <stop offset="100%" stop-color="#D4A24C"/>
-                  </linearGradient>
-                  <linearGradient id="gradBooks2" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#6C9BC4"/>
-                    <stop offset="100%" stop-color="#4A759E"/>
-                  </linearGradient>
-                </defs>
-                <rect x="7" y="16" width="30" height="6" rx="1.5" fill="url(#gradBooks2)" transform="rotate(-6 22 19)"/>
-                <rect x="9" y="21" width="30" height="15" rx="2" fill="url(#gradBooks1)"/>
-                <rect x="9" y="21" width="30" height="4" fill="#00000018"/>
-                <rect x="22" y="24" width="14" height="2" rx="1" fill="#FFFFFF55"/>
-                <rect x="22" y="29" width="10" height="2" rx="1" fill="#FFFFFF55"/>
-              </svg>
-            </span>
+            <span class="ic">📚</span>
             <span class="lbl">Books</span>
           </div>
         </div>
@@ -1207,7 +1149,7 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
 
   // Prompts for Gemini-driven (Google Search grounded) discovery topics.
   const TOPIC_PROMPTS = {
-    movies: ()=> `Find 3 real English-language YouTube videos that help an Amharic-speaking English learner at ${state.level} level practice listening and vocabulary through POPULAR AMERICAN MOVIES (mainstream Hollywood films enjoyed by adults, not children's cartoons/animated movies) — such as movie scene clips with real dialogue, "learn English through movies" clips, or short lesson videos built around a well-known American movie scene. Each video should be at least a few minutes long (NOT a 15-60 second trailer or teaser). Use Google Search restricted to site:youtube.com to find their exact YouTube watch page URLs (format: https://www.youtube.com/watch?v=VIDEO_ID). For each, name the movie/video and give one short sentence on why it helps this learner. Respond only in English, and make sure every recommendation is backed by a real youtube.com/watch link you found via search.`,
+    movies: ()=> `Find 3 real, COMPLETE, FULL-LENGTH English-language movies (around 1 to 2 hours long, NOT short clips, NOT scene compilations, NOT trailers) legally available to watch in full on YouTube — such as public-domain classic films, or full movies officially uploaded by a studio/rights-holder channel (often free with ads) — appropriate for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. Prefer well-known, popular American movies enjoyed by adults (not children's cartoons/animated movies). Use Google Search restricted to site:youtube.com with terms like "full movie" to find their exact YouTube watch page URLs (format: https://www.youtube.com/watch?v=VIDEO_ID) — each link MUST be the entire film, not an excerpt. For each, name the movie and give one short sentence on why it helps this learner. Respond only in English, and make sure every recommendation is backed by a real youtube.com/watch link you found via search that points to the full film.`,
     'music-pronounce': ()=> `Find 2-3 real English songs' official lyric videos on YouTube (videos that show the song's lyrics as on-screen text while it plays) that are appropriate for ${state.level} level and good for pronunciation practice (clear, slow-ish singing). The video MUST display lyrics as text on screen. Use Google Search restricted to site:youtube.com to find their exact YouTube watch page URLs (format: https://www.youtube.com/watch?v=VIDEO_ID). For each, give the song title, artist, and one short tip. Respond only in English, and make sure every recommendation is backed by a real youtube.com/watch link you found via search.`,
     'music-listen': ()=> `Find 2-3 real English songs' normal official music videos on YouTube (the regular music video, NOT a lyrics video) that are appropriate for ${state.level} level and good for general listening practice. Use Google Search restricted to site:youtube.com to find their exact YouTube watch page URLs (format: https://www.youtube.com/watch?v=VIDEO_ID). For each, give the song title, artist, and one short reason. Respond only in English, and make sure every recommendation is backed by a real youtube.com/watch link you found via search.`
   };
@@ -1251,7 +1193,7 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
     }
   };
   const YOUTUBE_SEED_PROMPTS = {
-    movies: ()=> `Suggest 3 popular AMERICAN movies (mainstream Hollywood films that adults enjoy — NOT children's cartoons or animated kids' movies) great for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. For each item return: title (the movie name), subtitle (release year), reason (one short sentence on why it helps this learner), and youtube_query (a precise YouTube search query to find a LONGER video (several minutes, not a short trailer/teaser) useful for language practice — such as a movie scene clip with dialogue, a "learn English with [Movie Name]" video, or a best-scenes compilation, e.g. "Movie Name movie scene clip" or "Movie Name best scenes english subtitles"). Do NOT search for trailers or teasers. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
+    movies: ()=> `Suggest 3 real movies that are legally available to watch as a COMPLETE, FULL-LENGTH film (around 1 to 2 hours, NOT a clip or scene) for free on YouTube — such as public-domain classic films, or full movies officially uploaded by a studio/rights-holder channel. Prefer well-known, popular movies enjoyable by adults (not children's cartoons/animated movies), appropriate for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. For each item return: title (the movie name), subtitle (release year), reason (one short sentence on why it helps this learner), and youtube_query (a precise YouTube search query aimed at finding the FULL MOVIE upload, e.g. "Movie Name (Year) full movie" or "Movie Name full movie English"). Do NOT search for trailers, teasers, scene clips, or "best scenes" compilations — only the complete film. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
     'music-pronounce': ()=> `Suggest 2-3 real English songs appropriate for ${state.level} level that are good for pronunciation practice (clear, slow-ish singing). For each item return: title (song title), subtitle (artist name), reason (one short tip), and youtube_query (a precise YouTube search query to find its LYRIC VIDEO — a video that shows the song's lyrics as on-screen text — e.g. "Song Title Artist lyrics"). The query must be aimed at finding a lyrics video, not a plain music video. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
     'music-listen': ()=> `Suggest 2-3 real English songs appropriate for ${state.level} level that are good for general listening practice. For each item return: title (song title), subtitle (artist name), reason (one short reason), and youtube_query (a precise YouTube search query to find its NORMAL official music video, NOT a lyrics video, e.g. "Song Title Artist official music video"). Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`
   };
@@ -1277,7 +1219,7 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
     return { id: item.id.videoId, title: item.snippet && item.snippet.title };
   }
   // Duration filter per discovery topic: movies should be longer clips, not short trailers.
-  const TOPIC_VIDEO_DURATION = { movies: 'medium' };
+  const TOPIC_VIDEO_DURATION = { movies: 'long' };
   function isYoutubeKeyError(message){
     return /API key not valid|keyInvalid|403|API_KEY_INVALID/i.test(message||'');
   }
