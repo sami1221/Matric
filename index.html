@@ -325,7 +325,7 @@
     <div class="hint am">Key ከሌለህ <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a> ላይ በነፃ ማግኘት ትችላለህ። Key ያለው በዚህ መሳሪያ ላይ ብቻ ተቀምጦ ይቆያል።</div>
 
     <button class="cta am" id="startBtn" disabled>ጀምር</button>
-    <div style="text-align:center; font-size:10.5px; opacity:0.35; margin-top:14px;">build: gemini-3.1-flash-lite + live · v4</div>
+    <div style="text-align:center; font-size:10.5px; opacity:0.35; margin-top:14px;">build: gemini-3.1-flash-lite + live · v6</div>
   </div>
 
   <!-- MAIN APP -->
@@ -800,7 +800,10 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
   }
 
   function playPcmChunk(b64, sampleRate){
-    if (!live.playCtx) live.playCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (!live.playCtx){
+      live.playCtx = new (window.AudioContext || window.webkitAudioContext)();
+      live.nextPlayTime = live.playCtx.currentTime;
+    }
     const int16 = b64ToInt16(b64);
     const float32 = new Float32Array(int16.length);
     for (let i=0;i<int16.length;i++) float32[i] = int16[i] / 32768;
@@ -839,6 +842,20 @@ If the learner seems completely lost, you may say a short phrase in Amharic to h
 Start by warmly greeting the learner in English and asking an easy question to begin.`;
   }
 
+  function failLive(text){
+    liveStatus.textContent = '⚠️ ' + text;
+    liveStatus.classList.remove('speaking');
+    liveMicBtn.classList.remove('connecting','live');
+    live.active = false;
+    if (live.connectTimeout){ clearTimeout(live.connectTimeout); live.connectTimeout=null; }
+    if (live.processor){ try{ live.processor.disconnect(); }catch(e){} live.processor=null; }
+    if (live.source){ try{ live.source.disconnect(); }catch(e){} live.source=null; }
+    if (live.silentGain){ try{ live.silentGain.disconnect(); }catch(e){} live.silentGain=null; }
+    if (live.inputCtx){ try{ live.inputCtx.close(); }catch(e){} live.inputCtx=null; }
+    if (live.stream){ live.stream.getTracks().forEach(t=>t.stop()); live.stream=null; }
+    if (live.ws){ try{ live.ws.close(); }catch(e){} live.ws=null; }
+  }
+
   async function startLive(){
     if (!state.apiKey){ liveStatus.textContent = 'መጀመሪያ API key አስገባ'; return; }
     if (!isSecureEnoughForMic()){
@@ -849,78 +866,103 @@ Start by warmly greeting the learner in English and asking an easy question to b
     liveStatus.textContent = 'እየተገናኘ...';
 
     try{
-      live.stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount:1, echoCancellation:true, noiseSuppression:true } });
-    }catch(err){
-      liveMicBtn.classList.remove('connecting');
-      liveStatus.textContent = '⚠️ የማይክ ፍቃድ ተከልክሏል';
-      return;
-    }
+      if (!live.playCtx){
+        live.playCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      try{ await live.playCtx.resume(); }catch(e){}
+      live.nextPlayTime = live.playCtx.currentTime;
 
-    const wsUrl = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=' + encodeURIComponent(state.apiKey);
-    live.ws = new WebSocket(wsUrl);
-
-    live.ws.onopen = ()=>{
-      live.ws.send(JSON.stringify({
-        setup:{
-          model: LIVE_MODEL,
-          generationConfig:{
-            responseModalities:['AUDIO'],
-            speechConfig:{ voiceConfig:{ prebuiltVoiceConfig:{ voiceName:'Puck' } } }
-          },
-          systemInstruction:{ parts:[{ text: buildLiveSystemPrompt() }] },
-          inputAudioTranscription:{},
-          outputAudioTranscription:{}
-        }
-      }));
-    };
-
-    live.ws.onmessage = (event)=>{
-      let msg;
-      try{ msg = JSON.parse(event.data); }catch(e){ return; }
-
-      if (msg.setupComplete){
-        liveMicBtn.classList.remove('connecting');
-        liveMicBtn.classList.add('live');
-        liveStatus.textContent = 'እያዳመጠ...';
-        live.active = true;
-        beginMicStreaming();
+      try{
+        live.stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount:1, echoCancellation:true, noiseSuppression:true } });
+      }catch(err){
+        failLive('የማይክ ፍቃድ ተከልክሏል');
         return;
       }
 
-      const sc = msg.serverContent;
-      if (!sc) return;
+      const wsUrl = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=' + encodeURIComponent(state.apiKey);
+      live.ws = new WebSocket(wsUrl);
 
-      if (sc.interrupted) clearPendingAudio();
+      live.connectTimeout = setTimeout(()=>{
+        if (!live.active){
+          failLive('ግንኙነት ጊዜው አለፈ (timeout) — ኔትወርክህን አረጋግጥ ወይም እንደገና ሞክር');
+        }
+      }, 10000);
 
-      if (sc.modelTurn && sc.modelTurn.parts){
-        sc.modelTurn.parts.forEach(part=>{
-          if (part.inlineData && part.inlineData.data){
-            const rate = /rate=(\d+)/.exec(part.inlineData.mimeType||'');
-            playPcmChunk(part.inlineData.data, rate ? parseInt(rate[1]) : 24000);
+      live.ws.onopen = ()=>{
+        live.ws.send(JSON.stringify({
+          setup:{
+            model: LIVE_MODEL,
+            generationConfig:{
+              responseModalities:['AUDIO'],
+              speechConfig:{ voiceConfig:{ prebuiltVoiceConfig:{ voiceName:'Puck' } } }
+            },
+            systemInstruction:{ parts:[{ text: buildLiveSystemPrompt() }] },
+            inputAudioTranscription:{},
+            outputAudioTranscription:{}
           }
-        });
-      }
+        }));
+      };
 
-      if (sc.inputTranscription && sc.inputTranscription.text){
-        if (!live.currentUserBubble) live.currentUserBubble = addLiveMsg('user', '');
-        live.currentUserBubble.textContent += sc.inputTranscription.text;
-      }
-      if (sc.outputTranscription && sc.outputTranscription.text){
-        if (!live.currentBotBubble) live.currentBotBubble = addLiveMsg('bot', '');
-        live.currentBotBubble.textContent += sc.outputTranscription.text;
-      }
-      if (sc.turnComplete){
-        live.currentUserBubble = null;
-        live.currentBotBubble = null;
-      }
-    };
+      live.ws.onmessage = (event)=>{
+        let msg;
+        try{ msg = JSON.parse(event.data); }catch(e){ return; }
 
-    live.ws.onerror = ()=>{
-      liveStatus.textContent = '⚠️ ግንኙነት ተቋርጧል';
-    };
-    live.ws.onclose = ()=>{
-      stopLive();
-    };
+        if (msg.setupComplete){
+          if (live.connectTimeout){ clearTimeout(live.connectTimeout); live.connectTimeout=null; }
+          liveMicBtn.classList.remove('connecting');
+          liveMicBtn.classList.add('live');
+          liveStatus.textContent = 'እያዳመጠ...';
+          live.active = true;
+          beginMicStreaming();
+          return;
+        }
+
+        if (msg.error){
+          failLive(msg.error.message || 'API error');
+          return;
+        }
+
+        const sc = msg.serverContent;
+        if (!sc) return;
+
+        if (sc.interrupted) clearPendingAudio();
+
+        if (sc.modelTurn && sc.modelTurn.parts){
+          sc.modelTurn.parts.forEach(part=>{
+            if (part.inlineData && part.inlineData.data){
+              const rate = /rate=(\d+)/.exec(part.inlineData.mimeType||'');
+              playPcmChunk(part.inlineData.data, rate ? parseInt(rate[1]) : 24000);
+            }
+          });
+        }
+
+        if (sc.inputTranscription && sc.inputTranscription.text){
+          if (!live.currentUserBubble) live.currentUserBubble = addLiveMsg('user', '');
+          live.currentUserBubble.textContent += sc.inputTranscription.text;
+        }
+        if (sc.outputTranscription && sc.outputTranscription.text){
+          if (!live.currentBotBubble) live.currentBotBubble = addLiveMsg('bot', '');
+          live.currentBotBubble.textContent += sc.outputTranscription.text;
+        }
+        if (sc.turnComplete){
+          live.currentUserBubble = null;
+          live.currentBotBubble = null;
+        }
+      };
+
+      live.ws.onerror = ()=>{
+        if (!live.active) failLive('የግንኙነት ስህተት (WebSocket)');
+      };
+      live.ws.onclose = (ev)=>{
+        if (!live.active){
+          failLive('ግንኙነት ተዘግቷል (code ' + ev.code + (ev.reason ? ': ' + ev.reason : '') + ')');
+        } else {
+          stopLive();
+        }
+      };
+    }catch(err){
+      failLive(err.message || 'ያልታወቀ ስህተት');
+    }
   }
 
   function beginMicStreaming(){
@@ -961,7 +1003,7 @@ Start by warmly greeting the learner in English and asking an easy question to b
 
   liveMicBtn.addEventListener('click', ()=>{
     if (live.active || live.ws){ stopLive(); }
-    else { startLive(); }
+    else { startLive().catch(err=> failLive(err.message || 'ያልታወቀ ስህተት')); }
   });
 
 })();
