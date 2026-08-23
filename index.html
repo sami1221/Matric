@@ -285,6 +285,83 @@
   nav.tabbar button.active{ opacity:1; color:var(--ochre); }
 
   ::-webkit-scrollbar{ width:0; height:0; }
+
+  /* ---------- Home ---------- */
+  #homeView .home-pad{
+    padding:24px 18px 20px; text-align:center;
+    flex:1; display:flex; flex-direction:column; min-height:100%;
+  }
+  .welcome-title{ font-size:26px; margin:0 0 6px; }
+  .brand-title{ font-size:34px; line-height:1.15; margin:0 0 28px; color:var(--ochre); }
+  .home-grid{
+    margin-top:auto;
+    display:grid; grid-template-columns:repeat(4,1fr); gap:8px; text-align:center;
+  }
+  .home-btn{
+    background:var(--ink-2); border:1px solid var(--line); border-radius:12px;
+    padding:10px 4px; cursor:pointer; display:flex; flex-direction:column; gap:4px;
+    min-height:auto; justify-content:center; align-items:center;
+    transition:transform .15s ease, border-color .15s ease;
+  }
+  .home-btn:active{ transform:scale(0.97); }
+  .home-btn .ic{ font-size:16px; }
+  .home-btn .lbl{ font-size:10.5px; font-weight:700; font-family:'Inter',sans-serif; }
+  .home-results{ margin-top:20px; text-align:left; display:none; }
+  .home-results.show{ display:block; }
+  .back-row{
+    display:flex; align-items:center; gap:8px; margin-bottom:14px; cursor:pointer;
+    font-size:13px; opacity:0.7;
+  }
+  .sub-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:4px; }
+  .sub-btn{
+    background:var(--ink-2); border:1px solid var(--line); border-radius:12px;
+    padding:14px 10px; text-align:center; cursor:pointer; font-size:13.5px; font-weight:600;
+  }
+  .sub-btn:active{ transform:scale(0.97); }
+  .discovery-loading{ text-align:center; opacity:0.5; font-size:13px; padding:20px 0; }
+  .discovery-text{ font-size:14px; line-height:1.65; opacity:0.9; white-space:pre-wrap; }
+  .discovery-links{ margin-top:14px; display:flex; flex-direction:column; gap:8px; }
+  .discovery-links a{
+    display:block; background:var(--ink-2); border:1px solid var(--line); border-radius:10px;
+    padding:10px 12px; color:var(--ochre); text-decoration:none; font-size:13px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+
+  /* ---------- Floating live button ---------- */
+  .floating-live-btn{
+    position:fixed; left:calc(100% - 76px); top:calc(100% - 220px);
+    width:58px; height:58px; border-radius:50%; border:none; background:var(--coral);
+    color:var(--parchment); font-size:24px; cursor:grab; z-index:40;
+    box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center;
+    touch-action:none; user-select:none;
+  }
+  .floating-live-btn.dragging{ cursor:grabbing; opacity:0.85; transition:none; }
+  .floating-live-btn.active{ background:var(--ochre); color:var(--ink); }
+
+  /* ---------- Settings modal ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(10,14,32,0.72); z-index:60;
+    display:none; align-items:flex-end; justify-content:center;
+  }
+  .modal-overlay.show{ display:flex; }
+  .modal-panel{
+    width:100%; max-width:480px; background:var(--ink); border-top-left-radius:22px; border-top-right-radius:22px;
+    padding:22px 20px calc(env(safe-area-inset-bottom,0px) + 22px); box-shadow:var(--shadow);
+  }
+  .modal-title{ font-size:17px; margin-bottom:16px; }
+  .modal-close{
+    margin-top:20px; width:100%; background:var(--ink-2); color:var(--parchment); border:1px solid var(--line);
+    border-radius:12px; padding:13px; font-size:14px; font-weight:600; cursor:pointer;
+  }
+
+  /* ---------- Live header/mute ---------- */
+  .live-header{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px 0; }
+  .live-back{ background:none; border:none; color:var(--parchment); font-size:20px; cursor:pointer; opacity:0.7; }
+  .mute-btn{
+    background:var(--ink-2); border:1px solid var(--line); color:var(--parchment);
+    width:44px; height:44px; border-radius:50%; font-size:19px; cursor:pointer;
+  }
+  .live-controls-row{ display:flex; align-items:center; gap:16px; }
 </style>
 </head>
 <body>
@@ -296,27 +373,24 @@
       <div class="stamp">EJ</div>
       <div>
         <div class="title display">English Journal</div>
-        <div class="sub am">በGemini የተደገፈ የእንግሊዝኛ መምህርህ</div>
+        <div class="sub am">በEVA የታገዘ የእንግሊዝኛ መምህርህ</div>
       </div>
     </div>
-    <p class="lead am">ውይይት አድርግ፣ ቃላት ተማር፣ ፅሁፍህን አርም — ሁሉም በአንድ mini app ውስጥ፣ በደረጃህ ልክ።</p>
+    <p class="lead am">እንግሊዝኛ ቋንቋን በቀላሉ ተማር — ቃላት ክምችት (vocabulary)፣ የአረፍተ ነገር አሰራር (sentence structure)፣ ትክክለኛ አጠራር (pronunciation)፣ እና የውይይት ክህሎትህን በደረጃህ ልክ አሻሽል።</p>
 
     <div class="field-label am">የደረጃህ ምረጥ</div>
     <div class="level-grid" id="levelGrid">
       <div class="level-card" data-level="beginner">
         <span class="em">🌱</span>
         <div class="lbl">Beginner</div>
-        <div class="lbl-am am">ጀማሪ</div>
       </div>
       <div class="level-card" data-level="intermediate">
         <span class="em">🌿</span>
         <div class="lbl">Intermediate</div>
-        <div class="lbl-am am">መካከለኛ</div>
       </div>
       <div class="level-card" data-level="advanced">
         <span class="em">🌳</span>
         <div class="lbl">Advanced</div>
-        <div class="lbl-am am">ከፍተኛ</div>
       </div>
     </div>
 
@@ -341,8 +415,39 @@
       <button class="gear" id="settingsBtn">⚙</button>
     </header>
 
+    <!-- HOME -->
+    <main class="view active" id="homeView">
+      <div class="home-pad">
+        <div class="welcome-title display">Welcome to</div>
+        <div class="brand-title display">EVA<br>English Language Learning</div>
+        <div class="home-grid" id="homeGrid">
+          <div class="home-btn" data-topic="movies">
+            <span class="ic">🎬</span>
+            <span class="lbl">Movies</span>
+          </div>
+          <div class="home-btn" data-topic="music">
+            <span class="ic">🎵</span>
+            <span class="lbl">Music</span>
+          </div>
+          <div class="home-btn" data-topic="twister">
+            <span class="ic">👅</span>
+            <span class="lbl">Twister</span>
+          </div>
+          <div class="home-btn" data-topic="books">
+            <span class="ic">📚</span>
+            <span class="lbl">Books</span>
+          </div>
+        </div>
+
+        <div class="home-results" id="homeResults">
+          <div class="back-row" id="homeBack">← Back</div>
+          <div id="homeResultsBody"></div>
+        </div>
+      </div>
+    </main>
+
     <!-- CHAT -->
-    <main class="view active" id="chatView">
+    <main class="view" id="chatView">
       <div id="chatMessages"></div>
       <div class="composer">
         <textarea id="chatInput" rows="1" placeholder="በእንግሊዝኛ ፃፍ ወይም ጥያቄ ጠይቅ..."></textarea>
@@ -355,10 +460,9 @@
       <div class="pad">
         <div class="topic-row">
           <input type="text" id="topicInput" placeholder="ርዕስ (ለምሳሌ: food, travel, work)">
-          <button class="btn-solid am" id="genCardsBtn">አዲስ ካርዶች</button>
+          <button class="btn-solid am" id="genCardsBtn">ቃላት እና አጠቃቀም</button>
         </div>
         <div class="card-stack" id="cardStack"></div>
-        <div class="empty-note am" id="cardsEmpty">ርዕስ ፃፍ (ወይም ባዶውን ተወው) እና "አዲስ ካርዶች" ተጫን — Gemini 5 ቃላት ከትርጉምና ምሳሌ ጋር ይፈጥርልሃል።</div>
       </div>
     </main>
 
@@ -366,6 +470,7 @@
     <main class="view" id="fixView">
       <div class="pad">
         <div class="field-label am">የእንግሊዝኛ ፅሁፍህን እዚህ ለጥፍ</div>
+        <p class="lead am" style="margin:0 0 4px;">አንድ sentence ወይም paragraph በእንግሊዝኛ ላክ — ስህተቶች (grammar, spelling, word choice) በራስ-ሰር ይታረሙልሃል፣ እና ለምን እንደተስተካከለ ማብራሪያ በአማርኛ ታገኛለህ።</p>
         <textarea class="fix-input" id="fixInput" placeholder="Type or paste an English sentence or paragraph..."></textarea>
         <button class="btn-solid am" id="fixBtn" style="align-self:flex-start;">አርም</button>
         <div class="result-card" id="fixResult">
@@ -383,28 +488,59 @@
 
     <!-- LIVE VOICE -->
     <main class="view" id="liveView">
+      <div class="live-header">
+        <button class="live-back" id="liveBackBtn">←</button>
+        <div class="live-status am" id="liveStatus" style="margin:0;">ለመጀመር ንካ</div>
+        <span style="width:20px;"></span>
+      </div>
       <div id="liveMessages" style="flex:1; padding:16px 16px 8px; display:flex; flex-direction:column; gap:10px; overflow-y:auto;"></div>
       <div style="padding:14px 16px calc(env(safe-area-inset-bottom,0px) + 16px); display:flex; flex-direction:column; align-items:center; gap:12px; border-top:1px solid var(--line);">
-        <div class="live-note am" id="liveNote">ማይክ ለመስራት ገፁ HTTPS ላይ (ድረ-ገጽ ላይ ስትሰቅለው) መከፈት አለበት — ከ file:// ወይም Downloads አይሰራም።</div>
-        <button class="live-mic-btn" id="liveMicBtn">🎙️</button>
-        <div class="live-status am" id="liveStatus">ለመጀመር ንካ</div>
+        <div class="live-controls-row">
+          <button class="mute-btn" id="muteBtn">🔊</button>
+          <button class="live-mic-btn" id="liveMicBtn">🎙️</button>
+          <span style="width:44px;"></span>
+        </div>
       </div>
     </main>
 
     <nav class="tabbar">
-      <button class="tab-btn active am" data-view="chatView">
-        <span class="ic">💬</span> ውይይት
+      <button class="tab-btn active" data-view="homeView">
+        <span class="ic">🏠</span> Home
       </button>
-      <button class="tab-btn am" data-view="cardsView">
-        <span class="ic">📇</span> ቃላት
+      <button class="tab-btn" data-view="chatView">
+        <span class="ic">💬</span> Chat
       </button>
-      <button class="tab-btn am" data-view="fixView">
-        <span class="ic">✏️</span> አርም
+      <button class="tab-btn" data-view="cardsView">
+        <span class="ic">📇</span> Vocabulary
       </button>
-      <button class="tab-btn am" data-view="liveView">
-        <span class="ic">🎙️</span> ቀጥታ
+      <button class="tab-btn" data-view="fixView">
+        <span class="ic">✏️</span> Fix
       </button>
     </nav>
+
+    <button class="floating-live-btn" id="floatingLiveBtn">🎙️</button>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-panel">
+      <div class="modal-title display">Level</div>
+      <div class="level-grid" id="settingsLevelGrid">
+        <div class="level-card" data-level="beginner">
+          <span class="em">🌱</span>
+          <div class="lbl">Beginner</div>
+        </div>
+        <div class="level-card" data-level="intermediate">
+          <span class="em">🌿</span>
+          <div class="lbl">Intermediate</div>
+        </div>
+        <div class="level-card" data-level="advanced">
+          <span class="em">🌳</span>
+          <div class="lbl">Advanced</div>
+        </div>
+      </div>
+      <button class="modal-close am" id="settingsCloseBtn">ዝጋ</button>
+    </div>
   </div>
 </div>
 
@@ -468,18 +604,41 @@
   });
 
   // try to restore saved key/level (Telegram CloudStorage only — no browser storage used)
-  cloudGet('gemini_key', (key)=>{
-    if (key){
-      apiKeyInput.value = key;
-      refreshStartBtn();
+  // If a valid key was saved before, skip onboarding entirely and go straight to Home.
+  // Wrapped in a function and called at the very end of the script (see bottom), so that
+  // every other const/function this touches (chatMessages, addMsg, etc.) is already defined
+  // even if CloudStorage callbacks fire synchronously.
+  let restoredLevel = false;
+  let restoredKey = false;
+  let savedKey = '';
+
+  function tryAutoLaunch(){
+    if (!restoredLevel || !restoredKey) return;
+    if (savedKey && savedKey.trim().length >= 10){
+      state.apiKey = savedKey.trim();
+      launchApp();
     }
-  });
-  cloudGet('level', (lvl)=>{
-    if (lvl && LEVEL_META[lvl]){
-      state.level = lvl;
-      levelGrid.querySelectorAll('.level-card').forEach(c=>c.classList.toggle('selected', c.dataset.level===lvl));
-    }
-  });
+  }
+
+  function initRestore(){
+    cloudGet('level', (lvl)=>{
+      if (lvl && LEVEL_META[lvl]){
+        state.level = lvl;
+        levelGrid.querySelectorAll('.level-card').forEach(c=>c.classList.toggle('selected', c.dataset.level===lvl));
+      }
+      restoredLevel = true;
+      tryAutoLaunch();
+    });
+    cloudGet('gemini_key', (key)=>{
+      savedKey = key || '';
+      restoredKey = true;
+      if (savedKey){
+        apiKeyInput.value = savedKey;
+        refreshStartBtn();
+      }
+      tryAutoLaunch();
+    });
+  }
 
   function launchApp(){
     document.getElementById('onboarding').style.display = 'none';
@@ -500,19 +659,120 @@
     return g[level];
   }
 
-  document.getElementById('settingsBtn').addEventListener('click', ()=>{
+  // If the API key turns out to be invalid, clear it and send the user back to onboarding.
+  function invalidateKeyAndReopen(msg){
+    state.apiKey = '';
+    savedKey = '';
+    cloudSet('gemini_key', '');
     document.getElementById('main').style.display = 'none';
     document.getElementById('onboarding').style.display = 'flex';
+    apiKeyInput.value = '';
+    refreshStartBtn();
+    const hint = document.querySelector('#onboarding .hint');
+    if (hint) hint.innerHTML = '⚠️ Key ልክ ያልሆነ ይመስላል፣ እባክህ ትክክለኛ Gemini API Key እንደገና አስገባ። <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a>';
+  }
+  function isKeyError(message){
+    return /API_KEY_INVALID|API key not valid|400|401|403/i.test(message||'');
+  }
+
+  // ---------- Settings modal (level only) ----------
+  const settingsModal = document.getElementById('settingsModal');
+  const settingsLevelGrid = document.getElementById('settingsLevelGrid');
+  document.getElementById('settingsBtn').addEventListener('click', ()=>{
+    settingsLevelGrid.querySelectorAll('.level-card').forEach(c=>c.classList.toggle('selected', c.dataset.level===state.level));
+    settingsModal.classList.add('show');
+  });
+  document.getElementById('settingsCloseBtn').addEventListener('click', ()=>{
+    settingsModal.classList.remove('show');
+  });
+  settingsModal.addEventListener('click', (e)=>{
+    if (e.target === settingsModal) settingsModal.classList.remove('show');
+  });
+  settingsLevelGrid.querySelectorAll('.level-card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      settingsLevelGrid.querySelectorAll('.level-card').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');
+      state.level = card.dataset.level;
+      cloudSet('level', state.level);
+      document.getElementById('topStamp').textContent = LEVEL_META[state.level].emoji;
+      document.getElementById('topLevelName').textContent = LEVEL_META[state.level].label;
+    });
   });
 
   // ---------- Tabs ----------
+  let lastTabView = 'homeView';
   document.querySelectorAll('.tab-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
       document.querySelectorAll('main.view').forEach(v=>v.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById(btn.dataset.view).classList.add('active');
+      lastTabView = btn.dataset.view;
+      document.getElementById('floatingLiveBtn').classList.remove('active');
     });
+  });
+
+  // ---------- Floating live button (draggable) ----------
+  const floatingLiveBtn = document.getElementById('floatingLiveBtn');
+
+  function openLiveView(){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('main.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('liveView').classList.add('active');
+    floatingLiveBtn.classList.add('active');
+  }
+
+  (function makeDraggable(el){
+    let dragging = false;
+    let moved = false;
+    let startX = 0, startY = 0, startLeft = 0, startTop = 0;
+
+    function clamp(val, min, max){ return Math.max(min, Math.min(max, val)); }
+
+    function onPointerDown(e){
+      dragging = true;
+      moved = false;
+      const rect = el.getBoundingClientRect();
+      startLeft = rect.left;
+      startTop = rect.top;
+      startX = e.clientX;
+      startY = e.clientY;
+      el.classList.add('dragging');
+      el.setPointerCapture(e.pointerId);
+    }
+    function onPointerMove(e){
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) moved = true;
+      let newLeft = startLeft + dx;
+      let newTop = startTop + dy;
+      newLeft = clamp(newLeft, 4, window.innerWidth - el.offsetWidth - 4);
+      newTop = clamp(newTop, 4, window.innerHeight - el.offsetHeight - 4);
+      el.style.left = newLeft + 'px';
+      el.style.top = newTop + 'px';
+    }
+    function onPointerUp(e){
+      if (!dragging) return;
+      dragging = false;
+      el.classList.remove('dragging');
+      try{ el.releasePointerCapture(e.pointerId); }catch(err){}
+      if (!moved){
+        openLiveView();
+      }
+    }
+
+    el.addEventListener('pointerdown', onPointerDown);
+    el.addEventListener('pointermove', onPointerMove);
+    el.addEventListener('pointerup', onPointerUp);
+    el.addEventListener('pointercancel', onPointerUp);
+  })(floatingLiveBtn);
+
+  document.getElementById('liveBackBtn').addEventListener('click', ()=>{
+    document.querySelectorAll('main.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById(lastTabView).classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===lastTabView));
+    floatingLiveBtn.classList.remove('active');
   });
 
   // ---------- Gemini call helper ----------
@@ -525,12 +785,44 @@
     });
     if (!res.ok){
       const errText = await res.text();
-      throw new Error('API error ' + res.status + ': ' + errText);
+      const err = new Error('API error ' + res.status + ': ' + errText);
+      err.status = res.status;
+      throw err;
     }
     const data = await res.json();
     const cand = data.candidates && data.candidates[0];
     if (!cand || !cand.content || !cand.content.parts) throw new Error('Empty response');
     return cand.content.parts.map(p=>p.text||'').join('');
+  }
+
+  // Full response variant that also returns grounding (Google Search) source links.
+  async function callGeminiGrounded(payload){
+    const url = API_BASE + MODEL + ':generateContent?key=' + encodeURIComponent(state.apiKey);
+    const res = await fetch(url, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok){
+      const errText = await res.text();
+      const err = new Error('API error ' + res.status + ': ' + errText);
+      err.status = res.status;
+      throw err;
+    }
+    const data = await res.json();
+    const cand = data.candidates && data.candidates[0];
+    if (!cand || !cand.content || !cand.content.parts) throw new Error('Empty response');
+    const text = cand.content.parts.map(p=>p.text||'').join('');
+    const links = [];
+    const chunks = cand.groundingMetadata && cand.groundingMetadata.groundingChunks;
+    if (chunks){
+      chunks.forEach(c=>{
+        if (c.web && c.web.uri){
+          links.push({ title: c.web.title || c.web.uri, uri: c.web.uri });
+        }
+      });
+    }
+    return { text, links };
   }
 
   // ---------- CHAT ----------
@@ -588,6 +880,7 @@ Rules:
       state.chatHistory.push({role:'model', text: replyText.trim()});
     }catch(err){
       typingEl.remove();
+      if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
       addMsg('system', '⚠️ ' + err.message);
     }finally{
       chatSend.disabled = false;
@@ -606,7 +899,6 @@ Rules:
   const topicInput = document.getElementById('topicInput');
   const genCardsBtn = document.getElementById('genCardsBtn');
   const cardStack = document.getElementById('cardStack');
-  const cardsEmpty = document.getElementById('cardsEmpty');
 
   const cardSchema = {
     type:'ARRAY',
@@ -627,8 +919,6 @@ Rules:
     const topic = topicInput.value.trim() || 'everyday life';
     genCardsBtn.disabled = true;
     genCardsBtn.textContent = '...';
-    cardsEmpty.textContent = 'እየተጠበቀ ነው...';
-    cardsEmpty.style.display = 'block';
 
     const sys = `You create English vocabulary flashcards for a ${state.level} Amharic-speaking learner.
 Generate exactly 5 useful English words or short phrases related to the topic "${topic}", appropriate for ${state.level} level.
@@ -648,18 +938,17 @@ Return ONLY the JSON array matching the schema.`;
       const cards = JSON.parse(raw);
       renderCards(cards);
     }catch(err){
-      cardsEmpty.textContent = '⚠️ ' + err.message;
-      cardsEmpty.style.display = 'block';
+      if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
+      cardStack.innerHTML = '<div class="empty-note am">⚠️ ' + escapeHtml(err.message) + '</div>';
     }finally{
       genCardsBtn.disabled = false;
-      genCardsBtn.textContent = 'አዲስ ካርዶች';
+      genCardsBtn.textContent = 'ቃላት እና አጠቃቀም';
     }
   }
 
   function renderCards(cards){
     cardStack.innerHTML = '';
-    if (!cards || !cards.length){ cardsEmpty.style.display='block'; return; }
-    cardsEmpty.style.display = 'none';
+    if (!cards || !cards.length){ return; }
     cards.forEach(c=>{
       const el = document.createElement('div');
       el.className = 'flash';
@@ -723,6 +1012,7 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
       fixExplain.textContent = parsed.explanation;
       fixResult.classList.add('show');
     }catch(err){
+      if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
       fixCorrected.textContent = '';
       fixExplain.textContent = '⚠️ ' + err.message;
       fixResult.classList.add('show');
@@ -733,12 +1023,110 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
   }
   fixBtn.addEventListener('click', runFix);
 
+  // ---------- HOME DISCOVERY (Google Search grounded) ----------
+  const homeGrid = document.getElementById('homeGrid');
+  const homeResults = document.getElementById('homeResults');
+  const homeResultsBody = document.getElementById('homeResultsBody');
+  const homeBack = document.getElementById('homeBack');
+
+  const TOPIC_PROMPTS = {
+    movies: ()=> `Suggest 3 real English-language movies (or short films/trailers) that are great for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. For each, give the title and one short sentence on why it helps. Use Google Search to ground your answer in real, currently findable titles.`,
+    twister: ()=> `Give 3 fun English tongue twisters suitable for an Amharic speaker learning English at ${state.level} level, useful for pronunciation practice. Use Google Search to find real, well-known examples.`,
+    'music-pronounce': ()=> `Suggest 2-3 real English songs appropriate for ${state.level} level that are good for pronunciation practice (clear, slow-ish singing). Give title, artist, and one short tip. Use Google Search to ground the suggestions in real songs.`,
+    'music-listen': ()=> `Suggest 2-3 real English songs appropriate for ${state.level} level that are good for general listening practice. Give title, artist, and one short reason. Use Google Search to ground the suggestions in real songs.`,
+    grammar: ()=> `Suggest 2-3 good English grammar learning resources or videos suitable for an Amharic speaker at ${state.level} level. Use Google Search to find real, currently available resources.`,
+    spoken: ()=> `Suggest 2-3 good spoken-English practice resources or videos suitable for an Amharic speaker at ${state.level} level. Use Google Search to find real, currently available resources.`,
+    vocabulary: ()=> `Suggest 2-3 good English vocabulary-building resources or videos suitable for an Amharic speaker at ${state.level} level. Use Google Search to find real, currently available resources.`
+  };
+
+  const TOPIC_GROUPS = {
+    music: [
+      { key:'music-pronounce', label:'Pronounce' },
+      { key:'music-listen', label:'ማዳመጥ' }
+    ],
+    books: [
+      { key:'grammar', label:'Grammar' },
+      { key:'spoken', label:'Spoken' },
+      { key:'vocabulary', label:'Vocabulary' }
+    ]
+  };
+
+  function showHomeResults(){ homeResults.classList.add('show'); }
+  function hideHomeResults(){ homeResults.classList.remove('show'); homeResultsBody.innerHTML=''; }
+
+  homeBack.addEventListener('click', hideHomeResults);
+
+  homeGrid.querySelectorAll('.home-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const topic = btn.dataset.topic;
+      if (TOPIC_GROUPS[topic]){
+        renderSubGroup(topic);
+      } else {
+        runDiscovery(topic);
+      }
+    });
+  });
+
+  function renderSubGroup(groupKey){
+    showHomeResults();
+    const items = TOPIC_GROUPS[groupKey];
+    const wrap = document.createElement('div');
+    wrap.className = 'sub-grid';
+    items.forEach(it=>{
+      const b = document.createElement('div');
+      b.className = 'sub-btn';
+      b.textContent = it.label;
+      b.addEventListener('click', ()=> runDiscovery(it.key));
+      wrap.appendChild(b);
+    });
+    homeResultsBody.innerHTML = '';
+    homeResultsBody.appendChild(wrap);
+  }
+
+  async function runDiscovery(topicKey){
+    if (!state.apiKey) return;
+    showHomeResults();
+    homeResultsBody.innerHTML = '<div class="discovery-loading am">እየፈለገ ነው...</div>';
+    const promptFn = TOPIC_PROMPTS[topicKey];
+    if (!promptFn) return;
+
+    try{
+      const { text, links } = await callGeminiGrounded({
+        contents:[{ role:'user', parts:[{ text: promptFn() }] }],
+        tools:[{ google_search:{} }],
+        generationConfig:{ temperature:0.7, maxOutputTokens:500 }
+      });
+      const textDiv = document.createElement('div');
+      textDiv.className = 'discovery-text';
+      textDiv.textContent = text.trim();
+      homeResultsBody.innerHTML = '';
+      homeResultsBody.appendChild(textDiv);
+
+      if (links && links.length){
+        const linksWrap = document.createElement('div');
+        linksWrap.className = 'discovery-links';
+        links.slice(0,6).forEach(l=>{
+          const a = document.createElement('a');
+          a.href = l.uri;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.textContent = '🔗 ' + l.title;
+          linksWrap.appendChild(a);
+        });
+        homeResultsBody.appendChild(linksWrap);
+      }
+    }catch(err){
+      if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
+      homeResultsBody.innerHTML = '<div class="discovery-loading am">⚠️ ' + escapeHtml(err.message) + '</div>';
+    }
+  }
+
   // ---------- LIVE VOICE ----------
   const LIVE_MODEL = 'models/gemini-3.1-flash-live-preview';
   const liveMessages = document.getElementById('liveMessages');
   const liveMicBtn = document.getElementById('liveMicBtn');
   const liveStatus = document.getElementById('liveStatus');
-  const liveNote = document.getElementById('liveNote');
+  const muteBtn = document.getElementById('muteBtn');
 
   const live = {
     ws: null,
@@ -752,8 +1140,15 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
     nextPlayTime: 0,
     pendingSources: [],
     currentUserBubble: null,
-    currentBotBubble: null
+    currentBotBubble: null,
+    outputMuted: false
   };
+
+  muteBtn.addEventListener('click', ()=>{
+    live.outputMuted = !live.outputMuted;
+    muteBtn.textContent = live.outputMuted ? '🔈' : '🔊';
+    if (live.outputMuted) clearPendingAudio();
+  });
 
   function isSecureEnoughForMic(){
     return location.protocol === 'https:' || location.hostname === 'localhost';
@@ -800,6 +1195,7 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
   }
 
   function playPcmChunk(b64, sampleRate){
+    if (live.outputMuted) return;
     if (!live.playCtx){
       live.playCtx = new (window.AudioContext || window.webkitAudioContext)();
       live.nextPlayTime = live.playCtx.currentTime;
@@ -844,6 +1240,11 @@ Start by warmly greeting the learner in English and asking an easy question to b
 
   function failLive(text){
     live.failed = true;
+    if (isKeyError(text)){
+      stopLive();
+      invalidateKeyAndReopen();
+      return;
+    }
     liveStatus.textContent = '⚠️ ' + text;
     liveStatus.classList.remove('speaking');
     liveMicBtn.classList.remove('connecting','live');
@@ -861,7 +1262,7 @@ Start by warmly greeting the learner in English and asking an easy question to b
   async function startLive(){
     if (!state.apiKey){ liveStatus.textContent = 'መጀመሪያ API key አስገባ'; return; }
     if (!isSecureEnoughForMic()){
-      liveNote.textContent = '⚠️ ማይክ ለመስራት ገፁ HTTPS ላይ መከፈት አለበት። ፋይሉን ወደ hosting (GitHub Pages) ስቀለው።';
+      liveStatus.textContent = '⚠️ HTTPS ላይ መከፈት አለበት';
       return;
     }
     liveMicBtn.classList.add('connecting');
@@ -942,9 +1343,6 @@ Start by warmly greeting the learner in English and asking an easy question to b
 
         const sc = msg.serverContent;
         if (!sc){
-          // Unexpected message shape — surface it for debugging instead of silently ignoring.
-          const keys = Object.keys(msg).join(',');
-          if (keys) liveStatus.textContent = 'debug: ' + keys;
           return;
         }
 
@@ -1028,6 +1426,10 @@ Start by warmly greeting the learner in English and asking an easy question to b
     if (live.active || live.ws){ stopLive(); }
     else { startLive().catch(err=> failLive(err.message || 'ያልታወቀ ስህተት')); }
   });
+
+  // Now that every const/function in this scope is defined, it's safe to run the
+  // restore logic (its CloudStorage callbacks may fire synchronously).
+  initRestore();
 
 })();
 </script>
