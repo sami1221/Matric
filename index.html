@@ -288,14 +288,27 @@
 
   /* ---------- Home ---------- */
   #homeView .home-pad{
-    padding:24px 18px 20px; text-align:center;
+    padding:20px 18px 16px; text-align:center;
     flex:1; display:flex; flex-direction:column; min-height:100%;
   }
-  .welcome-title{ font-size:26px; margin:0 0 6px; }
-  .brand-title{ font-size:34px; line-height:1.15; margin:0 0 28px; color:var(--ochre); }
+  .hero-wrap{
+    flex:1;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .welcome-title{
+    font-family:'Fraunces','Noto Sans Ethiopic',serif;
+    font-style:italic; font-weight:500;
+    font-size:8.5vw; opacity:0.65; margin:0 0 2px; letter-spacing:0.01em;
+  }
+  .brand-title{
+    font-family:'Fraunces','Noto Sans Ethiopic',serif;
+    font-weight:700; font-size:15vw; line-height:1.06; margin:0;
+    color:var(--ochre); text-shadow:0 6px 30px rgba(212,162,76,0.22);
+  }
   .home-grid{
-    margin-top:auto;
+    margin-top:16px;
     display:grid; grid-template-columns:repeat(4,1fr); gap:8px; text-align:center;
+    flex-shrink:0;
   }
   .home-btn{
     background:var(--ink-2); border:1px solid var(--line); border-radius:12px;
@@ -306,12 +319,6 @@
   .home-btn:active{ transform:scale(0.97); }
   .home-btn .ic{ font-size:16px; }
   .home-btn .lbl{ font-size:10.5px; font-weight:700; font-family:'Inter',sans-serif; }
-  .home-results{ margin-top:20px; text-align:left; display:none; }
-  .home-results.show{ display:block; }
-  .back-row{
-    display:flex; align-items:center; gap:8px; margin-bottom:14px; cursor:pointer;
-    font-size:13px; opacity:0.7;
-  }
   .sub-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:4px; }
   .sub-btn{
     background:var(--ink-2); border:1px solid var(--line); border-radius:12px;
@@ -326,15 +333,22 @@
     padding:10px 12px; color:var(--ochre); text-decoration:none; font-size:13px;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
+  .twister-list{ display:flex; flex-direction:column; gap:10px; }
+  .twister-item{
+    background:var(--ink-2); border:1px solid var(--line); border-radius:12px;
+    padding:12px 14px; font-size:14.5px; line-height:1.5; font-style:italic;
+  }
 
   /* ---------- Floating live button ---------- */
   .floating-live-btn{
     position:fixed; left:calc(100% - 76px); top:calc(100% - 220px);
-    width:58px; height:58px; border-radius:50%; border:none; background:var(--coral);
-    color:var(--parchment); font-size:24px; cursor:grab; z-index:40;
-    box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center;
-    touch-action:none; user-select:none;
+    width:60px; height:60px; border-radius:50%; border:none; background:var(--coral);
+    color:var(--parchment); cursor:grab; z-index:40;
+    box-shadow:var(--shadow); display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:2px; touch-action:none; user-select:none;
   }
+  .floating-live-btn .ic{ font-size:19px; line-height:1; }
+  .floating-live-btn .lbl{ font-size:9px; font-weight:700; font-family:'Inter',sans-serif; line-height:1; letter-spacing:0.02em; }
   .floating-live-btn.dragging{ cursor:grabbing; opacity:0.85; transition:none; }
   .floating-live-btn.active{ background:var(--ochre); color:var(--ink); }
 
@@ -399,7 +413,7 @@
     <div class="hint am">Key ከሌለህ <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a> ላይ በነፃ ማግኘት ትችላለህ። Key ያለው በዚህ መሳሪያ ላይ ብቻ ተቀምጦ ይቆያል።</div>
 
     <button class="cta am" id="startBtn" disabled>ጀምር</button>
-    <div style="text-align:center; font-size:10.5px; opacity:0.35; margin-top:14px;">build: live blob-fix · v12</div>
+    <div style="text-align:center; font-size:10.5px; opacity:0.35; margin-top:14px;">build: fixes-batch-1 · v13</div>
   </div>
 
   <!-- MAIN APP -->
@@ -418,8 +432,10 @@
     <!-- HOME -->
     <main class="view active" id="homeView">
       <div class="home-pad">
-        <div class="welcome-title display">Welcome to</div>
-        <div class="brand-title display">EVA<br>English Language Learning</div>
+        <div class="hero-wrap">
+          <div class="welcome-title display">Welcome to</div>
+          <div class="brand-title display">EVA<br>English Language Learning</div>
+        </div>
         <div class="home-grid" id="homeGrid">
           <div class="home-btn" data-topic="movies">
             <span class="ic">🎬</span>
@@ -437,11 +453,6 @@
             <span class="ic">📚</span>
             <span class="lbl">Books</span>
           </div>
-        </div>
-
-        <div class="home-results" id="homeResults">
-          <div class="back-row" id="homeBack">← Back</div>
-          <div id="homeResultsBody"></div>
         </div>
       </div>
     </main>
@@ -503,6 +514,16 @@
       </div>
     </main>
 
+    <!-- DISCOVERY (Movies / Music / Twister / Books) -->
+    <main class="view" id="discoveryView">
+      <div class="live-header">
+        <button class="live-back" id="discoveryBackBtn">←</button>
+        <div class="lvl-name" id="discoveryTitle" style="margin:0;">Discovery</div>
+        <span style="width:20px;"></span>
+      </div>
+      <div class="pad" id="discoveryBody" style="flex:1; overflow-y:auto;"></div>
+    </main>
+
     <nav class="tabbar">
       <button class="tab-btn active" data-view="homeView">
         <span class="ic">🏠</span> Home
@@ -518,7 +539,10 @@
       </button>
     </nav>
 
-    <button class="floating-live-btn" id="floatingLiveBtn">🎙️</button>
+    <button class="floating-live-btn" id="floatingLiveBtn">
+      <span class="ic">🎙️</span>
+      <span class="lbl" id="floatingLiveLabel">Live</span>
+    </button>
   </div>
 
   <!-- SETTINGS MODAL -->
@@ -562,6 +586,7 @@
   };
 
   const MODEL = 'gemini-3.1-flash-lite';
+  const GROUNDED_MODEL = 'gemini-3.1-flash'; // full model for Google Search-grounded discovery calls (lite tier doesn't reliably return search results)
   const API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/';
 
   // ---------- Telegram CloudStorage helpers (used only if available; falls back to memory) ----------
@@ -605,9 +630,6 @@
 
   // try to restore saved key/level (Telegram CloudStorage only — no browser storage used)
   // If a valid key was saved before, skip onboarding entirely and go straight to Home.
-  // Wrapped in a function and called at the very end of the script (see bottom), so that
-  // every other const/function this touches (chatMessages, addMsg, etc.) is already defined
-  // even if CloudStorage callbacks fire synchronously.
   let restoredLevel = false;
   let restoredKey = false;
   let savedKey = '';
@@ -714,6 +736,7 @@
 
   // ---------- Floating live button (draggable) ----------
   const floatingLiveBtn = document.getElementById('floatingLiveBtn');
+  const floatingLiveLabel = document.getElementById('floatingLiveLabel');
 
   function openLiveView(){
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -796,8 +819,9 @@
   }
 
   // Full response variant that also returns grounding (Google Search) source links.
+  // Uses GROUNDED_MODEL (full flash, not lite) — lite-tier models often ignore/skip the search tool.
   async function callGeminiGrounded(payload){
-    const url = API_BASE + MODEL + ':generateContent?key=' + encodeURIComponent(state.apiKey);
+    const url = API_BASE + GROUNDED_MODEL + ':generateContent?key=' + encodeURIComponent(state.apiKey);
     const res = await fetch(url, {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
@@ -858,11 +882,11 @@
 
     const sys = `You are a friendly, patient English tutor for a native Amharic speaker at ${state.level.toUpperCase()} level (${LEVEL_META[state.level].desc}).
 Rules:
-- Reply mainly in English, matching the learner's level.
-- If the learner makes a grammar or word-choice mistake, gently point it out in one short line (prefix with "📝") before continuing the conversation naturally.
+- Reply only in English, matching the learner's level. Never write in Amharic.
+- If the learner makes a grammar or word-choice mistake, gently point it out in one short line (prefix with "📝") in English before continuing the conversation naturally.
 - Keep replies conversational and short (2-5 sentences).
 - Occasionally ask a follow-up question to keep the conversation going.
-- If the learner writes in Amharic, respond warmly, encourage them to try English, and give them the English phrase to use.`;
+- If the learner writes in Amharic, reply in English, encourage them to try English, and give them the English phrase to use.`;
 
     const contents = state.chatHistory.slice(-12).map(m=>({
       role: m.role === 'user' ? 'user' : 'model',
@@ -989,8 +1013,8 @@ Return ONLY the JSON array matching the schema.`;
 
     const sys = `You are an English writing coach for an Amharic-speaking learner at ${state.level} level.
 Given the learner's English text:
-1. Correct grammar, spelling, and word choice while keeping their original meaning and voice.
-2. Then explain, in a mix of simple English and Amharic, the 2-4 most important corrections and why they matter, so an Amharic speaker learning English understands the rule.
+1. Correct grammar, spelling, and word choice while keeping their original meaning and voice. This corrected text must be in English only.
+2. Then explain, in a mix of simple English and Amharic, the 2-4 most important corrections and why they matter, so an Amharic speaker learning English understands the rule. Amharic is only allowed in this explanation.
 Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markdown formatting.`;
 
     try{
@@ -1023,52 +1047,107 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
   }
   fixBtn.addEventListener('click', runFix);
 
-  // ---------- HOME DISCOVERY (Google Search grounded) ----------
+  // ---------- HOME DISCOVERY (Movies / Music / Twister / Books) ----------
   const homeGrid = document.getElementById('homeGrid');
-  const homeResults = document.getElementById('homeResults');
-  const homeResultsBody = document.getElementById('homeResultsBody');
-  const homeBack = document.getElementById('homeBack');
+  const discoveryView = document.getElementById('discoveryView');
+  const discoveryTitle = document.getElementById('discoveryTitle');
+  const discoveryBody = document.getElementById('discoveryBody');
+  const discoveryBackBtn = document.getElementById('discoveryBackBtn');
 
+  // Prompts for Gemini-driven (Google Search grounded) discovery topics.
   const TOPIC_PROMPTS = {
-    movies: ()=> `Suggest 3 real English-language movies (or short films/trailers) that are great for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. For each, give the title and one short sentence on why it helps. Use Google Search to ground your answer in real, currently findable titles.`,
-    twister: ()=> `Give 3 fun English tongue twisters suitable for an Amharic speaker learning English at ${state.level} level, useful for pronunciation practice. Use Google Search to find real, well-known examples.`,
-    'music-pronounce': ()=> `Suggest 2-3 real English songs appropriate for ${state.level} level that are good for pronunciation practice (clear, slow-ish singing). Give title, artist, and one short tip. Use Google Search to ground the suggestions in real songs.`,
-    'music-listen': ()=> `Suggest 2-3 real English songs appropriate for ${state.level} level that are good for general listening practice. Give title, artist, and one short reason. Use Google Search to ground the suggestions in real songs.`,
-    grammar: ()=> `Suggest 2-3 good English grammar learning resources or videos suitable for an Amharic speaker at ${state.level} level. Use Google Search to find real, currently available resources.`,
-    spoken: ()=> `Suggest 2-3 good spoken-English practice resources or videos suitable for an Amharic speaker at ${state.level} level. Use Google Search to find real, currently available resources.`,
-    vocabulary: ()=> `Suggest 2-3 good English vocabulary-building resources or videos suitable for an Amharic speaker at ${state.level} level. Use Google Search to find real, currently available resources.`
+    movies: ()=> `Suggest 3 real English-language movies (or short films/trailers) that are great for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. For each, give the title and one short sentence on why it helps. Use Google Search to ground your answer in real, currently findable titles. Respond only in English.`,
+    'music-pronounce': ()=> `Suggest 2-3 real English songs appropriate for ${state.level} level that are good for pronunciation practice (clear, slow-ish singing). Give title, artist, and one short tip. Use Google Search to ground the suggestions in real songs. Respond only in English.`,
+    'music-listen': ()=> `Suggest 2-3 real English songs appropriate for ${state.level} level that are good for general listening practice. Give title, artist, and one short reason. Use Google Search to ground the suggestions in real songs. Respond only in English.`,
+    grammar: ()=> `Suggest 2-3 good English grammar learning resources or videos suitable for an Amharic speaker at ${state.level} level. Use Google Search to find real, currently available resources. Respond only in English.`,
+    spoken: ()=> `Suggest 2-3 good spoken-English practice resources or videos suitable for an Amharic speaker at ${state.level} level. Use Google Search to find real, currently available resources. Respond only in English.`,
+    vocabulary: ()=> `Suggest 2-3 good English vocabulary-building resources or videos suitable for an Amharic speaker at ${state.level} level. Use Google Search to find real, currently available resources. Respond only in English.`
   };
 
+  // Topics that expand into a sub-menu before showing results.
   const TOPIC_GROUPS = {
     music: [
       { key:'music-pronounce', label:'Pronounce' },
-      { key:'music-listen', label:'ማዳመጥ' }
+      { key:'music-listen', label:'Listen' }
     ],
     books: [
       { key:'grammar', label:'Grammar' },
       { key:'spoken', label:'Spoken' },
       { key:'vocabulary', label:'Vocabulary' }
+    ],
+    twister: [
+      { key:'twister-easy', label:'Easy' },
+      { key:'twister-medium', label:'Medium' },
+      { key:'twister-hard', label:'Hard' }
+    ]
+  };
+  const GROUP_TITLES = { music:'Music', books:'Books', twister:'Twister' };
+  const TOPIC_TITLES = { movies:'Movies' };
+
+  // Hand-picked tongue twisters (no API call needed) — 5 per difficulty.
+  const TWISTERS = {
+    easy: [
+      'She sells seashells by the seashore.',
+      'Red lorry, yellow lorry.',
+      'How much wood would a woodchuck chuck?',
+      'Six thick thistle sticks.',
+      'A big black bear sat on a big black rug.'
+    ],
+    medium: [
+      "Fuzzy Wuzzy was a bear. Fuzzy Wuzzy had no hair.",
+      'I scream, you scream, we all scream for ice cream.',
+      'A proper copper coffee pot.',
+      'Betty Botter bought some butter.',
+      'Fred fed Ted bread, and Ted fed Fred bread.'
+    ],
+    hard: [
+      "The sixth sick sheikh's sixth sheep's sick.",
+      'Irish wristwatch, Swiss wristwatch.',
+      'Pad kid poured curd pulled cold.',
+      'Which wristwatches are Swiss wristwatches?',
+      'Toy boat, toy boat, toy boat.'
     ]
   };
 
-  function showHomeResults(){ homeResults.classList.add('show'); }
-  function hideHomeResults(){ homeResults.classList.remove('show'); homeResultsBody.innerHTML=''; }
+  // Navigation stack so the back button can step out of results -> sub-menu -> Home.
+  let discoveryStack = [];
 
-  homeBack.addEventListener('click', hideHomeResults);
+  function openDiscoveryView(){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('main.view').forEach(v=>v.classList.remove('active'));
+    discoveryView.classList.add('active');
+  }
+  function closeDiscoveryView(){
+    document.querySelectorAll('main.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('homeView').classList.add('active');
+    document.querySelector('.tab-btn[data-view="homeView"]').classList.add('active');
+    discoveryStack = [];
+  }
+  function discoveryNavigate(renderFn){
+    discoveryStack.push(renderFn);
+    openDiscoveryView();
+    renderFn();
+  }
+  function discoveryBack(){
+    discoveryStack.pop();
+    if (discoveryStack.length === 0){ closeDiscoveryView(); }
+    else { discoveryStack[discoveryStack.length-1](); }
+  }
+  discoveryBackBtn.addEventListener('click', discoveryBack);
 
   homeGrid.querySelectorAll('.home-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const topic = btn.dataset.topic;
       if (TOPIC_GROUPS[topic]){
-        renderSubGroup(topic);
+        discoveryNavigate(()=> renderGroupView(topic));
       } else {
-        runDiscovery(topic);
+        discoveryNavigate(()=> runDiscoveryView(topic));
       }
     });
   });
 
-  function renderSubGroup(groupKey){
-    showHomeResults();
+  function renderGroupView(groupKey){
+    discoveryTitle.textContent = GROUP_TITLES[groupKey] || '';
     const items = TOPIC_GROUPS[groupKey];
     const wrap = document.createElement('div');
     wrap.className = 'sub-grid';
@@ -1076,17 +1155,40 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
       const b = document.createElement('div');
       b.className = 'sub-btn';
       b.textContent = it.label;
-      b.addEventListener('click', ()=> runDiscovery(it.key));
+      b.addEventListener('click', ()=>{
+        discoveryNavigate(()=>{
+          if (groupKey === 'twister'){
+            renderTwisterView(it.key, it.label);
+          } else {
+            runDiscoveryView(it.key, it.label);
+          }
+        });
+      });
       wrap.appendChild(b);
     });
-    homeResultsBody.innerHTML = '';
-    homeResultsBody.appendChild(wrap);
+    discoveryBody.innerHTML = '';
+    discoveryBody.appendChild(wrap);
   }
 
-  async function runDiscovery(topicKey){
+  function renderTwisterView(key, label){
+    const level = key.replace('twister-','');
+    discoveryTitle.textContent = 'Twister' + (label ? ' — ' + label : '');
+    const list = document.createElement('div');
+    list.className = 'twister-list';
+    (TWISTERS[level]||[]).forEach(t=>{
+      const item = document.createElement('div');
+      item.className = 'twister-item';
+      item.textContent = t;
+      list.appendChild(item);
+    });
+    discoveryBody.innerHTML = '';
+    discoveryBody.appendChild(list);
+  }
+
+  async function runDiscoveryView(topicKey, label){
     if (!state.apiKey) return;
-    showHomeResults();
-    homeResultsBody.innerHTML = '<div class="discovery-loading am">እየፈለገ ነው...</div>';
+    discoveryTitle.textContent = label || TOPIC_TITLES[topicKey] || 'Discovery';
+    discoveryBody.innerHTML = '<div class="discovery-loading am">እየፈለገ ነው...</div>';
     const promptFn = TOPIC_PROMPTS[topicKey];
     if (!promptFn) return;
 
@@ -1099,8 +1201,8 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
       const textDiv = document.createElement('div');
       textDiv.className = 'discovery-text';
       textDiv.textContent = text.trim();
-      homeResultsBody.innerHTML = '';
-      homeResultsBody.appendChild(textDiv);
+      discoveryBody.innerHTML = '';
+      discoveryBody.appendChild(textDiv);
 
       if (links && links.length){
         const linksWrap = document.createElement('div');
@@ -1113,11 +1215,11 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
           a.textContent = '🔗 ' + l.title;
           linksWrap.appendChild(a);
         });
-        homeResultsBody.appendChild(linksWrap);
+        discoveryBody.appendChild(linksWrap);
       }
     }catch(err){
       if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
-      homeResultsBody.innerHTML = '<div class="discovery-loading am">⚠️ ' + escapeHtml(err.message) + '</div>';
+      discoveryBody.innerHTML = '<div class="discovery-loading am">⚠️ ' + escapeHtml(err.message) + '</div>';
     }
   }
 
@@ -1141,7 +1243,9 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
     pendingSources: [],
     currentUserBubble: null,
     currentBotBubble: null,
-    outputMuted: false
+    outputMuted: false,
+    timerInterval: null,
+    startTime: null
   };
 
   muteBtn.addEventListener('click', ()=>{
@@ -1229,12 +1333,31 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
     if (live.playCtx) live.nextPlayTime = live.playCtx.currentTime;
   }
 
+  // ---- Elapsed-time counter on the floating Live button ----
+  function formatElapsed(ms){
+    const totalSec = Math.floor(ms/1000);
+    const m = Math.floor(totalSec/60);
+    const s = totalSec % 60;
+    return m + ':' + String(s).padStart(2,'0');
+  }
+  function startLiveTimer(){
+    live.startTime = Date.now();
+    floatingLiveLabel.textContent = '0:00';
+    if (live.timerInterval) clearInterval(live.timerInterval);
+    live.timerInterval = setInterval(()=>{
+      floatingLiveLabel.textContent = formatElapsed(Date.now() - live.startTime);
+    }, 1000);
+  }
+  function stopLiveTimer(){
+    if (live.timerInterval){ clearInterval(live.timerInterval); live.timerInterval = null; }
+    floatingLiveLabel.textContent = 'Live';
+  }
+
   function buildLiveSystemPrompt(){
     return `You are a friendly English speaking-practice coach for a native Amharic speaker at ${state.level.toUpperCase()} level (${LEVEL_META[state.level].desc}).
-Speak clearly and at a pace appropriate for this level. Have a natural spoken conversation in English.
-If the learner makes a clear grammar or pronunciation-related mistake, briefly and kindly correct it out loud, then continue the conversation.
+Speak clearly and at a pace appropriate for this level. Have a natural spoken conversation in English only — never switch to Amharic, even if the learner seems lost; simplify your English instead.
+If the learner makes a clear grammar or pronunciation-related mistake, briefly and kindly correct it out loud in English, then continue the conversation.
 Keep your turns fairly short (a few sentences) so the conversation stays interactive.
-If the learner seems completely lost, you may say a short phrase in Amharic to help, then return to English.
 Start by warmly greeting the learner in English and asking an easy question to begin.`;
   }
 
@@ -1249,6 +1372,7 @@ Start by warmly greeting the learner in English and asking an easy question to b
     liveStatus.classList.remove('speaking');
     liveMicBtn.classList.remove('connecting','live');
     live.active = false;
+    stopLiveTimer();
     if (live.connectTimeout){ clearTimeout(live.connectTimeout); live.connectTimeout=null; }
     if (live.progressInterval){ clearInterval(live.progressInterval); live.progressInterval=null; }
     if (live.processor){ try{ live.processor.disconnect(); }catch(e){} live.processor=null; }
@@ -1332,6 +1456,7 @@ Start by warmly greeting the learner in English and asking an easy question to b
           liveMicBtn.classList.add('live');
           liveStatus.textContent = 'እያዳመጠ...';
           live.active = true;
+          startLiveTimer();
           beginMicStreaming();
           return;
         }
@@ -1410,6 +1535,7 @@ Start by warmly greeting the learner in English and asking an easy question to b
 
   function stopLive(){
     live.active = false;
+    stopLiveTimer();
     liveMicBtn.classList.remove('live','connecting');
     liveStatus.textContent = 'ለመጀመር ንካ';
     liveStatus.classList.remove('speaking');
