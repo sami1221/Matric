@@ -338,7 +338,15 @@
   .twister-item{
     background:var(--ink-2); border:1px solid var(--line); border-radius:12px;
     padding:12px 14px; font-size:14.5px; line-height:1.5; font-style:italic;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
   }
+  .twister-item .tw-text{ flex:1; }
+  .twister-item .tw-speak{
+    flex-shrink:0; background:var(--ink); border:1px solid var(--line); border-radius:50%;
+    width:34px; height:34px; display:flex; align-items:center; justify-content:center;
+    font-size:15px; cursor:pointer; font-style:normal; color:var(--ochre);
+  }
+  .twister-item .tw-speak:active{ transform:scale(0.92); }
 
   /* ---------- Floating live button ---------- */
   .floating-live-btn{
@@ -458,7 +466,7 @@
     <div class="hint am">Key ከሌለህ <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a> ላይ በነፃ ማግኘት ትችላለህ። Key ያለው በዚህ መሳሪያ ላይ ብቻ ተቀምጦ ይቆያል።</div>
 
     <button class="cta am" id="startBtn" disabled>ጀምር</button>
-    <div style="text-align:center; font-size:10.5px; opacity:0.35; margin-top:14px;">build: fixes-batch-8 · v23</div>
+    <div style="text-align:center; font-size:10.5px; opacity:0.35; margin-top:14px;">build: fixes-batch-9 · v24</div>
   </div>
 
   <!-- MAIN APP -->
@@ -516,7 +524,7 @@
       <div class="pad">
         <div class="topic-row">
           <input type="text" id="topicInput" placeholder="ርዕስ (ለምሳሌ: food, travel, work)">
-          <button class="btn-solid am" id="genCardsBtn">ቃላት እና አጠቃቀም</button>
+          <button class="btn-solid" id="genCardsBtn">Words &amp; Usage</button>
         </div>
         <div class="card-stack" id="cardStack"></div>
       </div>
@@ -1056,7 +1064,7 @@ Return ONLY the JSON array matching the schema.`;
       cardStack.innerHTML = '<div class="empty-note am">' + escapeHtml(friendlyErrorText(err.message)) + '</div>';
     }finally{
       genCardsBtn.disabled = false;
-      genCardsBtn.textContent = 'ቃላት እና አጠቃቀም';
+      genCardsBtn.textContent = 'Words & Usage';
     }
   }
 
@@ -1149,9 +1157,9 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
 
   // Prompts for Gemini-driven (Google Search grounded) discovery topics.
   const TOPIC_PROMPTS = {
-    movies: ()=> `Find 3 real, COMPLETE, FULL-LENGTH English-language movies (around 1 to 2 hours long, NOT short clips, NOT scene compilations, NOT trailers) legally available to watch in full on YouTube — such as public-domain classic films, or full movies officially uploaded by a studio/rights-holder channel (often free with ads) — appropriate for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. Prefer well-known, popular American movies enjoyed by adults (not children's cartoons/animated movies). Use Google Search restricted to site:youtube.com with terms like "full movie" to find their exact YouTube watch page URLs (format: https://www.youtube.com/watch?v=VIDEO_ID) — each link MUST be the entire film, not an excerpt. For each, name the movie and give one short sentence on why it helps this learner. Respond only in English, and make sure every recommendation is backed by a real youtube.com/watch link you found via search that points to the full film.`,
+    movies: ()=> `Find 3 real, COMPLETE, FULL-LENGTH English-language movies released between 2014 and 2026 (around 1 to 2.5 hours long, NOT short clips, NOT scene compilations, NOT trailers) legally available to watch in full on YouTube — such as full movies officially uploaded by a studio/rights-holder channel (often free with ads) — appropriate for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. Prefer well-known, popular modern American movies enjoyed by adults (not children's cartoons/animated movies). Use Google Search restricted to site:youtube.com with terms like "full movie" to find their exact YouTube watch page URLs (format: https://www.youtube.com/watch?v=VIDEO_ID) — each link MUST be the entire film, not an excerpt, and MUST be from 2014 or later. For each, name the movie and give one short sentence on why it helps this learner. Respond only in English, and make sure every recommendation is backed by a real youtube.com/watch link you found via search that points to the full film.`,
     'music-pronounce': ()=> `Find 2-3 real English songs' official lyric videos on YouTube (videos that show the song's lyrics as on-screen text while it plays) that are appropriate for ${state.level} level and good for pronunciation practice (clear, slow-ish singing). The video MUST display lyrics as text on screen. Use Google Search restricted to site:youtube.com to find their exact YouTube watch page URLs (format: https://www.youtube.com/watch?v=VIDEO_ID). For each, give the song title, artist, and one short tip. Respond only in English, and make sure every recommendation is backed by a real youtube.com/watch link you found via search.`,
-    'music-listen': ()=> `Find 2-3 real English songs' normal official music videos on YouTube (the regular music video, NOT a lyrics video) that are appropriate for ${state.level} level and good for general listening practice. Use Google Search restricted to site:youtube.com to find their exact YouTube watch page URLs (format: https://www.youtube.com/watch?v=VIDEO_ID). For each, give the song title, artist, and one short reason. Respond only in English, and make sure every recommendation is backed by a real youtube.com/watch link you found via search.`
+    'music-listen': ()=> `Find 2-3 real English songs released between 2024 and 2026 (new, recent releases — similar in era to artists like Dean Lewis) with normal official music videos on YouTube (the regular music video, NOT a lyrics video) that are appropriate for ${state.level} level and good for general listening practice. Use Google Search restricted to site:youtube.com to find their exact YouTube watch page URLs (format: https://www.youtube.com/watch?v=VIDEO_ID) and confirm the release year is 2024 or later. For each, give the song title, artist, and one short reason. Respond only in English, and make sure every recommendation is backed by a real youtube.com/watch link you found via search.`
   };
 
   // Topics whose results should be rendered as embedded YouTube players.
@@ -1192,19 +1200,24 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
       required:['title','reason','youtube_query']
     }
   };
+  // Each seed prompt fn takes (avoidList) and returns a batch of NEW suggestions not already shown,
+  // which is how the infinite-scroll pagination avoids repeating the same items.
+  const VIDEO_BATCH_SIZE = 6;
   const YOUTUBE_SEED_PROMPTS = {
-    movies: ()=> `Suggest 3 real movies that are legally available to watch as a COMPLETE, FULL-LENGTH film (around 1 to 2 hours, NOT a clip or scene) for free on YouTube — such as public-domain classic films, or full movies officially uploaded by a studio/rights-holder channel. Prefer well-known, popular movies enjoyable by adults (not children's cartoons/animated movies), appropriate for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. For each item return: title (the movie name), subtitle (release year), reason (one short sentence on why it helps this learner), and youtube_query (a precise YouTube search query aimed at finding the FULL MOVIE upload, e.g. "Movie Name (Year) full movie" or "Movie Name full movie English"). Do NOT search for trailers, teasers, scene clips, or "best scenes" compilations — only the complete film. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
-    'music-pronounce': ()=> `Suggest 2-3 real English songs appropriate for ${state.level} level that are good for pronunciation practice (clear, slow-ish singing). For each item return: title (song title), subtitle (artist name), reason (one short tip), and youtube_query (a precise YouTube search query to find its LYRIC VIDEO — a video that shows the song's lyrics as on-screen text — e.g. "Song Title Artist lyrics"). The query must be aimed at finding a lyrics video, not a plain music video. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
-    'music-listen': ()=> `Suggest 2-3 real English songs appropriate for ${state.level} level that are good for general listening practice. For each item return: title (song title), subtitle (artist name), reason (one short reason), and youtube_query (a precise YouTube search query to find its NORMAL official music video, NOT a lyrics video, e.g. "Song Title Artist official music video"). Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`
+    movies: (avoidList)=> `Suggest ${VIDEO_BATCH_SIZE} real movies released between 2014 and 2026 (recent, modern movies only — do NOT suggest anything older than 2014) that are legally available to watch as a COMPLETE, FULL-LENGTH film (around 1.5 to 2.5 hours, NOT a clip or scene) for free on YouTube — such as full movies officially uploaded by a studio/rights-holder channel or a legitimate free-movie channel. Prefer well-known, popular movies enjoyable by adults (not children's cartoons/animated movies), appropriate for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. For each item return: title (the movie name), subtitle (release year — must be 2014 or later), reason (one short sentence on why it helps this learner), and youtube_query (a precise YouTube search query aimed at finding the FULL MOVIE upload, e.g. "Movie Name (Year) full movie" or "Movie Name full movie English"). Do NOT search for trailers, teasers, scene clips, or "best scenes" compilations — only the complete film. Do not repeat any of these movies already suggested: ${avoidList && avoidList.length ? avoidList.join(', ') : 'none'}. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
+    'music-pronounce': (avoidList)=> `Suggest ${VIDEO_BATCH_SIZE} real English songs appropriate for ${state.level} level that are good for pronunciation practice (clear, slow-ish singing). For each item return: title (song title), subtitle (artist name), reason (one short tip), and youtube_query (a precise YouTube search query to find its LYRIC VIDEO — a video that shows the song's lyrics as on-screen text — e.g. "Song Title Artist lyrics"). The query must be aimed at finding a lyrics video, not a plain music video. Do not repeat any of these songs already suggested: ${avoidList && avoidList.length ? avoidList.join(', ') : 'none'}. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
+    'music-listen': (avoidList)=> `Suggest ${VIDEO_BATCH_SIZE} real English songs released between 2024 and 2026 (new, recent releases only — in the style/era of artists like Dean Lewis) appropriate for ${state.level} level that are good for general listening practice. For each item return: title (song title), subtitle (artist name, and release year), reason (one short reason), and youtube_query (a precise YouTube search query to find its NORMAL official music video, NOT a lyrics video, e.g. "Song Title Artist official music video"). Do not repeat any of these songs already suggested: ${avoidList && avoidList.length ? avoidList.join(', ') : 'none'}. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`
   };
 
   // Search the real YouTube Data API v3 for one embeddable video matching a query.
   // duration: optional YouTube "videoDuration" filter — 'short' (<4min), 'medium' (4-20min), 'long' (>20min), or omitted for any length.
-  async function ytSearchVideo(query, duration){
+  // publishedAfter: optional ISO date string to restrict results to videos published on/after that date.
+  async function ytSearchVideo(query, duration, publishedAfter){
     if (!state.youtubeKey) return null;
     let url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&type=video&videoEmbeddable=true&safeSearch=strict&q='
       + encodeURIComponent(query) + '&key=' + encodeURIComponent(state.youtubeKey);
     if (duration) url += '&videoDuration=' + encodeURIComponent(duration);
+    if (publishedAfter) url += '&publishedAfter=' + encodeURIComponent(publishedAfter);
     const res = await fetch(url);
     if (!res.ok){
       const body = await res.json().catch(()=>({}));
@@ -1220,6 +1233,8 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
   }
   // Duration filter per discovery topic: movies should be longer clips, not short trailers.
   const TOPIC_VIDEO_DURATION = { movies: 'long' };
+  // publishedAfter filter per discovery topic (ISO date) — keeps results within the required year range.
+  const TOPIC_PUBLISHED_AFTER = { movies: '2014-01-01T00:00:00Z', 'music-listen': '2024-01-01T00:00:00Z' };
   function isYoutubeKeyError(message){
     return /API key not valid|keyInvalid|403|API_KEY_INVALID/i.test(message||'');
   }
@@ -1253,30 +1268,177 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
   const GROUP_TITLES = { music:'Music', books:'Books', twister:'Twister' };
   const TOPIC_TITLES = { movies:'Movies' };
 
-  // Hand-picked tongue twisters (no API call needed) — 5 per difficulty.
+  // Hand-picked tongue twisters — 50 per difficulty (Hard ones are especially challenging).
   const TWISTERS = {
     easy: [
       'She sells seashells by the seashore.',
       'Red lorry, yellow lorry.',
       'How much wood would a woodchuck chuck?',
       'Six thick thistle sticks.',
-      'A big black bear sat on a big black rug.'
+      'A big black bear sat on a big black rug.',
+      'Peter Piper picked a peck of pickled peppers.',
+      'Betty bought a bit of butter.',
+      'A cup of coffee in a copper cup.',
+      'Black bug bit a big black bear.',
+      'Toy boat, toy boat, toy boat.',
+      'The cat sat on the mat.',
+      'Big blue bug bit big blue balloon.',
+      'Green glass globes glow greatly.',
+      'Nine nice night nurses nursing nicely.',
+      'Sheep should sleep in a shed.',
+      'Two tiny turtles took a train.',
+      'Ray likes rainy days in May.',
+      'My mom makes mini muffins Monday.',
+      'The bright blue bird flew by.',
+      'Five fast fish flip and flap.',
+      'Pack my box with five dozen jugs.',
+      'Sunny snails smile slowly.',
+      'Little Lily likes lilac lollipops.',
+      'Ten tan tigers tap on trees.',
+      'Wendy wanted a warm winter walk.',
+      'Nick knits nice knitted hats.',
+      'The frog jumped over the log.',
+      'A happy hippo hums a happy hymn.',
+      'Sam saw seven silly seals.',
+      'Do drop by and try the pie.',
+      'The kind king kept his crown.',
+      'Frank feeds four furry foxes.',
+      'Baby birds build big nests.',
+      'Slow snails slide on smooth stones.',
+      'Cindy sings sweet simple songs.',
+      'Two toads talk and toads talk too.',
+      'The tall man ran to the van.',
+      'My dad has a bad plan.',
+      'Six sick sheep sit still.',
+      'Pretty pink pigs play in puddles.',
+      'Jolly Jim jumps for joy.',
+      'The dog dug a deep hole.',
+      'Fluffy clouds float far away.',
+      'Round rocks roll down the road.',
+      'Kate bakes a cake at eight.',
+      'The bee buzzed by the busy barn.',
+      'Milk and cookies make me merry.',
+      'Cool cats catch cool cars.',
+      'A wise owl watches at night.',
+      'Blue whales swim in the wide sea.'
     ],
     medium: [
       "Fuzzy Wuzzy was a bear. Fuzzy Wuzzy had no hair.",
       'I scream, you scream, we all scream for ice cream.',
       'A proper copper coffee pot.',
       'Betty Botter bought some butter.',
-      'Fred fed Ted bread, and Ted fed Fred bread.'
+      'Fred fed Ted bread, and Ted fed Fred bread.',
+      'Six slippery snails slid slowly seaward.',
+      'A skunk sat on a stump and thunk the stump stunk.',
+      'How can a clam cram in a clean cream can?',
+      'Which witch wished which wicked wish?',
+      'I saw Susie sitting in a shoeshine shop.',
+      'Can you can a can as a canner can can a can?',
+      'Sheena leads, Sheila needs.',
+      'Rory the warrior and Roger the worrier were reared wrongly in a rural brewery.',
+      'A tutor who tooted the flute tried to tutor two tooters to toot.',
+      'Greek grapes, Greek grapes, Greek grapes.',
+      'The great Greek grape growers grow great Greek grapes.',
+      'A big bug bit a big black bug and the big black bug bled black blood.',
+      'The thirty-three thieves thought that they thrilled the throne throughout Thursday.',
+      'I wish to wash my Irish wristwatch.',
+      'A tree toad loved a she-toad who lived up in a tree.',
+      'She stood on the balcony inexplicably mimicking him hiccupping and amicably welcoming him home.',
+      'How many boards could the Mongols hoard if the Mongol hordes got bored?',
+      'Crisp crusts crackle crunchily.',
+      'Flash message, flash message, flash message.',
+      'Give papa a cup of proper coffee in a copper coffee cup.',
+      'Lesser leather never weathered wetter weather better.',
+      "Willie's really weary; will he rest awhile?",
+      'Three free throws for the tree, free of charge.',
+      'Nine nervous newts knew nothing new.',
+      'Truly rural, truly rural, truly rural.',
+      'Six sleek swans swam swiftly southwards.',
+      'A synonym for cinnamon is a cinnamon synonym.',
+      "The chic Sheikh's sixth sheep is sick.",
+      'Ed had edited it before Ted edited it.',
+      'A big black bug bit a big black dog on his big black nose.',
+      'Preshrunk silk shirts, preshrunk silk shirts.',
+      'The seething sea ceaseth and thus the seething sea sufficeth us.',
+      'A loyal warrior will rarely worry why we rule.',
+      'Peggy Babcock, Peggy Babcock, Peggy Babcock.',
+      'Wayne went to Wales to watch walruses.',
+      'Six shrewd sharks sensed six sick swans swimming.',
+      'The bootblack bought the black boot back.',
+      'A proper copper coffee pot has a proper copper handle.',
+      'Freshly fried flying fish, freshly fried flying fish.',
+      'Nine nice mice nibble nuts nightly.',
+      "Nick's chicks click their tongues quickly.",
+      'Nervous novice nurses know no nonsense.',
+      'The sixth Swedish sailor swiftly signaled the ship.',
+      'Nine numb neighbors nap near noon.',
+      'How much dew does a dewdrop drop if dewdrops do drop dew?'
     ],
     hard: [
       "The sixth sick sheikh's sixth sheep's sick.",
       'Irish wristwatch, Swiss wristwatch.',
       'Pad kid poured curd pulled cold.',
       'Which wristwatches are Swiss wristwatches?',
-      'Toy boat, toy boat, toy boat.'
+      'Toy boat, toy boat, toy boat.',
+      "The sixth sick sheik's sixth sheep's sick, so the sixth sick sheik's sheep sought a slick, quick-thinking sheikh.",
+      'Irish wristwatch, Swiss wristwatch, Irish wristwatch, Swiss wristwatch.',
+      'Pad kid poured curd pulled cold, pad kid poured curd pulled cold.',
+      'A proper copper coffee pot with a copper coffee proper top.',
+      'Six sick slick slim sycamore saplings.',
+      'Strange strategic statistics, strange strategic statistics.',
+      'The epitome of an itty-bitty pretty city committee.',
+      'Unique New York, unique New York, unique New York, you know you need unique New York.',
+      'Rubber baby buggy bumpers, rubber baby buggy bumpers.',
+      'She stood upon a balcony, inimicably mimicking him hiccupping, while amicably welcoming him in.',
+      "Send toast to ten tense stout saints' ten tests.",
+      'A skunk sat on a stump and thunk the stump stunk, but the stump thunk the skunk stunk.',
+      'Ed had edited it, and Ed had edited it, then edited it again.',
+      'Chop shop stock, chop shop stock, chop shop stock.',
+      "A big black bug's blood runs blue and black, a black bug's blood, a bug's black blood.",
+      'Flesh of freshly fried flying fish, flesh of freshly fried flying fish.',
+      'A synonymous cinnamon aluminum tin, a synonymous cinnamon aluminum tin.',
+      'The thirty-three thieves thought that they thrilled the throne throughout Thursday, thirty-three thousand times.',
+      'Six shrewd sharks sensed six sick swans swiftly swimming southward.',
+      'Wretched Rita rode a rattling, rusty red-and-white rickshaw.',
+      'The seething sea ceaseth and thus the seething sea sufficeth us, the sea ceaseth thus.',
+      'Silly Sally swiftly shooed seven silly sheep, seven silly sheep silly Sally shooed.',
+      'How much dew would a dewdrop drop if a dewdrop did drop dew, and would a dewdrop drop the dew it dropped?',
+      'Nine nimble noblemen nibbled nuts, nine nimble noblemen nibbled nuts nightly.',
+      'The great Greek grape growers grow great Greek grapes, and great Greek grapes grow greatly for great Greek grape growers.',
+      'A tutor who tooted the flute tried to tutor two tooters to toot, said the two to the tutor, is it harder to toot or to tutor two tooters to toot?',
+      "Willy's real rear wheel, really weary Willy's real rear wheel.",
+      'Crisp crinkled crusts crackle crunchily, crisp crinkled crusts crackle crunchily.',
+      "The bloke's back brake block broke, the bloke's back brake block broke.",
+      'Strict strong stretchy strings strung straight, strict strong stretchy strings strung straight.',
+      'Peggy Babcock, Peggy Babcock, Peggy Babcock, Peggy Babcock, Peggy Babcock.',
+      'Truly rural, truly rural, truly rural, truly rural.',
+      'Freddie fed Theodore Bear fresh food Thursday, Theodore Bear fed Freddie fresh food too.',
+      'Which witch switched the Swiss wristwatches, which Swiss witch wristwatches were switched?',
+      'Six thick thistle sticks, six thick thistles stick, thick thistle sticks stick thickly.',
+      'Fresh French fried fly fritters, fresh French fried fly fritters, fresh French fried fly fritters.',
+      'Lesser leather never weathered wetter weather better than better leather weathered wet weather.',
+      'A loyal royal warrior worries wearily while rarely wondering why we rule so rigidly.',
+      "The chic sheikh's sixth sheep seemed sicker, seemingly sicker than the sheikh's sixth sick sheep.",
+      'Nine nervous newts knew nothing new, nine nervous newts knew nothing new nightly.',
+      'Toy boat, toy boat, toy boat, toy boat, toy boat, toy boat.',
+      'Preshrunk silk shirts, preshrunk silk shirts, preshrunk silk shirts, preshrunk silk shirts.',
+      'The bootblack brought the black boot back, black boot back the bootblack brought.',
+      "A big bug's blood, a black bug's blood, a big black bug's blood runs thick and blue and black.",
+      "Send toast to ten tense stout saints' ten testy, stout saints tested ten toasts sent."
     ]
   };
+
+  // ---- Text-to-speech for tongue twisters ----
+  function speakText(text){
+    try{
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'en-US';
+      utter.rate = 0.85;
+      window.speechSynthesis.speak(utter);
+    }catch(e){}
+  }
 
   // Navigation stack so the back button can step out of results -> sub-menu -> Home.
   let discoveryStack = [];
@@ -1351,7 +1513,16 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
     (TWISTERS[level]||[]).forEach(t=>{
       const item = document.createElement('div');
       item.className = 'twister-item';
-      item.textContent = t;
+      const textSpan = document.createElement('span');
+      textSpan.className = 'tw-text';
+      textSpan.textContent = t;
+      const speakBtn = document.createElement('button');
+      speakBtn.className = 'tw-speak';
+      speakBtn.type = 'button';
+      speakBtn.textContent = '🔊';
+      speakBtn.addEventListener('click', (e)=>{ e.stopPropagation(); speakText(t); });
+      item.appendChild(textSpan);
+      item.appendChild(speakBtn);
       list.appendChild(item);
     });
     discoveryBody.innerHTML = '';
@@ -1731,11 +1902,9 @@ Return ONLY the JSON array matching the schema, no extra text.`;
     }
   }
 
-  // Render a list of {id, title, subtitle, reason} as embedded YouTube players.
-  function renderYoutubeList(videos){
-    const listWrap = document.createElement('div');
-    listWrap.className = 'yt-list';
-    videos.slice(0,4).forEach(v=>{
+  // Render a list of {id, title, subtitle, reason} as embedded YouTube players, appending to an existing container.
+  function renderYoutubeItems(container, videos){
+    videos.forEach(v=>{
       const item = document.createElement('div');
       item.className = 'yt-item';
       const embed = document.createElement('div');
@@ -1755,67 +1924,123 @@ Return ONLY the JSON array matching the schema, no extra text.`;
       meta.querySelector('.yt-why').textContent = v.reason || '';
       item.appendChild(embed);
       item.appendChild(meta);
-      listWrap.appendChild(item);
+      container.appendChild(item);
     });
-    return listWrap;
   }
 
-  // Video topics via the real YouTube Data API: Gemini picks good titles/queries (cheap, no
-  // grounding needed), then YouTube Search resolves each to a real, embeddable video ID.
-  async function runYoutubeApiDiscovery(topicKey){
+  // ---------- Infinite-scroll video discovery state (Movies / Music-Pronounce / Music-Listen) ----------
+  const videoTopicState = {}; // topicKey -> { items:[], titlesSeen:Set, idsSeen:Set, loading:bool, exhausted:bool }
+  function getVideoTopicState(topicKey){
+    if (!videoTopicState[topicKey]){
+      videoTopicState[topicKey] = { items:[], titlesSeen:new Set(), idsSeen:new Set(), loading:false, exhausted:false };
+    }
+    return videoTopicState[topicKey];
+  }
+
+  // Ask Gemini for a batch of seed suggestions, then resolve each via the real YouTube Data API.
+  async function fetchVideoBatch(topicKey){
+    const st = getVideoTopicState(topicKey);
     const seedPromptFn = YOUTUBE_SEED_PROMPTS[topicKey];
+    const avoidList = Array.from(st.titlesSeen).slice(-40);
     const seedsRaw = await callGemini({
-      contents:[{ role:'user', parts:[{ text: seedPromptFn() }] }],
-      generationConfig:{ temperature:0.8, maxOutputTokens:500, responseMimeType:'application/json', responseSchema: YOUTUBE_SEED_SCHEMA }
+      contents:[{ role:'user', parts:[{ text: seedPromptFn(avoidList) }] }],
+      generationConfig:{ temperature:0.9, maxOutputTokens:800, responseMimeType:'application/json', responseSchema: YOUTUBE_SEED_SCHEMA }
     });
     const seeds = JSON.parse(seedsRaw);
     const duration = TOPIC_VIDEO_DURATION[topicKey];
+    const publishedAfter = TOPIC_PUBLISHED_AFTER[topicKey];
 
     const results = await Promise.all(seeds.map(async (s)=>{
       try{
-        const found = await ytSearchVideo(s.youtube_query, duration);
+        const found = await ytSearchVideo(s.youtube_query, duration, publishedAfter);
         if (!found) return null;
         return { id: found.id, title: s.title, subtitle: s.subtitle, reason: s.reason };
       }catch(err){
-        if (isYoutubeKeyError(err.message)) throw err; // bubble up key errors so we can react once
+        if (isYoutubeKeyError(err.message)) throw err;
         return null;
       }
     }));
 
-    return results.filter(Boolean);
+    const fresh = [];
+    results.filter(Boolean).forEach(v=>{
+      if (!st.idsSeen.has(v.id)){
+        st.idsSeen.add(v.id);
+        st.titlesSeen.add(v.title);
+        fresh.push(v);
+      }
+    });
+    return fresh;
+  }
+
+  // Load the next batch for a video topic (guards against concurrent loads) and render it.
+  async function loadMoreVideos(topicKey, listEl, loadingEl){
+    const st = getVideoTopicState(topicKey);
+    if (st.loading || st.exhausted || !state.apiKey) return;
+    st.loading = true;
+    if (loadingEl) loadingEl.style.display = 'block';
+    try{
+      const fresh = await fetchVideoBatch(topicKey);
+      if (!fresh.length){
+        st.exhausted = true;
+      } else {
+        st.items = st.items.concat(fresh);
+        renderYoutubeItems(listEl, fresh);
+      }
+    }catch(err){
+      if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
+      // On error, just stop this round silently — the user can scroll again to retry.
+    }finally{
+      st.loading = false;
+      if (loadingEl) loadingEl.style.display = 'none';
+    }
+  }
+
+  function renderVideoTopicView(topicKey, label){
+    discoveryTitle.textContent = label || TOPIC_TITLES[topicKey] || 'Discovery';
+    discoveryBody.innerHTML = '';
+    const st = getVideoTopicState(topicKey);
+
+    const listEl = document.createElement('div');
+    listEl.className = 'yt-list';
+    const loadingEl = document.createElement('div');
+    loadingEl.className = 'discovery-loading am';
+    loadingEl.textContent = 'ተጨማሪ እየፈለገ ነው...';
+    loadingEl.style.display = 'none';
+
+    discoveryBody.appendChild(listEl);
+    discoveryBody.appendChild(loadingEl);
+
+    if (st.items.length){
+      renderYoutubeItems(listEl, st.items);
+    } else {
+      loadingEl.textContent = 'እየፈለገ ነው...';
+      loadingEl.style.display = 'block';
+    }
+
+    // Infinite scroll: when the user scrolls near the bottom of discoveryBody, load more.
+    function onScroll(){
+      if (discoveryBody.scrollTop + discoveryBody.clientHeight >= discoveryBody.scrollHeight - 300){
+        loadMoreVideos(topicKey, listEl, loadingEl).then(()=>{ loadingEl.textContent = 'ተጨማሪ እየፈለገ ነው...'; });
+      }
+    }
+    discoveryBody.addEventListener('scroll', onScroll);
+
+    if (!st.items.length){
+      loadMoreVideos(topicKey, listEl, loadingEl).then(()=>{ loadingEl.textContent = 'ተጨማሪ እየፈለገ ነው...'; });
+    }
   }
 
   async function runDiscoveryView(topicKey, label){
     if (!state.apiKey) return;
+    if (VIDEO_TOPICS.has(topicKey)){
+      renderVideoTopicView(topicKey, label);
+      return;
+    }
+    // Non-video discovery topics (none currently defined) fall back to the grounded single-shot flow.
     discoveryTitle.textContent = label || TOPIC_TITLES[topicKey] || 'Discovery';
     discoveryBody.innerHTML = '<div class="discovery-loading am">እየፈለገ ነው...</div>';
-
-    // Prefer the real YouTube Data API path when the user has provided a key and this is a video topic.
-    if (VIDEO_TOPICS.has(topicKey) && state.youtubeKey){
-      try{
-        const videos = await runYoutubeApiDiscovery(topicKey);
-        discoveryBody.innerHTML = '';
-        if (videos.length){
-          discoveryBody.appendChild(renderYoutubeList(videos));
-          return;
-        }
-        // No results from YouTube this time — fall through to the Google-Search-grounded fallback below.
-      }catch(err){
-        if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
-        if (isYoutubeKeyError(err.message)){
-          const note = document.createElement('div');
-          note.className = 'discovery-loading am';
-          note.textContent = '⚠️ YouTube API Key ልክ ያልሆነ ይመስላል፣ Settings ውስጥ አረጋግጥ። ለጊዜው በGoogle Search ፍለጋ ቀጥያለሁ...';
-          discoveryBody.innerHTML = '';
-          discoveryBody.appendChild(note);
-        }
-        // fall through to the grounded fallback below on any other YouTube API error too
-      }
-    }
-
     const promptFn = TOPIC_PROMPTS[topicKey];
     if (!promptFn) return;
-
     try{
       const { text, links } = await callGeminiGrounded({
         contents:[{ role:'user', parts:[{ text: promptFn() }] }],
@@ -1827,43 +2052,7 @@ Return ONLY the JSON array matching the schema, no extra text.`;
       textDiv.textContent = text.trim();
       discoveryBody.innerHTML = '';
       discoveryBody.appendChild(textDiv);
-
-      if (VIDEO_TOPICS.has(topicKey)){
-        // Pull out real YouTube links from the grounding results and embed them as players.
-        const seen = new Set();
-        const videos = [];
-        (links||[]).forEach(l=>{
-          const id = extractYouTubeId(l.uri);
-          if (id && !seen.has(id)){
-            seen.add(id);
-            videos.push({ id, title:l.title });
-          }
-        });
-
-        if (videos.length){
-          discoveryBody.appendChild(renderYoutubeList(videos));
-        } else {
-          // No YouTube link came back from grounding this time — fall back to plain source links.
-          const note = document.createElement('div');
-          note.className = 'discovery-loading am';
-          note.style.padding = '10px 0 0';
-          note.textContent = '⚠️ ቪዲዮ ማምጣት አልተቻለም፣ ከታች ያሉትን ምንጮች ተመልከት';
-          discoveryBody.appendChild(note);
-          if (links && links.length){
-            const linksWrap = document.createElement('div');
-            linksWrap.className = 'discovery-links';
-            links.slice(0,6).forEach(l=>{
-              const a = document.createElement('a');
-              a.href = l.uri;
-              a.target = '_blank';
-              a.rel = 'noopener';
-              a.textContent = '🔗 ' + l.title;
-              linksWrap.appendChild(a);
-            });
-            discoveryBody.appendChild(linksWrap);
-          }
-        }
-      } else if (links && links.length){
+      if (links && links.length){
         const linksWrap = document.createElement('div');
         linksWrap.className = 'discovery-links';
         links.slice(0,6).forEach(l=>{
@@ -1904,7 +2093,8 @@ Return ONLY the JSON array matching the schema, no extra text.`;
     currentBotBubble: null,
     outputMuted: false,
     timerInterval: null,
-    startTime: null
+    startTime: null,
+    aiSpeaking: false
   };
 
   muteBtn.addEventListener('click', ()=>{
@@ -1975,11 +2165,13 @@ Return ONLY the JSON array matching the schema, no extra text.`;
     src.start(startAt);
     live.nextPlayTime = startAt + buffer.duration;
     live.pendingSources.push(src);
+    live.aiSpeaking = true;
     liveStatus.textContent = 'እየተናገረ...';
     liveStatus.classList.add('speaking');
     src.onended = ()=>{
       live.pendingSources = live.pendingSources.filter(s=>s!==src);
       if (live.pendingSources.length === 0){
+        live.aiSpeaking = false;
         liveStatus.textContent = 'እያዳመጠ...';
         liveStatus.classList.remove('speaking');
       }
@@ -1989,6 +2181,7 @@ Return ONLY the JSON array matching the schema, no extra text.`;
   function clearPendingAudio(){
     live.pendingSources.forEach(s=>{ try{ s.stop(); }catch(e){} });
     live.pendingSources = [];
+    live.aiSpeaking = false;
     if (live.playCtx) live.nextPlayTime = live.playCtx.currentTime;
   }
 
@@ -2044,7 +2237,7 @@ Start by warmly greeting the learner in English and asking an easy question to b
 
   async function startLive(){
     if (!state.apiKey){ liveStatus.textContent = 'መጀመሪያ API key አስገባ'; return; }
-    if (!isSecureEnoughForMic()){
+      if (!isSecureEnoughForMic()){
       liveStatus.textContent = '⚠️ HTTPS ላይ መከፈት አለበት';
       return;
     }
@@ -2096,7 +2289,8 @@ Start by warmly greeting the learner in English and asking an easy question to b
             },
             systemInstruction:{ parts:[{ text: buildLiveSystemPrompt() }] },
             inputAudioTranscription:{},
-            outputAudioTranscription:{}
+            outputAudioTranscription:{},
+            realtimeInputConfig:{ automaticActivityDetection:{ disabled:false } }
           }
         }));
       };
@@ -2179,6 +2373,10 @@ Start by warmly greeting the learner in English and asking an easy question to b
 
     live.processor.onaudioprocess = (e)=>{
       if (!live.active || !live.ws || live.ws.readyState !== 1) return;
+      // Don't stream mic audio back while the AI is speaking — prevents the AI's own
+      // voice (picked up by the mic through the speaker) from being sent back to it,
+      // which otherwise causes it to "talk to itself" in a feedback loop.
+      if (live.aiSpeaking) return;
       const input = e.inputBuffer.getChannelData(0);
       const down = downsampleTo16k(input, live.inputCtx.sampleRate);
       const b64 = floatTo16BitB64(down);
@@ -2220,3 +2418,4 @@ Start by warmly greeting the learner in English and asking an easy question to b
 </script>
 </body>
 </html>
+    
