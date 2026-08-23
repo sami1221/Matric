@@ -341,12 +341,6 @@
     display:flex; align-items:center; justify-content:space-between; gap:10px;
   }
   .twister-item .tw-text{ flex:1; }
-  .twister-item .tw-speak{
-    flex-shrink:0; background:var(--ink); border:1px solid var(--line); border-radius:50%;
-    width:34px; height:34px; display:flex; align-items:center; justify-content:center;
-    font-size:15px; cursor:pointer; font-style:normal; color:var(--ochre);
-  }
-  .twister-item .tw-speak:active{ transform:scale(0.92); }
 
   /* ---------- Floating live button ---------- */
   .floating-live-btn{
@@ -405,11 +399,11 @@
   .spoken-item .am-word{ font-size:13.5px; color:var(--ochre); font-weight:600; font-style:normal; margin-top:4px; }
   .vocab-list{ display:flex; flex-direction:column; }
   .vocab-item{
-    display:flex; justify-content:space-between; align-items:baseline; gap:10px;
-    padding:10px 2px; border-bottom:1px solid var(--line); font-size:14px;
+    display:flex; justify-content:space-between; align-items:baseline; gap:12px;
+    padding:14px 2px; border-bottom:1px solid var(--line); font-size:18px;
   }
-  .vocab-item .vword{ font-weight:600; font-family:'Fraunces',serif; }
-  .vocab-item .vmean{ color:var(--ochre); font-size:13px; text-align:right; }
+  .vocab-item .vword{ font-weight:600; font-family:'Fraunces',serif; font-size:19px; }
+  .vocab-item .vmean{ color:var(--ochre); font-size:17px; text-align:right; font-weight:600; }
 
   /* ---- Grammar practice box ---- */
   .practice-box{ margin-top:14px; padding-top:14px; border-top:1px dashed var(--line); }
@@ -1163,7 +1157,7 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
   };
 
   // Topics whose results should be rendered as embedded YouTube players.
-  const VIDEO_TOPICS = new Set(['movies', 'music-pronounce', 'music-listen']);
+  const VIDEO_TOPICS = new Set(['movies-adventure', 'movies-comedy', 'movies-action', 'music-pronounce', 'music-listen']);
 
   // Extract a YouTube video ID from watch/shorts/youtu.be/embed style URLs. Returns null if not a YouTube link.
   function extractYouTubeId(url){
@@ -1204,17 +1198,21 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
   // which is how the infinite-scroll pagination avoids repeating the same items.
   const VIDEO_BATCH_SIZE = 6;
   const YOUTUBE_SEED_PROMPTS = {
-    movies: (avoidList)=> `Suggest ${VIDEO_BATCH_SIZE} real movies released between 2014 and 2026 (recent, modern movies only — do NOT suggest anything older than 2014) that are legally available to watch as a COMPLETE, FULL-LENGTH film (around 1.5 to 2.5 hours, NOT a clip or scene) for free on YouTube — such as full movies officially uploaded by a studio/rights-holder channel or a legitimate free-movie channel. Prefer well-known, popular movies enjoyable by adults (not children's cartoons/animated movies), appropriate for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. For each item return: title (the movie name), subtitle (release year — must be 2014 or later), reason (one short sentence on why it helps this learner), and youtube_query (a precise YouTube search query aimed at finding the FULL MOVIE upload, e.g. "Movie Name (Year) full movie" or "Movie Name full movie English"). Do NOT search for trailers, teasers, scene clips, or "best scenes" compilations — only the complete film. Do not repeat any of these movies already suggested: ${avoidList && avoidList.length ? avoidList.join(', ') : 'none'}. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
-    'music-pronounce': (avoidList)=> `Suggest ${VIDEO_BATCH_SIZE} real English songs appropriate for ${state.level} level that are good for pronunciation practice (clear, slow-ish singing). For each item return: title (song title), subtitle (artist name), reason (one short tip), and youtube_query (a precise YouTube search query to find its LYRIC VIDEO — a video that shows the song's lyrics as on-screen text — e.g. "Song Title Artist lyrics"). The query must be aimed at finding a lyrics video, not a plain music video. Do not repeat any of these songs already suggested: ${avoidList && avoidList.length ? avoidList.join(', ') : 'none'}. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
+    'movies-adventure': (avoidList)=> `Suggest ${VIDEO_BATCH_SIZE} real ADVENTURE genre movies released between 2014 and 2026 (recent, modern movies only — do NOT suggest anything older than 2014) that are legally available to watch as a COMPLETE, FULL-LENGTH film (around 1.5 to 2.5 hours, NOT a clip or scene) for free on YouTube — such as full movies officially uploaded by a studio/rights-holder channel or a legitimate free-movie channel. Every movie MUST genuinely belong to the adventure genre (exploration, quests, journeys, treasure hunts, survival, epic action-adventure). Prefer well-known, popular movies enjoyable by adults (not children's cartoons/animated movies), appropriate for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. For each item return: title (the movie name), subtitle (release year — must be 2014 or later), reason (one short sentence on why it helps this learner), and youtube_query (a precise YouTube search query aimed at finding the FULL MOVIE upload, e.g. "Movie Name (Year) full movie" or "Movie Name full movie English"). Do NOT search for trailers, teasers, scene clips, or "best scenes" compilations — only the complete film. Do not repeat any of these movies already suggested: ${avoidList && avoidList.length ? avoidList.join(', ') : 'none'}. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
+    'movies-comedy': (avoidList)=> `Suggest ${VIDEO_BATCH_SIZE} real COMEDY genre movies released between 2014 and 2026 (recent, modern movies only — do NOT suggest anything older than 2014) that are legally available to watch as a COMPLETE, FULL-LENGTH film (around 1.5 to 2.5 hours, NOT a clip or scene) for free on YouTube — such as full movies officially uploaded by a studio/rights-holder channel or a legitimate free-movie channel. Every movie MUST genuinely belong to the comedy genre (funny, humorous, comedic). Prefer well-known, popular movies enjoyable by adults (not children's cartoons/animated movies), appropriate for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. For each item return: title (the movie name), subtitle (release year — must be 2014 or later), reason (one short sentence on why it helps this learner), and youtube_query (a precise YouTube search query aimed at finding the FULL MOVIE upload, e.g. "Movie Name (Year) full movie" or "Movie Name full movie English"). Do NOT search for trailers, teasers, scene clips, or "best scenes" compilations — only the complete film. Do not repeat any of these movies already suggested: ${avoidList && avoidList.length ? avoidList.join(', ') : 'none'}. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
+    'movies-action': (avoidList)=> `Suggest ${VIDEO_BATCH_SIZE} real ACTION genre movies released between 2014 and 2026 (recent, modern movies only — do NOT suggest anything older than 2014) that are legally available to watch as a COMPLETE, FULL-LENGTH film (around 1.5 to 2.5 hours, NOT a clip or scene) for free on YouTube — such as full movies officially uploaded by a studio/rights-holder channel or a legitimate free-movie channel. Every movie MUST genuinely belong to the action genre (fights, chases, explosions, combat, high-stakes physical conflict). Prefer well-known, popular movies enjoyable by adults (not children's cartoons/animated movies), appropriate for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. For each item return: title (the movie name), subtitle (release year — must be 2014 or later), reason (one short sentence on why it helps this learner), and youtube_query (a precise YouTube search query aimed at finding the FULL MOVIE upload, e.g. "Movie Name (Year) full movie" or "Movie Name full movie English"). Do NOT search for trailers, teasers, scene clips, or "best scenes" compilations — only the complete film. Do not repeat any of these movies already suggested: ${avoidList && avoidList.length ? avoidList.join(', ') : 'none'}. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
+    'music-pronounce': (avoidList)=> `Suggest ${VIDEO_BATCH_SIZE} real English songs appropriate for ${state.level} level that are good for pronunciation practice (clear, slow-ish singing). For each item return: title (song title), subtitle (artist name), reason (one short tip), and youtube_query (a precise YouTube search query to find its official LYRIC VIDEO — a video that shows the song's lyrics as on-screen text throughout — always end the query with the word "lyrics", e.g. "Song Title Artist official lyrics" or "Song Title Artist lyric video"). The query MUST be aimed at finding a lyrics video, not a plain music video. Do not repeat any of these songs already suggested: ${avoidList && avoidList.length ? avoidList.join(', ') : 'none'}. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
     'music-listen': (avoidList)=> `Suggest ${VIDEO_BATCH_SIZE} real English songs released between 2024 and 2026 (new, recent releases only — in the style/era of artists like Dean Lewis) appropriate for ${state.level} level that are good for general listening practice. For each item return: title (song title), subtitle (artist name, and release year), reason (one short reason), and youtube_query (a precise YouTube search query to find its NORMAL official music video, NOT a lyrics video, e.g. "Song Title Artist official music video"). Do not repeat any of these songs already suggested: ${avoidList && avoidList.length ? avoidList.join(', ') : 'none'}. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`
   };
 
   // Search the real YouTube Data API v3 for one embeddable video matching a query.
   // duration: optional YouTube "videoDuration" filter — 'short' (<4min), 'medium' (4-20min), 'long' (>20min), or omitted for any length.
   // publishedAfter: optional ISO date string to restrict results to videos published on/after that date.
-  async function ytSearchVideo(query, duration, publishedAfter){
+  // titleMustInclude / titleMustExclude: optional lowercase keyword the top-ranked matching result's title must contain / must not contain
+  // (used to reliably tell lyric videos apart from normal music videos, since the YouTube API has no dedicated "lyrics" filter).
+  async function ytSearchVideo(query, duration, publishedAfter, titleMustInclude, titleMustExclude){
     if (!state.youtubeKey) return null;
-    let url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&type=video&videoEmbeddable=true&safeSearch=strict&q='
+    let url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=8&type=video&videoEmbeddable=true&safeSearch=strict&q='
       + encodeURIComponent(query) + '&key=' + encodeURIComponent(state.youtubeKey);
     if (duration) url += '&videoDuration=' + encodeURIComponent(duration);
     if (publishedAfter) url += '&publishedAfter=' + encodeURIComponent(publishedAfter);
@@ -1227,14 +1225,28 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
       throw err;
     }
     const data = await res.json();
-    const item = data.items && data.items[0];
-    if (!item || !item.id || !item.id.videoId) return null;
+    const items = (data.items || []).filter(it=> it.id && it.id.videoId);
+    if (!items.length) return null;
+    if (titleMustInclude){
+      const withKeyword = items.find(it=> (it.snippet && it.snippet.title || '').toLowerCase().includes(titleMustInclude));
+      if (withKeyword) return { id: withKeyword.id.videoId, title: withKeyword.snippet && withKeyword.snippet.title };
+      // No result had the keyword in the title — better to skip this seed than show a wrong-type video.
+      return null;
+    }
+    if (titleMustExclude){
+      const withoutKeyword = items.find(it=> !(it.snippet && it.snippet.title || '').toLowerCase().includes(titleMustExclude));
+      if (withoutKeyword) return { id: withoutKeyword.id.videoId, title: withoutKeyword.snippet && withoutKeyword.snippet.title };
+    }
+    const item = items[0];
     return { id: item.id.videoId, title: item.snippet && item.snippet.title };
   }
   // Duration filter per discovery topic: movies should be longer clips, not short trailers.
-  const TOPIC_VIDEO_DURATION = { movies: 'long' };
+  const TOPIC_VIDEO_DURATION = { 'movies-adventure':'long', 'movies-comedy':'long', 'movies-action':'long' };
   // publishedAfter filter per discovery topic (ISO date) — keeps results within the required year range.
-  const TOPIC_PUBLISHED_AFTER = { movies: '2014-01-01T00:00:00Z', 'music-listen': '2024-01-01T00:00:00Z' };
+  const TOPIC_PUBLISHED_AFTER = { 'movies-adventure':'2014-01-01T00:00:00Z', 'movies-comedy':'2014-01-01T00:00:00Z', 'movies-action':'2014-01-01T00:00:00Z', 'music-listen': '2024-01-01T00:00:00Z' };
+  // Title keyword requirements so pronunciation (lyric) videos and listening (normal) videos never get mixed up.
+  const TOPIC_TITLE_MUST_INCLUDE = { 'music-pronounce': 'lyric' };
+  const TOPIC_TITLE_MUST_EXCLUDE = { 'music-listen': 'lyric' };
   function isYoutubeKeyError(message){
     return /API key not valid|keyInvalid|403|API_KEY_INVALID/i.test(message||'');
   }
@@ -1250,6 +1262,11 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
 
   // Topics that expand into a sub-menu before showing results.
   const TOPIC_GROUPS = {
+    movies: [
+      { key:'movies-adventure', label:'Adventure' },
+      { key:'movies-comedy', label:'Comedy' },
+      { key:'movies-action', label:'Action' }
+    ],
     music: [
       { key:'music-pronounce', label:'Pronounce' },
       { key:'music-listen', label:'Listen' }
@@ -1265,8 +1282,8 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
       { key:'twister-hard', label:'Hard' }
     ]
   };
-  const GROUP_TITLES = { music:'Music', books:'Books', twister:'Twister' };
-  const TOPIC_TITLES = { movies:'Movies' };
+  const GROUP_TITLES = { movies:'Movies', music:'Music', books:'Books', twister:'Twister' };
+  const TOPIC_TITLES = { 'movies-adventure':'Adventure', 'movies-comedy':'Comedy', 'movies-action':'Action' };
 
   // Hand-picked tongue twisters — 50 per difficulty (Hard ones are especially challenging).
   const TWISTERS = {
@@ -1428,18 +1445,6 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
     ]
   };
 
-  // ---- Text-to-speech for tongue twisters ----
-  function speakText(text){
-    try{
-      if (!window.speechSynthesis) return;
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'en-US';
-      utter.rate = 0.85;
-      window.speechSynthesis.speak(utter);
-    }catch(e){}
-  }
-
   // Navigation stack so the back button can step out of results -> sub-menu -> Home.
   let discoveryStack = [];
 
@@ -1516,13 +1521,7 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
       const textSpan = document.createElement('span');
       textSpan.className = 'tw-text';
       textSpan.textContent = t;
-      const speakBtn = document.createElement('button');
-      speakBtn.className = 'tw-speak';
-      speakBtn.type = 'button';
-      speakBtn.textContent = '🔊';
-      speakBtn.addEventListener('click', (e)=>{ e.stopPropagation(); speakText(t); });
       item.appendChild(textSpan);
-      item.appendChild(speakBtn);
       list.appendChild(item);
     });
     discoveryBody.innerHTML = '';
@@ -1928,7 +1927,7 @@ Return ONLY the JSON array matching the schema, no extra text.`;
     });
   }
 
-  // ---------- Infinite-scroll video discovery state (Movies / Music-Pronounce / Music-Listen) ----------
+  // ---------- Infinite-scroll video discovery state (Movies genres / Music-Pronounce / Music-Listen) ----------
   const videoTopicState = {}; // topicKey -> { items:[], titlesSeen:Set, idsSeen:Set, loading:bool, exhausted:bool }
   function getVideoTopicState(topicKey){
     if (!videoTopicState[topicKey]){
@@ -1949,10 +1948,16 @@ Return ONLY the JSON array matching the schema, no extra text.`;
     const seeds = JSON.parse(seedsRaw);
     const duration = TOPIC_VIDEO_DURATION[topicKey];
     const publishedAfter = TOPIC_PUBLISHED_AFTER[topicKey];
+    const titleMustInclude = TOPIC_TITLE_MUST_INCLUDE[topicKey];
+    const titleMustExclude = TOPIC_TITLE_MUST_EXCLUDE[topicKey];
 
     const results = await Promise.all(seeds.map(async (s)=>{
       try{
-        const found = await ytSearchVideo(s.youtube_query, duration, publishedAfter);
+        // For lyric-video topics, make sure the query itself also asks for lyrics —
+        // this is a belt-and-suspenders fix on top of the title keyword filter below.
+        let q = s.youtube_query;
+        if (titleMustInclude && !/lyric/i.test(q)) q = q + ' lyrics';
+        const found = await ytSearchVideo(q, duration, publishedAfter, titleMustInclude, titleMustExclude);
         if (!found) return null;
         return { id: found.id, title: s.title, subtitle: s.subtitle, reason: s.reason };
       }catch(err){
@@ -2418,4 +2423,3 @@ Start by warmly greeting the learner in English and asking an easy question to b
 </script>
 </body>
 </html>
-    
