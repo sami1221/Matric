@@ -325,7 +325,7 @@
     <div class="hint am">Key ከሌለህ <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a> ላይ በነፃ ማግኘት ትችላለህ። Key ያለው በዚህ መሳሪያ ላይ ብቻ ተቀምጦ ይቆያል።</div>
 
     <button class="cta am" id="startBtn" disabled>ጀምር</button>
-    <div style="text-align:center; font-size:10.5px; opacity:0.35; margin-top:14px;">build: live v1beta fixed · v10</div>
+    <div style="text-align:center; font-size:10.5px; opacity:0.35; margin-top:14px;">build: live diag · v11</div>
   </div>
 
   <!-- MAIN APP -->
@@ -849,6 +849,7 @@ Start by warmly greeting the learner in English and asking an easy question to b
     liveMicBtn.classList.remove('connecting','live');
     live.active = false;
     if (live.connectTimeout){ clearTimeout(live.connectTimeout); live.connectTimeout=null; }
+    if (live.progressInterval){ clearInterval(live.progressInterval); live.progressInterval=null; }
     if (live.processor){ try{ live.processor.disconnect(); }catch(e){} live.processor=null; }
     if (live.source){ try{ live.source.disconnect(); }catch(e){} live.source=null; }
     if (live.silentGain){ try{ live.silentGain.disconnect(); }catch(e){} live.silentGain=null; }
@@ -886,9 +887,20 @@ Start by warmly greeting the learner in English and asking an easy question to b
 
       live.connectTimeout = setTimeout(()=>{
         if (!live.active){
-          failLive('ግንኙነት ጊዜው አለፈ (timeout) — ኔትወርክህን አረጋግጥ ወይም እንደገና ሞክር');
+          const rs = live.ws ? live.ws.readyState : -1;
+          const rsNames = {0:'CONNECTING',1:'OPEN',2:'CLOSING',3:'CLOSED'};
+          failLive('ጊዜው አለፈ (timeout) — readyState: ' + (rsNames[rs]||rs) + '. ኔትወርክህን አረጋግጥ ወይም እንደገና ሞክር');
         }
       }, 10000);
+
+      let elapsed = 0;
+      live.progressInterval = setInterval(()=>{
+        if (live.active){ clearInterval(live.progressInterval); return; }
+        elapsed += 1;
+        const rs = live.ws ? live.ws.readyState : -1;
+        const rsNames = {0:'CONNECTING',1:'OPEN(no setupComplete yet)',2:'CLOSING',3:'CLOSED'};
+        liveStatus.textContent = 'እየተገናኘ... ' + elapsed + 's — ' + (rsNames[rs]||rs);
+      }, 1000);
 
       live.ws.onopen = ()=>{
         live.ws.send(JSON.stringify({
