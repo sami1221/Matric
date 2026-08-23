@@ -376,6 +376,15 @@
     width:44px; height:44px; border-radius:50%; font-size:19px; cursor:pointer;
   }
   .live-controls-row{ display:flex; align-items:center; gap:16px; }
+
+  /* ---------- YouTube embeds in Discovery ---------- */
+  .yt-list{ display:flex; flex-direction:column; gap:14px; margin-top:14px; }
+  .yt-item{ background:var(--ink-2); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+  .yt-embed{ position:relative; width:100%; padding-top:56.25%; background:#000; }
+  .yt-embed iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+  .yt-meta{ padding:10px 12px 12px; }
+  .yt-title{ font-size:13.5px; font-weight:600; line-height:1.4; }
+  .yt-why{ font-size:12.5px; opacity:0.65; margin-top:4px; line-height:1.5; }
 </style>
 </head>
 <body>
@@ -413,7 +422,7 @@
     <div class="hint am">Key ከሌለህ <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a> ላይ በነፃ ማግኘት ትችላለህ። Key ያለው በዚህ መሳሪያ ላይ ብቻ ተቀምጦ ይቆያል።</div>
 
     <button class="cta am" id="startBtn" disabled>ጀምር</button>
-    <div style="text-align:center; font-size:10.5px; opacity:0.35; margin-top:14px;">build: fixes-batch-1 · v13</div>
+    <div style="text-align:center; font-size:10.5px; opacity:0.35; margin-top:14px;">build: fixes-batch-4 · v16 (grammar/spoken/vocab = real books)</div>
   </div>
 
   <!-- MAIN APP -->
@@ -1056,13 +1065,34 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
 
   // Prompts for Gemini-driven (Google Search grounded) discovery topics.
   const TOPIC_PROMPTS = {
-    movies: ()=> `Suggest 3 real English-language movies (or short films/trailers) that are great for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. For each, give the title and one short sentence on why it helps. Use Google Search to ground your answer in real, currently findable titles. Respond only in English.`,
-    'music-pronounce': ()=> `Suggest 2-3 real English songs appropriate for ${state.level} level that are good for pronunciation practice (clear, slow-ish singing). Give title, artist, and one short tip. Use Google Search to ground the suggestions in real songs. Respond only in English.`,
-    'music-listen': ()=> `Suggest 2-3 real English songs appropriate for ${state.level} level that are good for general listening practice. Give title, artist, and one short reason. Use Google Search to ground the suggestions in real songs. Respond only in English.`,
-    grammar: ()=> `Suggest 2-3 good English grammar learning resources or videos suitable for an Amharic speaker at ${state.level} level. Use Google Search to find real, currently available resources. Respond only in English.`,
-    spoken: ()=> `Suggest 2-3 good spoken-English practice resources or videos suitable for an Amharic speaker at ${state.level} level. Use Google Search to find real, currently available resources. Respond only in English.`,
-    vocabulary: ()=> `Suggest 2-3 good English vocabulary-building resources or videos suitable for an Amharic speaker at ${state.level} level. Use Google Search to find real, currently available resources. Respond only in English.`
+    movies: ()=> `Find 3 real English-language movie trailers on YouTube (official trailers only) that are great for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. Use Google Search restricted to site:youtube.com to find their exact YouTube watch page URLs (format: https://www.youtube.com/watch?v=VIDEO_ID). For each, name the movie and give one short sentence on why it helps this learner. Respond only in English, and make sure every recommendation is backed by a real youtube.com/watch link you found via search.`,
+    'music-pronounce': ()=> `Find 2-3 real English songs' official music videos or lyric videos on YouTube that are appropriate for ${state.level} level and good for pronunciation practice (clear, slow-ish singing). Use Google Search restricted to site:youtube.com to find their exact YouTube watch page URLs (format: https://www.youtube.com/watch?v=VIDEO_ID). For each, give the song title, artist, and one short tip. Respond only in English, and make sure every recommendation is backed by a real youtube.com/watch link you found via search.`,
+    'music-listen': ()=> `Find 2-3 real English songs' official music videos or lyric videos on YouTube that are appropriate for ${state.level} level and good for general listening practice. Use Google Search restricted to site:youtube.com to find their exact YouTube watch page URLs (format: https://www.youtube.com/watch?v=VIDEO_ID). For each, give the song title, artist, and one short reason. Respond only in English, and make sure every recommendation is backed by a real youtube.com/watch link you found via search.`,
+    grammar: ()=> `Find 3 real, completely free and legal English grammar books or grammar guides (full books, not just articles) available to read online, suitable for an Amharic-speaking learner at ${state.level} level. Use Google Search to find their exact working page URL on a legitimate free site (e.g. Project Gutenberg, Standard Ebooks, Open Library, archive.org, British Council, or a publisher's free sample). For each, give the title, author, and one short sentence on why it fits this level. Respond only in English, and make sure every recommendation is backed by a real link you found via search to a page where the book can be read or downloaded for free and legally.`,
+    spoken: ()=> `Find 3 real, completely free and legal books about spoken English / everyday conversation / pronunciation (full books, not just articles) available to read online, suitable for an Amharic-speaking learner at ${state.level} level. Use Google Search to find their exact working page URL on a legitimate free site (e.g. Project Gutenberg, Standard Ebooks, Open Library, archive.org, British Council, or a publisher's free sample). For each, give the title, author, and one short sentence on why it fits this level. Respond only in English, and make sure every recommendation is backed by a real link you found via search to a page where the book can be read or downloaded for free and legally.`,
+    vocabulary: ()=> `Find 3 real, completely free and legal English vocabulary-building books (full books, not just articles) available to read online, suitable for an Amharic-speaking learner at ${state.level} level. Use Google Search to find their exact working page URL on a legitimate free site (e.g. Project Gutenberg, Standard Ebooks, Open Library, archive.org, British Council, or a publisher's free sample). For each, give the title, author, and one short sentence on why it fits this level. Respond only in English, and make sure every recommendation is backed by a real link you found via search to a page where the book can be read or downloaded for free and legally.`
   };
+
+  // Topics whose Google-Search links should be rendered as embedded YouTube players.
+  const VIDEO_TOPICS = new Set(['movies', 'music-pronounce', 'music-listen']);
+
+  // Extract a YouTube video ID from watch/shorts/youtu.be/embed style URLs. Returns null if not a YouTube link.
+  function extractYouTubeId(url){
+    try{
+      const u = new URL(url);
+      const host = u.hostname.replace(/^www\./,'').replace(/^m\./,'');
+      if (host === 'youtu.be'){
+        const id = u.pathname.split('/').filter(Boolean)[0];
+        return id || null;
+      }
+      if (host === 'youtube.com' || host === 'youtube-nocookie.com'){
+        if (u.pathname === '/watch'){ return u.searchParams.get('v'); }
+        const parts = u.pathname.split('/').filter(Boolean);
+        if ((parts[0] === 'shorts' || parts[0] === 'embed' || parts[0] === 'live') && parts[1]){ return parts[1]; }
+      }
+      return null;
+    }catch(e){ return null; }
+  }
 
   // Topics that expand into a sub-menu before showing results.
   const TOPIC_GROUPS = {
@@ -1204,7 +1234,64 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
       discoveryBody.innerHTML = '';
       discoveryBody.appendChild(textDiv);
 
-      if (links && links.length){
+      if (VIDEO_TOPICS.has(topicKey)){
+        // Pull out real YouTube links from the grounding results and embed them as players.
+        const seen = new Set();
+        const videos = [];
+        (links||[]).forEach(l=>{
+          const id = extractYouTubeId(l.uri);
+          if (id && !seen.has(id)){
+            seen.add(id);
+            videos.push({ id, title:l.title });
+          }
+        });
+
+        if (videos.length){
+          const listWrap = document.createElement('div');
+          listWrap.className = 'yt-list';
+          videos.slice(0,4).forEach(v=>{
+            const item = document.createElement('div');
+            item.className = 'yt-item';
+            const embed = document.createElement('div');
+            embed.className = 'yt-embed';
+            const iframe = document.createElement('iframe');
+            iframe.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(v.id);
+            iframe.title = v.title || 'YouTube video';
+            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+            iframe.allowFullscreen = true;
+            iframe.loading = 'lazy';
+            embed.appendChild(iframe);
+            const meta = document.createElement('div');
+            meta.className = 'yt-meta';
+            meta.innerHTML = '<div class="yt-title"></div>';
+            meta.querySelector('.yt-title').textContent = v.title || '';
+            item.appendChild(embed);
+            item.appendChild(meta);
+            listWrap.appendChild(item);
+          });
+          discoveryBody.appendChild(listWrap);
+        } else {
+          // No YouTube link came back from grounding this time — fall back to plain source links.
+          const note = document.createElement('div');
+          note.className = 'discovery-loading am';
+          note.style.padding = '10px 0 0';
+          note.textContent = '⚠️ ቪዲዮ ማምጣት አልተቻለም፣ ከታች ያሉትን ምንጮች ተመልከት';
+          discoveryBody.appendChild(note);
+          if (links && links.length){
+            const linksWrap = document.createElement('div');
+            linksWrap.className = 'discovery-links';
+            links.slice(0,6).forEach(l=>{
+              const a = document.createElement('a');
+              a.href = l.uri;
+              a.target = '_blank';
+              a.rel = 'noopener';
+              a.textContent = '🔗 ' + l.title;
+              linksWrap.appendChild(a);
+            });
+            discoveryBody.appendChild(linksWrap);
+          }
+        }
+      } else if (links && links.length){
         const linksWrap = document.createElement('div');
         linksWrap.className = 'discovery-links';
         links.slice(0,6).forEach(l=>{
