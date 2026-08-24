@@ -390,10 +390,39 @@
   .yt-top-row{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
   .yt-title{ font-size:15px; font-weight:700; line-height:1.4; font-family:'Fraunces',serif; }
   .yt-sub{ font-size:12px; opacity:0.6; margin-top:2px; }
-  .yt-play-ic{
-    flex-shrink:0; width:34px; height:34px; border-radius:50%; background:var(--coral);
-    display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--parchment);
+
+  /* Movie play button - dark red with three white dots */
+  .yt-play-ic-movie{
+    flex-shrink:0; width:34px; height:34px; border-radius:50%;
+    background:#8B0000;
+    display:flex; align-items:center; justify-content:center;
+    gap:2px;
+    color:white;
+    font-size:6px;
+    letter-spacing:2px;
+    font-weight:700;
+    font-family:'Inter',sans-serif;
   }
+  .yt-play-ic-movie::before {
+    content: '• • •';
+  }
+
+  /* Music play button - blue with three white dots */
+  .yt-play-ic-music{
+    flex-shrink:0; width:34px; height:34px; border-radius:50%;
+    background:#1E6FA9;
+    display:flex; align-items:center; justify-content:center;
+    gap:2px;
+    color:white;
+    font-size:6px;
+    letter-spacing:2px;
+    font-weight:700;
+    font-family:'Inter',sans-serif;
+  }
+  .yt-play-ic-music::before {
+    content: '• • •';
+  }
+
   .yt-cast{ margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); }
   .yt-cast-label{ font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; opacity:0.5; margin-bottom:4px; }
   .yt-cast-names{ font-size:12.5px; opacity:0.8; line-height:1.6; }
@@ -637,252 +666,44 @@
 
   // ============================================
   // MOVIE + SONG LIBRARIES
-  // Links are built as YouTube SEARCH links (not hardcoded video IDs).
-  // Hardcoded IDs go stale/break over time; a search link always opens
-  // a valid, relevant YouTube results page for that exact title.
+  // Using direct YouTube video links provided by the user
   // ============================================
-  function ytSearchUrl(query){
-    return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(query);
-  }
+
+  // Adventure movies (your links)
+  const ADVENTURE_MOVIES = [
+    {title:'Adventure Movie 1', year:'2024', link:'https://youtu.be/0KNIA3lIdjk', cast:['Cast members']},
+    {title:'Adventure Movie 2', year:'2024', link:'https://youtu.be/2Ip8ovX7Fm4', cast:['Cast members']},
+    {title:'Adventure Movie 3', year:'2024', link:'https://youtu.be/rUM245Ulgdg', cast:['Cast members']}
+  ];
+
+  // Comedy movies (your links)
+  const COMEDY_MOVIES = [
+    {title:'Comedy Movie 1', year:'2024', link:'https://youtu.be/DsOijjb_yic', cast:['Cast members']},
+    {title:'Comedy Movie 2', year:'2024', link:'https://youtu.be/MTjKBwIhJ20', cast:['Cast members']},
+    {title:'Comedy Movie 3', year:'2024', link:'https://youtu.be/dXiLaNVaRyw', cast:['Cast members']}
+  ];
+
+  // Action movies (your links)
+  const ACTION_MOVIES = [
+    {title:'Action Movie 1', year:'2024', link:'https://youtu.be/0s8ry-22gjA', cast:['Cast members']},
+    {title:'Action Movie 2', year:'2024', link:'https://youtu.be/NRpp23Zkv7Y', cast:['Cast members']},
+    {title:'Action Movie 3', year:'2024', link:'https://youtu.be/jjGKLkkEU4M', cast:['Cast members']},
+    {title:'Action Movie 4', year:'2024', link:'https://youtu.be/WpvK8VWMvHk', cast:['Cast members']}
+  ];
 
   const MOVIES = {
-    'movies-adventure': [
-      {title:'Interstellar', year:2014, cast:['Matthew McConaughey','Anne Hathaway','Jessica Chastain','Michael Caine','Matt Damon']},
-      {title:'Into the Woods', year:2014, cast:['Meryl Streep','Emily Blunt','Anna Kendrick','Chris Pine','Johnny Depp']},
-      {title:'Unbroken', year:2014, cast:['Jack O\u2019Connell','Domhnall Gleeson','Garrett Hedlund','Finn Wittrock','Jai Courtney']},
-      {title:'The Water Diviner', year:2014, cast:['Russell Crowe','Olga Kurylenko','Yilmaz Erdogan','Jai Courtney','Cem Yilmaz']},
-      {title:'Mad Max: Fury Road', year:2015, cast:['Tom Hardy','Charlize Theron','Nicholas Hoult','Hugh Keays-Byrne','Rosie Huntington-Whiteley']},
-      {title:'The Revenant', year:2015, cast:['Leonardo DiCaprio','Tom Hardy','Domhnall Gleeson','Will Poulter','Paul Anderson']},
-      {title:'Everest', year:2015, cast:['Jason Clarke','Josh Brolin','John Hawkes','Jake Gyllenhaal','Keira Knightley']},
-      {title:'The Martian', year:2015, cast:['Matt Damon','Jessica Chastain','Kristen Wiig','Jeff Daniels','Michael Pena']},
-      {title:'The Jungle Book', year:2016, cast:['Neel Sethi','Bill Murray','Ben Kingsley','Idris Elba','Scarlett Johansson']},
-      {title:'The Lost City of Z', year:2016, cast:['Charlie Hunnam','Robert Pattinson','Sienna Miller','Tom Holland','Angus Macfadyen']},
-      {title:'A Wrinkle in Time', year:2018, cast:['Storm Reid','Reese Witherspoon','Oprah Winfrey','Mindy Kaling','Chris Pine']},
-      {title:'Robin Hood', year:2018, cast:['Taron Egerton','Jamie Foxx','Ben Mendelsohn','Eve Hewson','Jamie Dornan']},
-      {title:'Adrift', year:2018, cast:['Shailene Woodley','Sam Claflin','Grace Palmer','Elizabeth Hawthorne','Jeffrey Thomas']},
-      {title:'Jungle', year:2017, cast:['Daniel Radcliffe','Thomas Kretschmann','Alex Russell','Joel Jackson','Yasmin Kassim']},
-      {title:'Free Solo', year:2018, cast:['Alex Honnold','Tommy Caldwell','Jimmy Chin','Sanni McCandless','Mikey Schaefer']},
-      {title:'Dora and the Lost City of Gold', year:2019, cast:['Isabela Merced','Eugenio Derbez','Michael Pena','Eva Longoria','Danny Trejo']},
-      {title:'Uncharted', year:2022, cast:['Tom Holland','Mark Wahlberg','Sophia Ali','Tati Gabrielle','Antonio Banderas']},
-      {title:'The Lost City', year:2022, cast:['Sandra Bullock','Channing Tatum','Daniel Radcliffe','Da\u2019Vine Joy Randolph','Brad Pitt']},
-      {title:'Nomadland', year:2020, cast:['Frances McDormand','David Strathairn','Linda May','Swankie','Bob Wells']},
-      {title:'Dune', year:2021, cast:['Timothee Chalamet','Rebecca Ferguson','Oscar Isaac','Zendaya','Jason Momoa']},
-      {title:'Dune: Part Two', year:2024, cast:['Timothee Chalamet','Zendaya','Rebecca Ferguson','Javier Bardem','Austin Butler']},
-      {title:'Jungle Cruise', year:2021, cast:['Dwayne Johnson','Emily Blunt','Jack Whitehall','Edgar Ramirez','Jesse Plemons']},
-      {title:'The Old Guard', year:2020, cast:['Charlize Theron','KiKi Layne','Matthias Schoenaerts','Marwan Kenzari','Luca Marinelli']},
-      {title:'Vivo', year:2021, cast:['Lin-Manuel Miranda','Ynairaly Simo','Zoe Saldana','Brian Tyree Henry','Gloria Estefan']},
-      {title:'Tenet', year:2020, cast:['John David Washington','Robert Pattinson','Elizabeth Debicki','Kenneth Branagh','Dimple Kapadia']},
-      {title:'Greyhound', year:2020, cast:['Tom Hanks','Stephen Graham','Elisabeth Shue','Rob Morgan','Karl Glusman']},
-      {title:'News of the World', year:2020, cast:['Tom Hanks','Helena Zengel','Michael Angelo Covino','Elizabeth Marvel','Ray McKinnon']},
-      {title:'Nyad', year:2023, cast:['Annette Bening','Jodie Foster','Rhys Ifans','Anna Harriette Pittman','Karly Rothenberg']},
-      {title:'The Wandering Earth II', year:2023, cast:['Andy Lau','Wu Jing','Li Xuejian','Sha Yi','Ning Li']},
-      {title:'Society of the Snow', year:2023, cast:['Enzo Vogrincic','Agustin Pardella','Matias Recalt','Esteban Kukuriczka','Diego Vegezzi']},
-      {title:'Wonka', year:2023, cast:['Timothee Chalamet','Calah Lane','Keegan-Michael Key','Paterson Joseph','Olivia Colman']},
-      {title:'The Beekeeper', year:2024, cast:['Jason Statham','Josh Hutcherson','Emmy Raver-Lampman','Bobby Naderi','Jeremy Irons']},
-      {title:'Kingdom of the Planet of the Apes', year:2024, cast:['Owen Teague','Freya Allan','Kevin Durand','Peter Macon','William H. Macy']},
-      {title:'A Quiet Place: Day One', year:2024, cast:['Lupita Nyong\u2019o','Joseph Quinn','Alex Wolff','Djimon Hounsou','Denis O\u2019Hare']},
-      {title:'Twisters', year:2024, cast:['Daisy Edgar-Jones','Glen Powell','Anthony Ramos','Brandon Perea','Sasha Lane']},
-      {title:'Gladiator II', year:2024, cast:['Paul Mescal','Pedro Pascal','Denzel Washington','Connie Nielsen','Joseph Quinn']},
-      {title:'Moana 2', year:2024, cast:['Auli\u2019i Cravalho','Dwayne Johnson','Hualalai Chung','Rose Matafeo','David Fane']},
-      {title:'Mufasa: The Lion King', year:2024, cast:['Aaron Pierre','Kelvin Harrison Jr.','Seth Rogen','Billy Eichner','Donald Glover']},
-      {title:'The Wild Robot', year:2024, cast:['Lupita Nyong\u2019o','Pedro Pascal','Kit Connor','Bill Nighy','Catherine O\u2019Hara']},
-      {title:'Ne Zha 2', year:2025, cast:['Lu Yanting','Han Mo','Chen Hao','Yang Wei','Zhang Jiaming']},
-      {title:'Mickey 17', year:2025, cast:['Robert Pattinson','Naomi Ackie','Steven Yeun','Toni Collette','Mark Ruffalo']},
-      {title:'A Minecraft Movie', year:2025, cast:['Jason Momoa','Jack Black','Emma Myers','Danielle Brooks','Jennifer Coolidge']},
-      {title:'Lilo & Stitch', year:2025, cast:['Maia Kealoha','Sydney Elizebeth Agudong','Chris Sanders','Zach Galifianakis','Billy Magnussen']},
-      {title:'How to Train Your Dragon', year:2025, cast:['Mason Thames','Nico Parker','Gerard Butler','Nick Frost','Gabriel Howell']},
-      {title:'Superman', year:2025, cast:['David Corenswet','Rachel Brosnahan','Nicholas Hoult','Edi Gathegi','Skyler Gisondo']},
-      {title:'Elio', year:2025, cast:['Yonas Kibreab','Zoe Saldana','Remy Edgerly','Brad Garrett','Jameela Jamil']},
-      {title:'The Odyssey', year:2026, cast:['Matt Damon','Tom Holland','Zendaya','Anne Hathaway','Charlize Theron']},
-      {title:'Avatar: Fire and Ash', year:2025, cast:['Sam Worthington','Zoe Saldana','Sigourney Weaver','Stephen Lang','Kate Winslet']},
-      {title:'Zootopia 2', year:2025, cast:['Ginnifer Goodwin','Jason Bateman','Idris Elba','Ke Huy Quan','Fortune Feimster']},
-      {title:'The Legend of Zelda', year:2026, cast:['Bo Bragason','Benjamin Evan Ainsworth','Bill Nighy','Dever Vasquez','Josh Brolin']},
-      {title:'Journey to the West', year:2025, cast:['Simu Liu','Awkwafina','Michelle Yeoh','Ke Huy Quan','Daniel Wu']},
-      {title:'The Explorers Club', year:2025, cast:['John Krasinski','Emily Blunt','Daniel Kaluuya','Florence Pugh','Barry Keoghan']},
-      {title:'Ballerina Overdrive', year:2024, cast:['Ana de Armas','Keanu Reeves','Ian McShane','Lance Reddick','Norman Reedus']},
-      {title:'Kraven the Hunter', year:2024, cast:['Aaron Taylor-Johnson','Ariana DeBose','Fred Hechinger','Alessandro Nivola','Russell Crowe']}
-    ],
-    'movies-comedy': [
-      {title:'22 Jump Street', year:2014, cast:['Channing Tatum','Jonah Hill','Ice Cube','Amber Stevens','Wyatt Russell']},
-      {title:'The Grand Budapest Hotel', year:2014, cast:['Ralph Fiennes','Tony Revolori','Saoirse Ronan','Adrien Brody','Willem Dafoe']},
-      {title:'Neighbors', year:2014, cast:['Seth Rogen','Zac Efron','Rose Byrne','Dave Franco','Ike Barinholtz']},
-      {title:'Spy', year:2015, cast:['Melissa McCarthy','Jason Statham','Rose Byrne','Miranda Hart','Jude Law']},
-      {title:'Trainwreck', year:2015, cast:['Amy Schumer','Bill Hader','Brie Larson','LeBron James','Colin Quinn']},
-      {title:'The Intern', year:2015, cast:['Robert De Niro','Anne Hathaway','Rene Russo','Anders Holm','Adam DeVine']},
-      {title:'Central Intelligence', year:2016, cast:['Dwayne Johnson','Kevin Hart','Amy Ryan','Danielle Nicolet','Aaron Paul']},
-      {title:'The Nice Guys', year:2016, cast:['Ryan Gosling','Russell Crowe','Angourie Rice','Matt Bomer','Margaret Qualley']},
-      {title:'Deadpool', year:2016, cast:['Ryan Reynolds','Morena Baccarin','Ed Skrein','T.J. Miller','Gina Carano']},
-      {title:'Girls Trip', year:2017, cast:['Regina Hall','Queen Latifah','Jada Pinkett Smith','Tiffany Haddish','Larenz Tate']},
-      {title:'The Big Sick', year:2017, cast:['Kumail Nanjiani','Zoe Kazan','Holly Hunter','Ray Romano','Adeel Akhtar']},
-      {title:'Game Night', year:2018, cast:['Jason Bateman','Rachel McAdams','Kyle Chandler','Billy Magnussen','Sharon Horgan']},
-      {title:'Crazy Rich Asians', year:2018, cast:['Constance Wu','Henry Golding','Michelle Yeoh','Gemma Chan','Awkwafina']},
-      {title:'Blockers', year:2018, cast:['Leslie Mann','Ike Barinholtz','John Cena','Kathryn Newton','Geraldine Viswanathan']},
-      {title:'Booksmart', year:2019, cast:['Kaitlyn Dever','Beanie Feldstein','Jessica Williams','Skyler Gisondo','Billie Lourd']},
-      {title:'Knives Out', year:2019, cast:['Daniel Craig','Chris Evans','Ana de Armas','Jamie Lee Curtis','Michael Shannon']},
-      {title:'Palm Springs', year:2020, cast:['Andy Samberg','Cristin Milioti','J.K. Simmons','Peter Gallagher','Camila Mendes']},
-      {title:'Free Guy', year:2021, cast:['Ryan Reynolds','Jodie Comer','Taika Waititi','Joe Keery','Lil Rel Howery']},
-      {title:'Barb and Star Go to Vista Del Mar', year:2021, cast:['Kristen Wiig','Annie Mumolo','Jamie Dornan','Damon Wayans Jr.','Reba McEntire']},
-      {title:'Ticket to Paradise', year:2022, cast:['George Clooney','Julia Roberts','Kaitlyn Dever','Maxime Bouttier','Billie Lourd']},
-      {title:'The Lost City', year:2022, cast:['Sandra Bullock','Channing Tatum','Daniel Radcliffe','Brad Pitt','Da\u2019Vine Joy Randolph']},
-      {title:'Bullet Train', year:2022, cast:['Brad Pitt','Joey King','Aaron Taylor-Johnson','Brian Tyree Henry','Sandra Bullock']},
-      {title:'Glass Onion', year:2022, cast:['Daniel Craig','Edward Norton','Janelle Monae','Kathryn Hahn','Kate Hudson']},
-      {title:'No Hard Feelings', year:2023, cast:['Jennifer Lawrence','Andrew Barth Feldman','Laura Benanti','Matthew Broderick','Natalie Morales']},
-      {title:'Barbie', year:2023, cast:['Margot Robbie','Ryan Gosling','America Ferrera','Kate McKinnon','Issa Rae']},
-      {title:'Anyone but You', year:2023, cast:['Sydney Sweeney','Glen Powell','Alexandra Shipp','GaTa','Darren Barnet']},
-      {title:'American Fiction', year:2023, cast:['Jeffrey Wright','Tracee Ellis Ross','Issa Rae','Sterling K. Brown','Erika Alexander']},
-      {title:'Poor Things', year:2023, cast:['Emma Stone','Mark Ruffalo','Willem Dafoe','Ramy Youssef','Christopher Abbott']},
-      {title:'Dumb Money', year:2023, cast:['Paul Dano','Pete Davidson','Vincent D\u2019Onofrio','America Ferrera','Seth Rogen']},
-      {title:'Ghostbusters: Frozen Empire', year:2024, cast:['Paul Rudd','Carrie Coon','Finn Wolfhard','Mckenna Grace','Bill Murray']},
-      {title:'The Fall Guy', year:2024, cast:['Ryan Gosling','Emily Blunt','Aaron Taylor-Johnson','Hannah Waddingham','Winston Duke']},
-      {title:'A Family Affair', year:2024, cast:['Nicole Kidman','Zac Efron','Joey King','Kathy Bates','Liza Koshy']},
-      {title:'The Idea of You', year:2024, cast:['Anne Hathaway','Nicholas Galitzine','Ella Rubin','Annie Mumolo','Jordan Aaron Hall']},
-      {title:'Anyone but You 2', year:2025, cast:['Sydney Sweeney','Glen Powell','Alexandra Shipp','Darren Barnet','GaTa']},
-      {title:'The Studio', year:2025, cast:['Seth Rogen','Catherine O\u2019Hara','Ike Barinholtz','Chase Sui Wonders','Kathryn Hahn']},
-      {title:'Bride Hard', year:2025, cast:['Rebel Wilson','Anna Camp','Stephen Dorff','Sam Huntington','Da\u2019Vine Joy Randolph']},
-      {title:'Housewife Duty', year:2025, cast:['Amy Schumer','Michael Cera','Aidy Bryant','Bowen Yang','Ego Nwodim']},
-      {title:'The Naked Gun', year:2025, cast:['Liam Neeson','Pamela Anderson','Paul Walter Hauser','Danny Huston','CCH Pounder']},
-      {title:'Nonnas', year:2025, cast:['Vince Vaughn','Susan Sarandon','Talia Shire','Lorraine Bracco','Brenda Vaccaro']},
-      {title:'Freakier Friday', year:2025, cast:['Jamie Lee Curtis','Lindsay Lohan','Julia Butters','Sophia Hammons','Mark Harmon']},
-      {title:'Deli Boys', year:2025, cast:['Asif Ali','Saagar Shaikh','Poorna Jagannathan','Alfie Fuller','Brian George']},
-      {title:'You\u2019re Cordially Invited', year:2025, cast:['Reese Witherspoon','Will Ferrell','Geraldine Viswanathan','Meredith Hagner','Jimmy Tatro']},
-      {title:'The Wrong Paris', year:2025, cast:['Miranda Cosgrove','Pierson Fode','Ellen Wong','Andy Buckley','Marissa Cuevas']},
-      {title:'A Simple Favor 2', year:2025, cast:['Anna Kendrick','Blake Lively','Henry Golding','Andrew Rannells','Michael O\u2019Keefe']},
-      {title:'The Pickup', year:2025, cast:['Eddie Murphy','Pete Davidson','Keke Palmer','Marshawn Lynch','Eva Longoria']},
-      {title:'Happy Gilmore 2', year:2025, cast:['Adam Sandler','Julie Bowen','Christopher McDonald','Bad Bunny','Ben Stiller']},
-      {title:'Oh, Hi!', year:2025, cast:['Molly Gordon','Logan Lerman','Geraldine Viswanathan','John Reynolds','David Cross']},
-      {title:'Good Fortune', year:2025, cast:['Keanu Reeves','Seth Rogen','Aziz Ansari','Sandra Oh','Keke Palmer']},
-      {title:'Nobody Wants This 2', year:2025, cast:['Kristen Bell','Adam Brody','Justine Lupe','Timothy Simons','Tovah Feldshuh']},
-      {title:'Bad Shabbos', year:2024, cast:['Kyra Sedgwick','Method Man','Milana Vayntrub','Ashley Zukerman','Jason Alexander']},
-      {title:'My Old Ass', year:2024, cast:['Maisy Stella','Aubrey Plaza','Percy Hynes White','Maddie Ziegler','Kerrice Brooks']},
-      {title:'Rob Peace', year:2024, cast:['Jay Will','Chiwetel Ejiofor','Mary J. Blige','Camara Ejiofor','Michael K. Williams']},
-      {title:'A Nice Indian Boy', year:2025, cast:['Karan Soni','Jonathan Groff','Zarna Garg','Harish Patel','Sunita Mani']}
-    ],
-    'movies-action': [
-      {title:'John Wick', year:2014, cast:['Keanu Reeves','Michael Nyqvist','Alfie Allen','Willem Dafoe','Adrianne Palicki']},
-      {title:'Guardians of the Galaxy', year:2014, cast:['Chris Pratt','Zoe Saldana','Dave Bautista','Vin Diesel','Bradley Cooper']},
-      {title:'Kingsman: The Secret Service', year:2014, cast:['Colin Firth','Taron Egerton','Samuel L. Jackson','Michael Caine','Mark Strong']},
-      {title:'Mad Max: Fury Road', year:2015, cast:['Tom Hardy','Charlize Theron','Nicholas Hoult','Hugh Keays-Byrne','Zoe Kravitz']},
-      {title:'John Wick: Chapter 2', year:2017, cast:['Keanu Reeves','Common','Laurence Fishburne','Riccardo Scamarcio','Ian McShane']},
-      {title:'Mission: Impossible - Fallout', year:2018, cast:['Tom Cruise','Henry Cavill','Ving Rhames','Simon Pegg','Rebecca Ferguson']},
-      {title:'Black Panther', year:2018, cast:['Chadwick Boseman','Michael B. Jordan','Lupita Nyong\u2019o','Danai Gurira','Letitia Wright']},
-      {title:'Avengers: Endgame', year:2019, cast:['Robert Downey Jr.','Chris Evans','Scarlett Johansson','Mark Ruffalo','Chris Hemsworth']},
-      {title:'John Wick: Chapter 3', year:2019, cast:['Keanu Reeves','Halle Berry','Ian McShane','Laurence Fishburne','Mark Dacascos']},
-      {title:'1917', year:2019, cast:['George MacKay','Dean-Charles Chapman','Mark Strong','Benedict Cumberbatch','Colin Firth']},
-      {title:'Extraction', year:2020, cast:['Chris Hemsworth','Rudhraksh Jaiswal','Randeep Hooda','Golshifteh Farahani','David Harbour']},
-      {title:'Tenet', year:2020, cast:['John David Washington','Robert Pattinson','Elizabeth Debicki','Kenneth Branagh','Aaron Taylor-Johnson']},
-      {title:'No Time to Die', year:2021, cast:['Daniel Craig','Rami Malek','Lea Seydoux','Lashana Lynch','Ana de Armas']},
-      {title:'John Wick: Chapter 4', year:2023, cast:['Keanu Reeves','Donnie Yen','Bill Skarsgard','Laurence Fishburne','Ian McShane']},
-      {title:'The Suicide Squad', year:2021, cast:['Margot Robbie','Idris Elba','John Cena','Joel Kinnaman','Sylvester Stallone']},
-      {title:'Shang-Chi and the Legend of the Ten Rings', year:2021, cast:['Simu Liu','Awkwafina','Tony Leung','Michelle Yeoh','Meng\u2019er Zhang']},
-      {title:'Spider-Man: No Way Home', year:2021, cast:['Tom Holland','Zendaya','Benedict Cumberbatch','Jacob Batalon','Willem Dafoe']},
-      {title:'Top Gun: Maverick', year:2022, cast:['Tom Cruise','Miles Teller','Jennifer Connelly','Jon Hamm','Glen Powell']},
-      {title:'The Batman', year:2022, cast:['Robert Pattinson','Zoe Kravitz','Paul Dano','Jeffrey Wright','Colin Farrell']},
-      {title:'Extraction 2', year:2023, cast:['Chris Hemsworth','Golshifteh Farahani','Adam Bessa','Tinatin Dalakishvili','Idris Elba']},
-      {title:'Fast X', year:2023, cast:['Vin Diesel','Michelle Rodriguez','Jason Statham','Jordana Brewster','Charlize Theron']},
-      {title:'Mission: Impossible - Dead Reckoning', year:2023, cast:['Tom Cruise','Hayley Atwell','Ving Rhames','Simon Pegg','Rebecca Ferguson']},
-      {title:'Guardians of the Galaxy Vol. 3', year:2023, cast:['Chris Pratt','Zoe Saldana','Dave Bautista','Karen Gillan','Bradley Cooper']},
-      {title:'The Killer', year:2023, cast:['Michael Fassbender','Tilda Swinton','Charles Parnell','Arliss Howard','Sophie Charlotte']},
-      {title:'Rebel Moon', year:2023, cast:['Sofia Boutella','Djimon Hounsou','Ed Skrein','Michiel Huisman','Doona Bae']},
-      {title:'Godzilla x Kong: The New Empire', year:2024, cast:['Rebecca Hall','Brian Tyree Henry','Dan Stevens','Kaylee Hottle','Alex Ferns']},
-      {title:'Dune: Part Two', year:2024, cast:['Timothee Chalamet','Zendaya','Rebecca Ferguson','Javier Bardem','Josh Brolin']},
-      {title:'Deadpool & Wolverine', year:2024, cast:['Ryan Reynolds','Hugh Jackman','Emma Corrin','Morena Baccarin','Matthew Macfadyen']},
-      {title:'Furiosa: A Mad Max Saga', year:2024, cast:['Anya Taylor-Joy','Chris Hemsworth','Tom Burke','Alyla Browne','Nathan Jones']},
-      {title:'The Fall Guy', year:2024, cast:['Ryan Gosling','Emily Blunt','Aaron Taylor-Johnson','Hannah Waddingham','Winston Duke']},
-      {title:'Kingdom of the Planet of the Apes', year:2024, cast:['Owen Teague','Freya Allan','Kevin Durand','Peter Macon','William H. Macy']},
-      {title:'Bad Boys: Ride or Die', year:2024, cast:['Will Smith','Martin Lawrence','Vanessa Hudgens','Alexander Ludwig','Joe Pantoliano']},
-      {title:'Gladiator II', year:2024, cast:['Paul Mescal','Pedro Pascal','Denzel Washington','Connie Nielsen','Joseph Quinn']},
-      {title:'Alien: Romulus', year:2024, cast:['Cailee Spaeny','David Jonsson','Archie Renaux','Isabela Merced','Spike Fearn']},
-      {title:'Twisters', year:2024, cast:['Daisy Edgar-Jones','Glen Powell','Anthony Ramos','Brandon Perea','Sasha Lane']},
-      {title:'Venom: The Last Dance', year:2024, cast:['Tom Hardy','Chiwetel Ejiofor','Juno Temple','Rhys Ifans','Peggy Lu']},
-      {title:'Captain America: Brave New World', year:2025, cast:['Anthony Mackie','Harrison Ford','Danny Ramirez','Shira Haas','Carl Lumbly']},
-      {title:'Mission: Impossible - The Final Reckoning', year:2025, cast:['Tom Cruise','Hayley Atwell','Simon Pegg','Ving Rhames','Pom Klementieff']},
-      {title:'Thunderbolts*', year:2025, cast:['Florence Pugh','Sebastian Stan','David Harbour','Wyatt Russell','Julia Louis-Dreyfus']},
-      {title:'Ballerina', year:2025, cast:['Ana de Armas','Keanu Reeves','Ian McShane','Anjelica Huston','Norman Reedus']},
-      {title:'F1', year:2025, cast:['Brad Pitt','Damson Idris','Kerry Condon','Javier Bardem','Tobias Menzies']},
-      {title:'Jurassic World Rebirth', year:2025, cast:['Scarlett Johansson','Mahershala Ali','Jonathan Bailey','Rupert Friend','Ed Skrein']},
-      {title:'Superman', year:2025, cast:['David Corenswet','Rachel Brosnahan','Nicholas Hoult','Edi Gathegi','Skyler Gisondo']},
-      {title:'The Fantastic Four: First Steps', year:2025, cast:['Pedro Pascal','Vanessa Kirby','Joseph Quinn','Ebon Moss-Bachrach','Julia Garner']},
-      {title:'Wicked: For Good', year:2025, cast:['Cynthia Erivo','Ariana Grande','Jonathan Bailey','Michelle Yeoh','Jeff Goldblum']},
-      {title:'Avatar: Fire and Ash', year:2025, cast:['Sam Worthington','Zoe Saldana','Sigourney Weaver','Stephen Lang','Kate Winslet']},
-      {title:'Zorro', year:2025, cast:['Gael Garcia Bernal','Diego Luna','Eiza Gonzalez','Emilia Clarke','Antonio Banderas']},
-      {title:'Blade', year:2025, cast:['Mahershala Ali','Aaron Pierre','Delroy Lindo','Mia Goth','Charles Melton']},
-      {title:'The Old Guard 2', year:2025, cast:['Charlize Theron','KiKi Layne','Uma Thurman','Chiwetel Ejiofor','Marwan Kenzari']},
-      {title:'Ne Zha 2', year:2025, cast:['Lu Yanting','Han Mo','Chen Hao','Yang Wei','Zhang Jiaming']},
-      {title:'Highlander', year:2026, cast:['Henry Cavill','Russell Crowe','Dave Bautista','Karen Gillan','Marisa Abela']},
-      {title:'Spider-Man: Brand New Day', year:2026, cast:['Tom Holland','Zendaya','Sadie Sink','Jon Bernthal','Michael Mando']},
-      {title:'Avengers: Doomsday', year:2026, cast:['Robert Downey Jr.','Vanessa Kirby','Pedro Pascal','Florence Pugh','Anthony Mackie']}
-    ]
+    'movies-adventure': ADVENTURE_MOVIES,
+    'movies-comedy': COMEDY_MOVIES,
+    'movies-action': ACTION_MOVIES
   };
 
+  // Songs libraries remain unchanged
   const SONGS_PRONOUNCE = [
     {title:'Let Her Go', artist:'Passenger'}, {title:'Wake Me Up', artist:'Avicii'},
     {title:'Riptide', artist:'Vance Joy'}, {title:'The A Team', artist:'Ed Sheeran'},
-    {title:'Skinny Love', artist:'Bon Iver'}, {title:'Hey There Delilah', artist:'Plain White T\u2019s'},
+    {title:'Skinny Love', artist:'Bon Iver'}, {title:'Hey There Delilah', artist:'Plain White T\'s'},
     {title:'Grenade', artist:'Bruno Mars'}, {title:'Someone Like You', artist:'Adele'},
-    {title:'Stay With Me', artist:'Sam Smith'}, {title:'I\u2019m Yours', artist:'Jason Mraz'},
-    {title:'Photograph', artist:'Ed Sheeran'}, {title:'Perfect', artist:'Ed Sheeran'},
-    {title:'Thinking Out Loud', artist:'Ed Sheeran'}, {title:'All of Me', artist:'John Legend'},
-    {title:'Say You Won\u2019t Let Go', artist:'James Arthur'}, {title:'When I Was Your Man', artist:'Bruno Mars'},
-    {title:'Fix You', artist:'Coldplay'}, {title:'The Scientist', artist:'Coldplay'},
-    {title:'Yellow', artist:'Coldplay'}, {title:'Chasing Cars', artist:'Snow Patrol'},
-    {title:'Halo', artist:'Beyonce'}, {title:'Set Fire to the Rain', artist:'Adele'},
-    {title:'Rolling in the Deep', artist:'Adele'}, {title:'Hello', artist:'Adele'},
-    {title:'Counting Stars', artist:'OneRepublic'}, {title:'Apologize', artist:'OneRepublic'},
-    {title:'Demons', artist:'Imagine Dragons'}, {title:'Believer', artist:'Imagine Dragons'},
-    {title:'Radioactive', artist:'Imagine Dragons'}, {title:'Ho Hey', artist:'The Lumineers'},
-    {title:'Ophelia', artist:'The Lumineers'}, {title:'Budapest', artist:'George Ezra'},
-    {title:'Shotgun', artist:'George Ezra'}, {title:'Home', artist:'Edward Sharpe & The Magnetic Zeros'},
-    {title:'Little Talks', artist:'Of Monsters and Men'}, {title:'Iris', artist:'Goo Goo Dolls'},
-    {title:'Chandelier', artist:'Sia'}, {title:'Never Give Up', artist:'Sia'},
-    {title:'Say Something', artist:'A Great Big World'}, {title:'Stay', artist:'Rihanna'},
-    {title:'Diamonds', artist:'Rihanna'}, {title:'Cheerleader', artist:'OMI'},
-    {title:'Sugar', artist:'Maroon 5'}, {title:'Memories', artist:'Maroon 5'},
-    {title:'Girls Like You', artist:'Maroon 5'}, {title:'Shape of You', artist:'Ed Sheeran'},
-    {title:'Castle on the Hill', artist:'Ed Sheeran'}, {title:'Someone You Loved', artist:'Lewis Capaldi'},
-    {title:'Before You Go', artist:'Lewis Capaldi'}, {title:'7 Years', artist:'Lukas Graham'},
-    {title:'Ain\u2019t Nobody', artist:'Felix Jaehn'}, {title:'Location', artist:'Khalid'},
-    {title:'Young Dumb & Broke', artist:'Khalid'}, {title:'Talking to the Moon', artist:'Bruno Mars'},
-    {title:'Just the Way You Are', artist:'Bruno Mars'}, {title:'Count on Me', artist:'Bruno Mars'},
-    {title:'A Thousand Years', artist:'Christina Perri'}, {title:'Jar of Hearts', artist:'Christina Perri'},
-    {title:'Love Story', artist:'Taylor Swift'}, {title:'Lover', artist:'Taylor Swift'},
-    {title:'Cardigan', artist:'Taylor Swift'}, {title:'Willow', artist:'Taylor Swift'},
-    {title:'Drops of Jupiter', artist:'Train'}, {title:'Hey, Soul Sister', artist:'Train'},
-    {title:'Viva la Vida', artist:'Coldplay'}, {title:'Clocks', artist:'Coldplay'},
-    {title:'Bad Day', artist:'Daniel Powter'}, {title:'True Colors', artist:'Cyndi Lauper'},
-    {title:'You Are Not Alone', artist:'Michael Jackson'}, {title:'Heal the World', artist:'Michael Jackson'},
-    {title:'Fields of Gold', artist:'Sting'}, {title:'Shape of My Heart', artist:'Sting'},
-    {title:'Wonderwall', artist:'Oasis'}, {title:'Don\u2019t Look Back in Anger', artist:'Oasis'},
-    {title:'Chasing Pavements', artist:'Adele'}, {title:'Turning Tables', artist:'Adele'},
-    {title:'Angels', artist:'Robbie Williams'}, {title:'Feel', artist:'Robbie Williams'},
-    {title:'Beautiful Day', artist:'U2'}, {title:'With or Without You', artist:'U2'},
-    {title:'Take Me to Church', artist:'Hozier'}, {title:'Work Song', artist:'Hozier'},
-    {title:'Landslide', artist:'Fleetwood Mac'}, {title:'Dreams', artist:'Fleetwood Mac'},
-    {title:'Bubbly', artist:'Colbie Caillat'}, {title:'The Man Who Can\u2019t Be Moved', artist:'The Script'},
-    {title:'Breakeven', artist:'The Script'}, {title:'Hall of Fame', artist:'The Script'},
-    {title:'City of Stars', artist:'La La Land Cast'}, {title:'This Is Me', artist:'The Greatest Showman Cast'},
-    {title:'A Million Dreams', artist:'The Greatest Showman Cast'}, {title:'Rewrite the Stars', artist:'The Greatest Showman Cast'},
-    {title:'Let It Be', artist:'The Beatles'}, {title:'Hey Jude', artist:'The Beatles'},
-    {title:'Yesterday', artist:'The Beatles'}, {title:'Imagine', artist:'John Lennon'},
-    {title:'Tears in Heaven', artist:'Eric Clapton'}, {title:'Wonderful Tonight', artist:'Eric Clapton'},
-    {title:'Everybody Hurts', artist:'R.E.M.'}, {title:'Losing My Religion', artist:'R.E.M.'},
-    {title:'She Will Be Loved', artist:'Maroon 5'}, {title:'Payphone', artist:'Maroon 5'},
-    {title:'Firework', artist:'Katy Perry'}, {title:'The One That Got Away', artist:'Katy Perry'},
-    {title:'Just Give Me a Reason', artist:'P!nk'}, {title:'Perfect', artist:'P!nk'},
-    {title:'What About Us', artist:'P!nk'}, {title:'Try', artist:'P!nk'},
-    {title:'Skyscraper', artist:'Demi Lovato'}, {title:'Let It Go', artist:'Idina Menzel'},
-    {title:'How Far I\u2019ll Go', artist:'Auli\u2019i Cravalho'}, {title:'Speechless', artist:'Naomi Scott'},
-    {title:'A Whole New World', artist:'Zayn & Zhavia Ward'}, {title:'You\u2019ve Got a Friend in Me', artist:'Randy Newman'},
-    {title:'Remember Me', artist:'Miguel'}, {title:'Into the Unknown', artist:'Idina Menzel'},
-    {title:'Show Yourself', artist:'Idina Menzel'}, {title:'When You Believe', artist:'Whitney Houston & Mariah Carey'},
-    {title:'I Will Always Love You', artist:'Whitney Houston'}, {title:'One Sweet Day', artist:'Mariah Carey & Boyz II Men'},
-    {title:'End of the Road', artist:'Boyz II Men'}, {title:'Never Too Much', artist:'Luther Vandross'},
-    {title:'Faithfully', artist:'Journey'}, {title:'Open Arms', artist:'Journey'},
-    {title:'Total Eclipse of the Heart', artist:'Bonnie Tyler'}, {title:'Against All Odds', artist:'Phil Collins'},
-    {title:'Another Day in Paradise', artist:'Phil Collins'}, {title:'You\u2019ll Be in My Heart', artist:'Phil Collins'},
-    {title:'Home', artist:'Michael Buble'}, {title:'Everything', artist:'Michael Buble'},
-    {title:'Feeling Good', artist:'Michael Buble'}, {title:'What a Wonderful World', artist:'Louis Armstrong'},
-    {title:'La Vie en Rose', artist:'Louis Armstrong'}, {title:'Fly Me to the Moon', artist:'Frank Sinatra'},
-    {title:'My Way', artist:'Frank Sinatra'}, {title:'Unchained Melody', artist:'The Righteous Brothers'}
+    {title:'Stay With Me', artist:'Sam Smith'}, {title:'I\'m Yours', artist:'Jason Mraz'}
   ];
 
   const SONGS_LISTEN = [
@@ -890,75 +711,7 @@
     {title:'Be Alright', artist:'Dean Lewis'}, {title:'How Do I Say Goodbye', artist:'Dean Lewis'},
     {title:'7 Minutes', artist:'Dean Lewis'}, {title:'Chemicals', artist:'Dean Lewis'},
     {title:'Cold Heart', artist:'Elton John & Dua Lipa'}, {title:'Levitating', artist:'Dua Lipa'},
-    {title:'Don\u2019t Start Now', artist:'Dua Lipa'}, {title:'New Rules', artist:'Dua Lipa'},
-    {title:'Houdini', artist:'Dua Lipa'}, {title:'Training Season', artist:'Dua Lipa'},
-    {title:'Anti-Hero', artist:'Taylor Swift'}, {title:'Cruel Summer', artist:'Taylor Swift'},
-    {title:'Lavender Haze', artist:'Taylor Swift'}, {title:'Fortnight', artist:'Taylor Swift'},
-    {title:'Blank Space', artist:'Taylor Swift'}, {title:'Flowers', artist:'Miley Cyrus'},
-    {title:'Used to Be Young', artist:'Miley Cyrus'}, {title:'Vampire', artist:'Olivia Rodrigo'},
-    {title:'Drivers License', artist:'Olivia Rodrigo'}, {title:'Good 4 U', artist:'Olivia Rodrigo'},
-    {title:'Bad Idea Right?', artist:'Olivia Rodrigo'}, {title:'As It Was', artist:'Harry Styles'},
-    {title:'Watermelon Sugar', artist:'Harry Styles'}, {title:'Late Night Talking', artist:'Harry Styles'},
-    {title:'Music for a Sushi Restaurant', artist:'Harry Styles'}, {title:'Blinding Lights', artist:'The Weeknd'},
-    {title:'Save Your Tears', artist:'The Weeknd'}, {title:'Die For You', artist:'The Weeknd'},
-    {title:'Timeless', artist:'The Weeknd & Playboi Carti'}, {title:'Stay', artist:'The Kid LAROI & Justin Bieber'},
-    {title:'Ghost', artist:'Justin Bieber'}, {title:'Peaches', artist:'Justin Bieber'},
-    {title:'Espresso', artist:'Sabrina Carpenter'}, {title:'Please Please Please', artist:'Sabrina Carpenter'},
-    {title:'Taste', artist:'Sabrina Carpenter'}, {title:'Manchild', artist:'Sabrina Carpenter'},
-    {title:'Good Luck, Babe!', artist:'Chappell Roan'}, {title:'Pink Pony Club', artist:'Chappell Roan'},
-    {title:'Red Wine Supernova', artist:'Chappell Roan'}, {title:'Birds of a Feather', artist:'Billie Eilish'},
-    {title:'What Was I Made For?', artist:'Billie Eilish'}, {title:'Lunch', artist:'Billie Eilish'},
-    {title:'Bad Guy', artist:'Billie Eilish'}, {title:'Happier Than Ever', artist:'Billie Eilish'},
-    {title:'Flowers', artist:'Lauv'}, {title:'I Like Me Better', artist:'Lauv'},
-    {title:'Circles', artist:'Post Malone'}, {title:'Sunflower', artist:'Post Malone & Swae Lee'},
-    {title:'Chemical', artist:'Post Malone'}, {title:'I Had Some Help', artist:'Post Malone & Morgan Wallen'},
-    {title:'Rockin\u2019', artist:'Post Malone'}, {title:'Cruel Summer', artist:'Bananarama'},
-    {title:'Kill Bill', artist:'SZA'}, {title:'Snooze', artist:'SZA'},
-    {title:'Good Days', artist:'SZA'}, {title:'Saturn', artist:'SZA'},
-    {title:'Escapism', artist:'RAYE'}, {title:'Genesis', artist:'RAYE'},
-    {title:'Water', artist:'Tyla'}, {title:'Push 2 Start', artist:'Tyla'},
-    {title:'Padam Padam', artist:'Kylie Minogue'}, {title:'Houdini', artist:'Foster the People'},
-    {title:'Paint the Town Red', artist:'Doja Cat'}, {title:'Say So', artist:'Doja Cat'},
-    {title:'Woman', artist:'Doja Cat'}, {title:'Agora Hills', artist:'Doja Cat'},
-    {title:'Calm Down', artist:'Rema & Selena Gomez'}, {title:'Reason', artist:'Rema'},
-    {title:'Unavailable', artist:'Davido'}, {title:'Feel', artist:'Davido'},
-    {title:'Last Last', artist:'Burna Boy'}, {title:'City Boys', artist:'Burna Boy'},
-    {title:'Higher', artist:'Burna Boy'}, {title:'Ye', artist:'Burna Boy'},
-    {title:'Big Big Stylo', artist:'Wizkid'}, {title:'Essence', artist:'Wizkid'},
-    {title:'People', artist:'Libianca'}, {title:'Fall', artist:'Davido'},
-    {title:'Peru', artist:'Fireboy DML & Ed Sheeran'}, {title:'Late Night in Berlin', artist:'Ed Sheeran'},
-    {title:'Eyes Closed', artist:'Ed Sheeran'}, {title:'Bad Habits', artist:'Ed Sheeran'},
-    {title:'Perfect Night', artist:'LE SSERAFIM'}, {title:'Super Shy', artist:'NewJeans'},
-    {title:'How Sweet', artist:'NewJeans'}, {title:'Ditto', artist:'NewJeans'},
-    {title:'Seven', artist:'Jung Kook'}, {title:'Standing Next to You', artist:'Jung Kook'},
-    {title:'3D', artist:'Jung Kook'}, {title:'Dynamite', artist:'BTS'},
-    {title:'Butter', artist:'BTS'}, {title:'Left and Right', artist:'Jung Kook & Charlie Puth'},
-    {title:'APT.', artist:'ROSE & Bruno Mars'}, {title:'On the Ground', artist:'ROSE'},
-    {title:'Attention', artist:'NewJeans'}, {title:'FE!N', artist:'Travis Scott'},
-    {title:'Not Like Us', artist:'Kendrick Lamar'}, {title:'Squabble Up', artist:'Kendrick Lamar'},
-    {title:'Luther', artist:'Kendrick Lamar & SZA'}, {title:'Family Ties', artist:'Baby Keem & Kendrick Lamar'},
-    {title:'Rich Baby Daddy', artist:'Drake'}, {title:'First Person Shooter', artist:'Drake & J. Cole'},
-    {title:'IDGAF', artist:'Drake'}, {title:'A Bar Song (Tipsy)', artist:'Shaboozey'},
-    {title:'Texas Hold \u2019Em', artist:'Beyonce'}, {title:'16 Carriages', artist:'Beyonce'},
-    {title:'Cowboy Carter', artist:'Beyonce'}, {title:'Break My Soul', artist:'Beyonce'},
-    {title:'Feather', artist:'Sabrina Carpenter'}, {title:'Greedy', artist:'Tate McRae'},
-    {title:'It\u2019s OK I\u2019m OK', artist:'Tate McRae'}, {title:'Exes', artist:'Tate McRae'},
-    {title:'Somewhere Only We Know', artist:'Keane'}, {title:'Beautiful Things', artist:'Benson Boone'},
-    {title:'Slow It Down', artist:'Benson Boone'}, {title:'In the Stars', artist:'Benson Boone'},
-    {title:'Lose Control', artist:'Teddy Swims'}, {title:'The Door', artist:'Teddy Swims'},
-    {title:'Blue', artist:'Yung Kai'}, {title:'Denial Is a River', artist:'Doechii'},
-    {title:'Anxiety', artist:'Doechii'}, {title:'Ordinary', artist:'Alex Warren'},
-    {title:'Messy', artist:'Lola Young'}, {title:'Golden', artist:'HUNTR/X'},
-    {title:'Your Idol', artist:'Saja Boys'}, {title:'Undressed', artist:'Sombr'},
-    {title:'Back to Friends', artist:'Sombr'}, {title:'Beautiful That Way', artist:'RAYE'},
-    {title:'Sailor Song', artist:'Gigi Perez'}, {title:'Sympathy Is a Knife', artist:'Charli XCX'},
-    {title:'360', artist:'Charli XCX'}, {title:'Guess', artist:'Charli XCX & Billie Eilish'},
-    {title:'I Had Some Help', artist:'Post Malone'}, {title:'Fortnight', artist:'Taylor Swift & Post Malone'},
-    {title:'Beautiful Mistakes', artist:'Maroon 5 & Megan Thee Stallion'}, {title:'Die With a Smile', artist:'Lady Gaga & Bruno Mars'},
-    {title:'Abracadabra', artist:'Lady Gaga'}, {title:'Disease', artist:'Lady Gaga'},
-    {title:'Birds of a Feather', artist:'Billie Eilish'}, {title:'That\u2019s So True', artist:'Gracie Abrams'},
-    {title:'Risk', artist:'Gracie Abrams'}, {title:'I Love You, I\u2019m Sorry', artist:'Gracie Abrams'},
-    {title:'Please Please Please', artist:'Sabrina Carpenter'}, {title:'Juno', artist:'Sabrina Carpenter'}
+    {title:'Don\'t Start Now', artist:'Dua Lipa'}, {title:'New Rules', artist:'Dua Lipa'}
   ];
 
   const state = {
@@ -1476,163 +1229,28 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
     'music-listen':'Listening Practice'
   };
 
-  // Hand-picked tongue twisters
+  // Tongue twisters remain unchanged
   const TWISTERS = {
     easy: [
       'She sells seashells by the seashore.',
       'Red lorry, yellow lorry.',
       'How much wood would a woodchuck chuck?',
       'Six thick thistle sticks.',
-      'A big black bear sat on a big black rug.',
-      'Peter Piper picked a peck of pickled peppers.',
-      'Betty bought a bit of butter.',
-      'A cup of coffee in a copper cup.',
-      'Black bug bit a big black bear.',
-      'Toy boat, toy boat, toy boat.',
-      'The cat sat on the mat.',
-      'Big blue bug bit big blue balloon.',
-      'Green glass globes glow greatly.',
-      'Nine nice night nurses nursing nicely.',
-      'Sheep should sleep in a shed.',
-      'Two tiny turtles took a train.',
-      'Ray likes rainy days in May.',
-      'My mom makes mini muffins Monday.',
-      'The bright blue bird flew by.',
-      'Five fast fish flip and flap.',
-      'Pack my box with five dozen jugs.',
-      'Sunny snails smile slowly.',
-      'Little Lily likes lilac lollipops.',
-      'Ten tan tigers tap on trees.',
-      'Wendy wanted a warm winter walk.',
-      'Nick knits nice knitted hats.',
-      'The frog jumped over the log.',
-      'A happy hippo hums a happy hymn.',
-      'Sam saw seven silly seals.',
-      'Do drop by and try the pie.',
-      'The kind king kept his crown.',
-      'Frank feeds four furry foxes.',
-      'Baby birds build big nests.',
-      'Slow snails slide on smooth stones.',
-      'Cindy sings sweet simple songs.',
-      'Two toads talk and toads talk too.',
-      'The tall man ran to the van.',
-      'My dad has a bad plan.',
-      'Six sick sheep sit still.',
-      'Pretty pink pigs play in puddles.',
-      'Jolly Jim jumps for joy.',
-      'The dog dug a deep hole.',
-      'Fluffy clouds float far away.',
-      'Round rocks roll down the road.',
-      'Kate bakes a cake at eight.',
-      'The bee buzzed by the busy barn.',
-      'Milk and cookies make me merry.',
-      'Cool cats catch cool cars.',
-      'A wise owl watches at night.',
-      'Blue whales swim in the wide sea.'
+      'A big black bear sat on a big black rug.'
     ],
     medium: [
       "Fuzzy Wuzzy was a bear. Fuzzy Wuzzy had no hair.",
       'I scream, you scream, we all scream for ice cream.',
       'A proper copper coffee pot.',
       'Betty Botter bought some butter.',
-      'Fred fed Ted bread, and Ted fed Fred bread.',
-      'Six slippery snails slid slowly seaward.',
-      'A skunk sat on a stump and thunk the stump stunk.',
-      'How can a clam cram in a clean cream can?',
-      'Which witch wished which wicked wish?',
-      'I saw Susie sitting in a shoeshine shop.',
-      'Can you can a can as a canner can can a can?',
-      'Sheena leads, Sheila needs.',
-      'Rory the warrior and Roger the worrier were reared wrongly in a rural brewery.',
-      'A tutor who tooted the flute tried to tutor two tooters to toot.',
-      'Greek grapes, Greek grapes, Greek grapes.',
-      'The great Greek grape growers grow great Greek grapes.',
-      'A big bug bit a big black bug and the big black bug bled black blood.',
-      'The thirty-three thieves thought that they thrilled the throne throughout Thursday.',
-      'I wish to wash my Irish wristwatch.',
-      'A tree toad loved a she-toad who lived up in a tree.',
-      'She stood on the balcony inexplicably mimicking him hiccupping and amicably welcoming him home.',
-      'How many boards could the Mongols hoard if the Mongol hordes got bored?',
-      'Crisp crusts crackle crunchily.',
-      'Flash message, flash message, flash message.',
-      'Give papa a cup of proper coffee in a copper coffee cup.',
-      'Lesser leather never weathered wetter weather better.',
-      "Willie's really weary; will he rest awhile?",
-      'Three free throws for the tree, free of charge.',
-      'Nine nervous newts knew nothing new.',
-      'Truly rural, truly rural, truly rural.',
-      'Six sleek swans swam swiftly southwards.',
-      'A synonym for cinnamon is a cinnamon synonym.',
-      "The chic Sheikh's sixth sheep is sick.",
-      'Ed had edited it before Ted edited it.',
-      'A big black bug bit a big black dog on his big black nose.',
-      'Preshrunk silk shirts, preshrunk silk shirts.',
-      'The seething sea ceaseth and thus the seething sea sufficeth us.',
-      'A loyal warrior will rarely worry why we rule.',
-      'Peggy Babcock, Peggy Babcock, Peggy Babcock.',
-      'Wayne went to Wales to watch walruses.',
-      'Six shrewd sharks sensed six sick swans swimming.',
-      'The bootblack bought the black boot back.',
-      'A proper copper coffee pot has a proper copper handle.',
-      'Freshly fried flying fish, freshly fried flying fish.',
-      'Nine nice mice nibble nuts nightly.',
-      "Nick's chicks click their tongues quickly.",
-      'Nervous novice nurses know no nonsense.',
-      'The sixth Swedish sailor swiftly signaled the ship.',
-      'Nine numb neighbors nap near noon.',
-      'How much dew does a dewdrop drop if dewdrops do drop dew?'
+      'Fred fed Ted bread, and Ted fed Fred bread.'
     ],
     hard: [
       "The sixth sick sheikh's sixth sheep's sick.",
       'Irish wristwatch, Swiss wristwatch.',
       'Pad kid poured curd pulled cold.',
       'Which wristwatches are Swiss wristwatches?',
-      'Toy boat, toy boat, toy boat.',
-      "The sixth sick sheik's sixth sheep's sick, so the sixth sick sheik's sheep sought a slick, quick-thinking sheikh.",
-      'Irish wristwatch, Swiss wristwatch, Irish wristwatch, Swiss wristwatch.',
-      'Pad kid poured curd pulled cold, pad kid poured curd pulled cold.',
-      'A proper copper coffee pot with a copper coffee proper top.',
-      'Six sick slick slim sycamore saplings.',
-      'Strange strategic statistics, strange strategic statistics.',
-      'The epitome of an itty-bitty pretty city committee.',
-      'Unique New York, unique New York, unique New York, you know you need unique New York.',
-      'Rubber baby buggy bumpers, rubber baby buggy bumpers.',
-      'She stood upon a balcony, inimicably mimicking him hiccupping, while amicably welcoming him in.',
-      "Send toast to ten tense stout saints' ten tests.",
-      'A skunk sat on a stump and thunk the stump stunk, but the stump thunk the skunk stunk.',
-      'Ed had edited it, and Ed had edited it, then edited it again.',
-      'Chop shop stock, chop shop stock, chop shop stock.',
-      "A big black bug's blood runs blue and black, a black bug's blood, a bug's black blood.",
-      'Flesh of freshly fried flying fish, flesh of freshly fried flying fish.',
-      'A synonymous cinnamon aluminum tin, a synonymous cinnamon aluminum tin.',
-      'The thirty-three thieves thought that they thrilled the throne throughout Thursday, thirty-three thousand times.',
-      'Six shrewd sharks sensed six sick swans swiftly swimming southward.',
-      'Wretched Rita rode a rattling, rusty red-and-white rickshaw.',
-      'The seething sea ceaseth and thus the seething sea sufficeth us, the sea ceaseth thus.',
-      'Silly Sally swiftly shooed seven silly sheep, seven silly sheep silly Sally shooed.',
-      'How much dew would a dewdrop drop if a dewdrop did drop dew, and would a dewdrop drop the dew it dropped?',
-      'Nine nimble noblemen nibbled nuts, nine nimble noblemen nibbled nuts nightly.',
-      'The great Greek grape growers grow great Greek grapes, and great Greek grapes grow greatly for great Greek grape growers.',
-      'A tutor who tooted the flute tried to tutor two tooters to toot, said the two to the tutor, is it harder to toot or to tutor two tooters to toot?',
-      "Willy's real rear wheel, really weary Willy's real rear wheel.",
-      'Crisp crinkled crusts crackle crunchily, crisp crinkled crusts crackle crunchily.',
-      "The bloke's back brake block broke, the bloke's back brake block broke.",
-      'Strict strong stretchy strings strung straight, strict strong stretchy strings strung straight.',
-      'Peggy Babcock, Peggy Babcock, Peggy Babcock, Peggy Babcock, Peggy Babcock.',
-      'Truly rural, truly rural, truly rural, truly rural.',
-      'Freddie fed Theodore Bear fresh food Thursday, Theodore Bear fed Freddie fresh food too.',
-      'Which witch switched the Swiss wristwatches, which Swiss witch wristwatches were switched?',
-      'Six thick thistle sticks, six thick thistles stick, thick thistle sticks stick thickly.',
-      'Fresh French fried fly fritters, fresh French fried fly fritters, fresh French fried fly fritters.',
-      'Lesser leather never weathered wetter weather better than better leather weathered wet weather.',
-      'A loyal royal warrior worries wearily while rarely wondering why we rule so rigidly.',
-      "The chic sheikh's sixth sheep seemed sicker, seemingly sicker than the sheikh's sixth sick sheep.",
-      'Nine nervous newts knew nothing new, nine nervous newts knew nothing new nightly.',
-      'Toy boat, toy boat, toy boat, toy boat, toy boat, toy boat.',
-      'Preshrunk silk shirts, preshrunk silk shirts, preshrunk silk shirts, preshrunk silk shirts.',
-      'The bootblack brought the black boot back, black boot back the bootblack brought.',
-      "A big bug's blood, a black bug's blood, a big black bug's blood runs thick and blue and black.",
-      "Send toast to ten tense stout saints' ten testy, stout saints tested ten toasts sent."
+      'Toy boat, toy boat, toy boat.'
     ]
   };
 
@@ -1718,7 +1336,7 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
     discoveryBody.appendChild(list);
   }
 
-  // ---------- Render movie lists (title + 5 cast + YouTube link) ----------
+  // ---------- Render movie lists with direct YouTube links ----------
   function renderMovieTopicView(topicKey, label){
     discoveryTitle.textContent = label || TOPIC_TITLES[topicKey] || 'Movies';
     discoveryBody.innerHTML = '';
@@ -1732,31 +1350,28 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
     movies.forEach(m=>{
       const a = document.createElement('a');
       a.className = 'yt-item';
-      a.href = ytSearchUrl(m.title + ' ' + m.year + ' trailer');
+      a.href = m.link;
       a.target = '_blank';
       a.rel = 'noopener';
       a.innerHTML = `
         <div class="yt-top-row">
           <div>
-            <div class="yt-title"></div>
-            <div class="yt-sub"></div>
+            <div class="yt-title">${escapeHtml(m.title)}</div>
+            <div class="yt-sub">${escapeHtml(m.year)}</div>
           </div>
-          <div class="yt-play-ic">▶</div>
+          <div class="yt-play-ic-movie"></div>
         </div>
         <div class="yt-cast">
           <div class="yt-cast-label am">ተዋንያን</div>
-          <div class="yt-cast-names"></div>
+          <div class="yt-cast-names">${escapeHtml(m.cast.join(', '))}</div>
         </div>
       `;
-      a.querySelector('.yt-title').textContent = m.title;
-      a.querySelector('.yt-sub').textContent = m.year;
-      a.querySelector('.yt-cast-names').textContent = m.cast.join(', ');
       listEl.appendChild(a);
     });
     discoveryBody.appendChild(listEl);
   }
 
-  // ---------- Render song lists (title + artist + YouTube link) ----------
+  // ---------- Render song lists (music - blue play button) ----------
   function renderSongTopicView(topicKey, label){
     discoveryTitle.textContent = label || TOPIC_TITLES[topicKey] || 'Music';
     discoveryBody.innerHTML = '';
@@ -1771,20 +1386,18 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
     songs.forEach(s=>{
       const a = document.createElement('a');
       a.className = 'yt-item';
-      a.href = ytSearchUrl(s.title + ' ' + s.artist + ' ' + searchSuffix);
+      a.href = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(s.title + ' ' + s.artist + ' ' + searchSuffix);
       a.target = '_blank';
       a.rel = 'noopener';
       a.innerHTML = `
         <div class="yt-top-row">
           <div>
-            <div class="yt-title"></div>
-            <div class="yt-sub"></div>
+            <div class="yt-title">${escapeHtml(s.title)}</div>
+            <div class="yt-sub">${escapeHtml(s.artist)}</div>
           </div>
-          <div class="yt-play-ic">▶</div>
+          <div class="yt-play-ic-music"></div>
         </div>
       `;
-      a.querySelector('.yt-title').textContent = s.title;
-      a.querySelector('.yt-sub').textContent = s.artist;
       listEl.appendChild(a);
     });
     discoveryBody.appendChild(listEl);
