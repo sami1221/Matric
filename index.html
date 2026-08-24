@@ -610,6 +610,10 @@
           <div class="lbl">Advanced</div>
         </div>
       </div>
+      <div class="field-label am" style="margin-top:22px;">YouTube API Key (ለቪድዮ ፍለጋ)</div>
+      <input type="password" class="key-input" id="youtubeKeyInput" placeholder="AIza...">
+      <div class="hint am" id="youtubeKeyStatus"></div>
+      <div class="hint am">Videos (Movies/Music) ካልመጣ የተጋራው key daily quota ላይ ደርሶ ሊሆን ይችላል። የራስህን ነፃ YouTube Data API v3 key <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank">Google Cloud Console</a> ላይ ፈጥረህ እዚህ ለጥፍ።</div>
       <button class="modal-close am" id="settingsCloseBtn">ዝጋ</button>
     </div>
   </div>
@@ -750,6 +754,12 @@
       }
       tryAutoLaunch();
     });
+    cloudGet('youtube_key', (ytKey)=>{
+      if (ytKey){
+        state.youtubeKey = ytKey;
+        youtubeKeyIsOverride = true;
+      }
+    });
   }
 
   function launchApp(){
@@ -790,8 +800,13 @@
   // ---------- Settings modal (level + YouTube key) ----------
   const settingsModal = document.getElementById('settingsModal');
   const settingsLevelGrid = document.getElementById('settingsLevelGrid');
+  const youtubeKeyInput = document.getElementById('youtubeKeyInput');
+  const youtubeKeyStatus = document.getElementById('youtubeKeyStatus');
+  let youtubeKeyIsOverride = false; // true once the user has saved their own key (vs. the built-in shared one)
   document.getElementById('settingsBtn').addEventListener('click', ()=>{
     settingsLevelGrid.querySelectorAll('.level-card').forEach(c=>c.classList.toggle('selected', c.dataset.level===state.level));
+    youtubeKeyInput.value = youtubeKeyIsOverride ? state.youtubeKey : '';
+    youtubeKeyStatus.textContent = youtubeKeyIsOverride ? 'የራስህ key ገብቷል።' : 'የተጋራ (built-in) key እየተጠቀምክ ነው።';
     settingsModal.classList.add('show');
   });
   document.getElementById('settingsCloseBtn').addEventListener('click', ()=>{
@@ -802,6 +817,26 @@
       settingsModal.classList.remove('show');
     }
   });
+  function saveYoutubeKey(){
+    const val = youtubeKeyInput.value.trim();
+    if (val){
+      state.youtubeKey = val;
+      youtubeKeyIsOverride = true;
+      youtubeKeyStatus.textContent = 'ተቀምጧል — የራስህ key እየተጠቀምክ ነው።';
+    } else {
+      state.youtubeKey = YOUTUBE_API_KEY;
+      youtubeKeyIsOverride = false;
+      youtubeKeyStatus.textContent = 'የተጋራ (built-in) key እየተጠቀምክ ነው።';
+    }
+    cloudSet('youtube_key', val);
+    // Clear any previous "quota/key" errors so the next tap on a video tab retries immediately.
+    Object.keys(videoTopicState).forEach(k=>{
+      videoTopicState[k].error = null;
+      videoTopicState[k].exhausted = false;
+    });
+  }
+  youtubeKeyInput.addEventListener('change', saveYoutubeKey);
+  youtubeKeyInput.addEventListener('blur', saveYoutubeKey);
   settingsLevelGrid.querySelectorAll('.level-card').forEach(card=>{
     card.addEventListener('click', ()=>{
       settingsLevelGrid.querySelectorAll('.level-card').forEach(c=>c.classList.remove('selected'));
@@ -1211,7 +1246,11 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
   // titleMustInclude / titleMustExclude: optional lowercase keyword the top-ranked matching result's title must contain / must not contain
   // (used to reliably tell lyric videos apart from normal music videos, since the YouTube API has no dedicated "lyrics" filter).
   async function ytSearchVideo(query, duration, publishedAfter, titleMustInclude, titleMustExclude){
-    if (!state.youtubeKey) return null;
+    if (!state.youtubeKey){
+      const err = new Error('YouTube API key አልገባም');
+      err.isYoutube = true;
+      throw err;
+    }
     let url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=8&type=video&videoEmbeddable=true&safeSearch=strict&q='
       + encodeURIComponent(query) + '&key=' + encodeURIComponent(state.youtubeKey);
     if (duration) url += '&videoDuration=' + encodeURIComponent(duration);
@@ -1222,6 +1261,7 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
       const msg = (body.error && body.error.message) || ('HTTP ' + res.status);
       const err = new Error('YouTube API error: ' + msg);
       err.status = res.status;
+      err.isYoutube = true;
       throw err;
     }
     const data = await res.json();
@@ -1248,7 +1288,7 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
   const TOPIC_TITLE_MUST_INCLUDE = { 'music-pronounce': 'lyric' };
   const TOPIC_TITLE_MUST_EXCLUDE = { 'music-listen': 'lyric' };
   function isYoutubeKeyError(message){
-    return /API key not valid|keyInvalid|403|API_KEY_INVALID/i.test(message||'');
+    return /API key not valid|keyInvalid|403|API_KEY_INVALID|quotaExceeded|exceeded your quota|dailyLimitExceeded|accessNotConfigured/i.test(message||'');
   }
   function isRateLimitError(message){
     return /429|RESOURCE_EXHAUSTED|exceeded your current quota/i.test(message||'');
@@ -1258,6 +1298,14 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
       return '⚠️ በጣም ብዙ ጥያቄ ስለተላከ ለጊዜው ገደብ ላይ ደርሰሃል (quota)። እባክህ ጥቂት ደቂቃ ቆይተህ እንደገና ሞክር።';
     }
     return '⚠️ ' + message;
+  }
+  // Diagnostic message specifically for YouTube video-search failures (movies/pronounce/listen),
+  // so the user can immediately tell whether the problem is the YouTube API key/quota, or something else.
+  function youtubeFriendlyErrorText(message){
+    if (isYoutubeKeyError(message)){
+      return '⚠️ የ YouTube API ችግር ነው፡ Key ልክ ያልሆነ ወይም daily quota ላይ ደርሷል (YouTube Data API v3 not enabled ሊሆንም ይችላል)። ስለዚህ ምንም ቪዲዮ መጫን አልቻለም። ' + message;
+    }
+    return '⚠️ ቪዲዮ መጫን አልተሳካም (API ችግር ላይሆን ይችላል)፡ ' + message;
   }
 
   // Topics that expand into a sub-menu before showing results.
@@ -1961,8 +2009,9 @@ Return ONLY the JSON array matching the schema, no extra text.`;
         if (!found) return null;
         return { id: found.id, title: s.title, subtitle: s.subtitle, reason: s.reason };
       }catch(err){
-        if (isYoutubeKeyError(err.message)) throw err;
-        return null;
+        // Surface every YouTube fetch failure (not just recognized key errors) so the caller
+        // can tell the user *why* nothing loaded, instead of silently returning nothing.
+        throw err;
       }
     }));
 
@@ -1982,7 +2031,12 @@ Return ONLY the JSON array matching the schema, no extra text.`;
     const st = getVideoTopicState(topicKey);
     if (st.loading || st.exhausted || !state.apiKey) return;
     st.loading = true;
-    if (loadingEl) loadingEl.style.display = 'block';
+    st.error = null;
+    if (loadingEl){
+      loadingEl.style.display = 'block';
+      loadingEl.style.cursor = '';
+      loadingEl.textContent = st.items.length ? 'ተጨማሪ እየፈለገ ነው...' : 'እየፈለገ ነው...';
+    }
     try{
       const fresh = await fetchVideoBatch(topicKey);
       if (!fresh.length){
@@ -1992,11 +2046,22 @@ Return ONLY the JSON array matching the schema, no extra text.`;
         renderYoutubeItems(listEl, fresh);
       }
     }catch(err){
-      if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
-      // On error, just stop this round silently — the user can scroll again to retry.
+      // Only a real Gemini-side auth error (never a YouTube search error, which is tagged
+      // isYoutube) should log the user out and clear their Gemini key.
+      if (!err.isYoutube && isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
+      st.error = err.isYoutube ? youtubeFriendlyErrorText(err.message) : friendlyErrorText(err.message);
     }finally{
       st.loading = false;
-      if (loadingEl) loadingEl.style.display = 'none';
+      if (loadingEl){
+        if (st.error){
+          loadingEl.style.display = 'block';
+          loadingEl.style.cursor = 'pointer';
+          loadingEl.textContent = st.error + ' (ዳግም ለመሞከር እዚህ ንካ)';
+        } else {
+          loadingEl.style.display = 'none';
+          loadingEl.style.cursor = '';
+        }
+      }
     }
   }
 
@@ -2009,29 +2074,36 @@ Return ONLY the JSON array matching the schema, no extra text.`;
     listEl.className = 'yt-list';
     const loadingEl = document.createElement('div');
     loadingEl.className = 'discovery-loading am';
-    loadingEl.textContent = 'ተጨማሪ እየፈለገ ነው...';
     loadingEl.style.display = 'none';
 
     discoveryBody.appendChild(listEl);
     discoveryBody.appendChild(loadingEl);
 
+    loadingEl.addEventListener('click', ()=>{
+      if (st.error && !st.loading){
+        loadMoreVideos(topicKey, listEl, loadingEl);
+      }
+    });
+
     if (st.items.length){
       renderYoutubeItems(listEl, st.items);
-    } else {
-      loadingEl.textContent = 'እየፈለገ ነው...';
+    }
+    if (st.error){
       loadingEl.style.display = 'block';
+      loadingEl.style.cursor = 'pointer';
+      loadingEl.textContent = st.error + ' (ዳግም ለመሞከር እዚህ ንካ)';
     }
 
     // Infinite scroll: when the user scrolls near the bottom of discoveryBody, load more.
     function onScroll(){
       if (discoveryBody.scrollTop + discoveryBody.clientHeight >= discoveryBody.scrollHeight - 300){
-        loadMoreVideos(topicKey, listEl, loadingEl).then(()=>{ loadingEl.textContent = 'ተጨማሪ እየፈለገ ነው...'; });
+        loadMoreVideos(topicKey, listEl, loadingEl);
       }
     }
     discoveryBody.addEventListener('scroll', onScroll);
 
-    if (!st.items.length){
-      loadMoreVideos(topicKey, listEl, loadingEl).then(()=>{ loadingEl.textContent = 'ተጨማሪ እየፈለገ ነው...'; });
+    if (!st.items.length && !st.error){
+      loadMoreVideos(topicKey, listEl, loadingEl);
     }
   }
 
@@ -2422,4 +2494,4 @@ Start by warmly greeting the learner in English and asking an easy question to b
 })();
 </script>
 </body>
-</html>
+  </html>
