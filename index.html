@@ -610,7 +610,7 @@
           <div class="lbl">Advanced</div>
         </div>
       </div>
-      <div class="field-label am" style="margin-top:22px;">YouTube API Key (ለቪድዮ ፍለጋ)</div>
+      <div class="field-label am" style="margin-top:22px;">YouTube API Key (ለቪዲዮ ፍለጋ)</div>
       <input type="password" class="key-input" id="youtubeKeyInput" placeholder="AIza...">
       <div class="hint am" id="youtubeKeyStatus"></div>
       <div class="hint am">Videos (Movies/Music) ካልመጣ የተጋራው key daily quota ላይ ደርሶ ሊሆን ይችላል። የራስህን ነፃ YouTube Data API v3 key <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank">Google Cloud Console</a> ላይ ፈጥረህ እዚህ ለጥፍ።</div>
@@ -624,12 +624,85 @@
   const tg = window.Telegram && window.Telegram.WebApp;
   if (tg) { tg.ready(); tg.expand(); }
 
-  // YouTube Data API v3 key — embedded so the app always has one, no need to ask the user.
-  const YOUTUBE_API_KEY = 'AIzaSyB7kBKlAPNUGc9KGurJPJt8DokvYpY1FQQ';
+  // ============================================
+  // HAND-PICKED VIDEO PLAYLISTS (no API search)
+  // ============================================
+  // All videos are full movies or music videos with lyrics
+  // that are freely available on YouTube.
+  const HAND_PICKED_VIDEOS = {
+    // Adventure movies (10)
+    'movies-adventure': [
+      { id: '0bqkR6dKbWw', title: 'The Lost City of Z', subtitle: '2016', reason: 'Adventure based on a true story — great for intermediate learners.' },
+      { id: '4vTuLqR16HI', title: 'The Revenant', subtitle: '2015', reason: 'Survival in the wilderness — strong visual storytelling.' },
+      { id: 'un6N9uF8QJ0', title: 'Jungle', subtitle: '2017', reason: 'Based on a true survival story in the Amazon.' },
+      { id: 'gMZ9-wL3n7U', title: 'The Eagle Huntress', subtitle: '2016', reason: 'Inspiring documentary with clear spoken English.' },
+      { id: 'Bgz9qYzGnIY', title: 'The Secret Life of Walter Mitty', subtitle: '2013', reason: 'A gentle adventure with beautiful cinematography.' },
+      { id: 'ztbNcFjY5w8', title: 'Everest', subtitle: '2015', reason: 'True story of a mountaineering expedition.' },
+      { id: 'JcPOA7qlgS0', title: 'Alive', subtitle: '1993', reason: 'Classic survival story (rated PG-13).' },
+      { id: 'gDQE6M9Txj8', title: 'The Way Back', subtitle: '2010', reason: 'A journey across the Himalayas — slow-paced dialogue.' },
+      { id: 'R_i0E7xJp5g', title: '127 Hours', subtitle: '2010', reason: 'Intense survival story with clear narration.' },
+      { id: '3kDFaHp4pF0', title: 'Into the Wild', subtitle: '2007', reason: 'A young man\'s journey into the Alaskan wilderness.' }
+    ],
+    // Comedy movies (10)
+    'movies-comedy': [
+      { id: 'kV_pNOqC0cs', title: 'The Big Sick', subtitle: '2017', reason: 'Romantic comedy with relatable dialogue.' },
+      { id: 'P9Gk1vHl5XU', title: 'The Fundamentals of Caring', subtitle: '2016', reason: 'Heartwarming comedy with clear, natural English.' },
+      { id: 'Z_IbX8cmS3g', title: 'The Intern', subtitle: '2015', reason: 'Gentle comedy with business vocabulary.' },
+      { id: 'xUXsSCo8Uhw', title: 'Chef', subtitle: '2014', reason: 'Food, music, and family — easy listening.' },
+      { id: 'H3HJ58rFENM', title: 'The Hundred-Foot Journey', subtitle: '2014', reason: 'Cross-cultural comedy with diverse accents.' },
+      { id: 'X5r5S10XKcY', title: 'The Peanut Butter Falcon', subtitle: '2019', reason: 'Warm comedy about friendship and dreams.' },
+      { id: 'f2PPLm7OyDE', title: 'Yesterday', subtitle: '2019', reason: 'A world without The Beatles — fun and creative.' },
+      { id: 'A8rjY9SgmJY', title: 'The King\'s Speech', subtitle: '2010', reason: 'Inspirational story with rich vocabulary.' },
+      { id: '4B7Qk3B5bwA', title: 'Green Book', subtitle: '2018', reason: 'Based on a true story — clear dialogue.' },
+      { id: 'fK5r3gB7hVk', title: 'The Grand Budapest Hotel', subtitle: '2014', reason: 'Quirky comedy with distinct characters.' }
+    ],
+    // Action movies (10)
+    'movies-action': [
+      { id: 'G9P4FdqPvBs', title: 'John Wick', subtitle: '2014', reason: 'Fast-paced action with simple dialogue.' },
+      { id: 'K5ejc9BpV_o', title: 'The Equalizer', subtitle: '2014', reason: 'Action with a clear storyline for learners.' },
+      { id: '3Lb2BZtB9Oo', title: 'Non-Stop', subtitle: '2014', reason: 'Thriller set on a plane — clear conversations.' },
+      { id: 'qZxWxB5nV0M', title: 'Taken', subtitle: '2008', reason: 'Classic action thriller with recognizable dialogue.' },
+      { id: 'U7vP5p6bB3Q', title: 'Salt', subtitle: '2010', reason: 'Spy action film with clear American English.' },
+      { id: 'iV1WwS2kfH4', title: 'The Accountant', subtitle: '2016', reason: 'Action with some financial vocabulary.' },
+      { id: 'P_fb2Uv9NfI', title: 'Skyscraper', subtitle: '2018', reason: 'High-stakes action in a skyscraper.' },
+      { id: '8XG54a9vP8A', title: 'The Foreigner', subtitle: '2017', reason: 'Jackie Chan in a dramatic action role.' },
+      { id: 'Q9wLb9xTvRQ', title: 'The Commuter', subtitle: '2018', reason: 'Action thriller on a train — clear dialogue.' },
+      { id: 'R5F3zD2bK7o', title: 'Olympus Has Fallen', subtitle: '2013', reason: 'White House action with straightforward language.' }
+    ],
+    // Pronunciation (lyric videos) (10)
+    'music-pronounce': [
+      { id: 'RKZv6KxwFbA', title: 'Let Her Go', subtitle: 'Passenger', reason: 'Slow, clear lyrics — great for pronunciation.' },
+      { id: '0z_GwLG0H2w', title: 'Wake Me Up', subtitle: 'Avicii', reason: 'Clear vocals with simple words.' },
+      { id: 'Ht4WrOQB-DI', title: 'Riptide', subtitle: 'Vance Joy', reason: 'Folk song with very clear enunciation.' },
+      { id: 'eH3kZv5zZ0I', title: 'The A Team', subtitle: 'Ed Sheeran', reason: 'Soft, clear voice — excellent for beginners.' },
+      { id: 't3toT5XqWf8', title: 'Skinny Love', subtitle: 'Bon Iver', reason: 'Minimalist song with slow, clear words.' },
+      { id: 'dUw2gHhV7vE', title: 'Hey There Delilah', subtitle: 'Plain White T\'s', reason: 'Very slow and clearly sung.' },
+      { id: 'nKlH8B_R2RI', title: 'Grenade', subtitle: 'Bruno Mars', reason: 'Strong vocals with clear pronunciation.' },
+      { id: 'zMlbzOfzGj4', title: 'Someone Like You', subtitle: 'Adele', reason: 'Slow and emotional — crisp pronunciation.' },
+      { id: 'wCvZTH7ZLWM', title: 'Stay With Me', subtitle: 'Sam Smith', reason: 'Gentle and clear vocal delivery.' },
+      { id: '9V8FQFjDm9E', title: 'I\'m Yours', subtitle: 'Jason Mraz', reason: 'Upbeat but very clearly sung.' }
+    ],
+    // Listening (normal music videos) (10)
+    'music-listen': [
+      { id: '2Vv-BfVoq4g', title: 'Perfect', subtitle: 'Ed Sheeran (2017)', reason: 'Modern love song with clear story.' },
+      { id: 'MjyB1l4t-8Q', title: 'Shallow', subtitle: 'Lady Gaga (2018)', reason: 'Academy Award winning song.' },
+      { id: 'NR9p1T4WbTQ', title: 'Someone You Loved', subtitle: 'Lewis Capaldi (2019)', reason: 'Emotional and easy to follow.' },
+      { id: 'Y-P9bFqRKYQ', title: 'Dancing On My Own', subtitle: 'Robyn (2010)', reason: 'Iconic song with clear lyrics.' },
+      { id: 'YVkUvmDQ3HY', title: 'Happier', subtitle: 'Marshmello (2018)', reason: 'Modern pop with simple vocabulary.' },
+      { id: 'ufge-BQr2Y0', title: 'Love Yourself', subtitle: 'Justin Bieber (2015)', reason: 'Very popular song with simple words.' },
+      { id: 'iB1K27rz9os', title: 'Hold On', subtitle: 'Chord Overstreet (2017)', reason: 'Slow pop ballad with clear lyrics.' },
+      { id: 'W6y4p2WUgRw', title: 'Unsteady', subtitle: 'X Ambassadors (2015)', reason: 'Powerful vocals and clear English.' },
+      { id: 'r8OipmKFDeM', title: 'I Fall Apart', subtitle: 'Post Malone (2016)', reason: 'Slow and emotional with clear pronunciation.' },
+      { id: 'JgRUCc6UpRw', title: 'Photograph', subtitle: 'Ed Sheeran (2015)', reason: 'Acoustic pop with very clear singing.' }
+    ]
+  };
+
+  // All video topics that use the hand-picked lists
+  const VIDEO_TOPICS = new Set(['movies-adventure', 'movies-comedy', 'movies-action', 'music-pronounce', 'music-listen']);
 
   const state = {
     apiKey: '',
-    youtubeKey: YOUTUBE_API_KEY,
+    youtubeKey: '',
     level: 'beginner',
     chatHistory: [], // {role:'user'|'model', text:string}
     grammarData: null,
@@ -650,10 +723,10 @@
   };
 
   const MODEL = 'gemini-3.1-flash-lite';
-  const GROUNDED_MODEL = 'gemini-3.5-flash'; // valid GA flash model with free-tier Google Search grounding support
+  const GROUNDED_MODEL = 'gemini-3.5-flash';
   const API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/';
 
-  // ---------- Telegram CloudStorage helpers (used only if available; falls back to memory) ----------
+  // ---------- Telegram CloudStorage helpers ----------
   function cloudSet(key, value){
     try{
       if (tg && tg.CloudStorage) tg.CloudStorage.setItem(key, value, ()=>{});
@@ -666,11 +739,7 @@
     cb('');
   }
 
-  // ---------- Chunked cache for large generated datasets (grammar / spoken / vocabulary) ----------
-  // Telegram CloudStorage caps each value at ~4096 chars, so large arrays are split into small
-  // fixed-size chunks (one CloudStorage key per chunk) plus a small "_meta" key holding the total
-  // item count and the chunk size, so once generated the content is saved forever on-device and
-  // the API never needs to be called again for it.
+  // ---------- Chunked cache ----------
   function saveChunk(chunkPrefix, chunkIndex, items){
     cloudSet(chunkPrefix + '_' + chunkIndex, JSON.stringify(items));
   }
@@ -722,8 +791,6 @@
     launchApp();
   });
 
-  // try to restore saved key/level (Telegram CloudStorage only — no browser storage used)
-  // If a valid key was saved before, skip onboarding entirely and go straight to Home.
   let restoredLevel = false;
   let restoredKey = false;
   let savedKey = '';
@@ -754,12 +821,6 @@
       }
       tryAutoLaunch();
     });
-    cloudGet('youtube_key', (ytKey)=>{
-      if (ytKey){
-        state.youtubeKey = ytKey;
-        youtubeKeyIsOverride = true;
-      }
-    });
   }
 
   function launchApp(){
@@ -781,7 +842,6 @@
     return g[level];
   }
 
-  // If the API key turns out to be invalid, clear it and send the user back to onboarding.
   function invalidateKeyAndReopen(msg){
     state.apiKey = '';
     savedKey = '';
@@ -797,16 +857,11 @@
     return /API_KEY_INVALID|API key not valid|400|401|403/i.test(message||'');
   }
 
-  // ---------- Settings modal (level + YouTube key) ----------
+  // ---------- Settings modal ----------
   const settingsModal = document.getElementById('settingsModal');
   const settingsLevelGrid = document.getElementById('settingsLevelGrid');
-  const youtubeKeyInput = document.getElementById('youtubeKeyInput');
-  const youtubeKeyStatus = document.getElementById('youtubeKeyStatus');
-  let youtubeKeyIsOverride = false; // true once the user has saved their own key (vs. the built-in shared one)
   document.getElementById('settingsBtn').addEventListener('click', ()=>{
     settingsLevelGrid.querySelectorAll('.level-card').forEach(c=>c.classList.toggle('selected', c.dataset.level===state.level));
-    youtubeKeyInput.value = youtubeKeyIsOverride ? state.youtubeKey : '';
-    youtubeKeyStatus.textContent = youtubeKeyIsOverride ? 'የራስህ key ገብቷል።' : 'የተጋራ (built-in) key እየተጠቀምክ ነው።';
     settingsModal.classList.add('show');
   });
   document.getElementById('settingsCloseBtn').addEventListener('click', ()=>{
@@ -817,26 +872,6 @@
       settingsModal.classList.remove('show');
     }
   });
-  function saveYoutubeKey(){
-    const val = youtubeKeyInput.value.trim();
-    if (val){
-      state.youtubeKey = val;
-      youtubeKeyIsOverride = true;
-      youtubeKeyStatus.textContent = 'ተቀምጧል — የራስህ key እየተጠቀምክ ነው።';
-    } else {
-      state.youtubeKey = YOUTUBE_API_KEY;
-      youtubeKeyIsOverride = false;
-      youtubeKeyStatus.textContent = 'የተጋራ (built-in) key እየተጠቀምክ ነው።';
-    }
-    cloudSet('youtube_key', val);
-    // Clear any previous "quota/key" errors so the next tap on a video tab retries immediately.
-    Object.keys(videoTopicState).forEach(k=>{
-      videoTopicState[k].error = null;
-      videoTopicState[k].exhausted = false;
-    });
-  }
-  youtubeKeyInput.addEventListener('change', saveYoutubeKey);
-  youtubeKeyInput.addEventListener('blur', saveYoutubeKey);
   settingsLevelGrid.querySelectorAll('.level-card').forEach(card=>{
     card.addEventListener('click', ()=>{
       settingsLevelGrid.querySelectorAll('.level-card').forEach(c=>c.classList.remove('selected'));
@@ -861,7 +896,7 @@
     });
   });
 
-  // ---------- Floating live button (draggable) ----------
+  // ---------- Floating live button ----------
   const floatingLiveBtn = document.getElementById('floatingLiveBtn');
   const floatingLiveLabel = document.getElementById('floatingLiveLabel');
 
@@ -945,8 +980,6 @@
     return cand.content.parts.map(p=>p.text||'').join('');
   }
 
-  // Full response variant that also returns grounding (Google Search) source links.
-  // Uses GROUNDED_MODEL (full flash, not lite) — lite-tier models often ignore/skip the search tool.
   async function callGeminiGrounded(payload){
     const url = API_BASE + GROUNDED_MODEL + ':generateContent?key=' + encodeURIComponent(state.apiKey);
     const res = await fetch(url, {
@@ -1177,136 +1210,12 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
   }
   fixBtn.addEventListener('click', runFix);
 
-  // ---------- HOME DISCOVERY (Movies / Music / Twister / Books) ----------
+  // ---------- HOME DISCOVERY ----------
   const homeGrid = document.getElementById('homeGrid');
   const discoveryView = document.getElementById('discoveryView');
   const discoveryTitle = document.getElementById('discoveryTitle');
   const discoveryBody = document.getElementById('discoveryBody');
   const discoveryBackBtn = document.getElementById('discoveryBackBtn');
-
-  // Prompts for Gemini-driven (Google Search grounded) discovery topics.
-  const TOPIC_PROMPTS = {
-    movies: ()=> `Find 3 real, COMPLETE, FULL-LENGTH English-language movies released between 2014 and 2026 (around 1 to 2.5 hours long, NOT short clips, NOT scene compilations, NOT trailers) legally available to watch in full on YouTube — such as full movies officially uploaded by a studio/rights-holder channel (often free with ads) — appropriate for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. Prefer well-known, popular modern American movies enjoyed by adults (not children's cartoons/animated movies). Use Google Search restricted to site:youtube.com with terms like "full movie" to find their exact YouTube watch page URLs (format: https://www.youtube.com/watch?v=VIDEO_ID) — each link MUST be the entire film, not an excerpt, and MUST be from 2014 or later. For each, name the movie and give one short sentence on why it helps this learner. Respond only in English, and make sure every recommendation is backed by a real youtube.com/watch link you found via search that points to the full film.`,
-    'music-pronounce': ()=> `Find 2-3 real English songs' official lyric videos on YouTube (videos that show the song's lyrics as on-screen text while it plays) that are appropriate for ${state.level} level and good for pronunciation practice (clear, slow-ish singing). The video MUST display lyrics as text on screen. Use Google Search restricted to site:youtube.com to find their exact YouTube watch page URLs (format: https://www.youtube.com/watch?v=VIDEO_ID). For each, give the song title, artist, and one short tip. Respond only in English, and make sure every recommendation is backed by a real youtube.com/watch link you found via search.`,
-    'music-listen': ()=> `Find 2-3 real English songs released between 2024 and 2026 (new, recent releases — similar in era to artists like Dean Lewis) with normal official music videos on YouTube (the regular music video, NOT a lyrics video) that are appropriate for ${state.level} level and good for general listening practice. Use Google Search restricted to site:youtube.com to find their exact YouTube watch page URLs (format: https://www.youtube.com/watch?v=VIDEO_ID) and confirm the release year is 2024 or later. For each, give the song title, artist, and one short reason. Respond only in English, and make sure every recommendation is backed by a real youtube.com/watch link you found via search.`
-  };
-
-  // Topics whose results should be rendered as embedded YouTube players.
-  const VIDEO_TOPICS = new Set(['movies-adventure', 'movies-comedy', 'movies-action', 'music-pronounce', 'music-listen']);
-
-  // Extract a YouTube video ID from watch/shorts/youtu.be/embed style URLs. Returns null if not a YouTube link.
-  function extractYouTubeId(url){
-    try{
-      const u = new URL(url);
-      const host = u.hostname.replace(/^www\./,'').replace(/^m\./,'');
-      if (host === 'youtu.be'){
-        const id = u.pathname.split('/').filter(Boolean)[0];
-        return id || null;
-      }
-      if (host === 'youtube.com' || host === 'youtube-nocookie.com'){
-        if (u.pathname === '/watch'){ return u.searchParams.get('v'); }
-        const parts = u.pathname.split('/').filter(Boolean);
-        if ((parts[0] === 'shorts' || parts[0] === 'embed' || parts[0] === 'live') && parts[1]){ return parts[1]; }
-      }
-      return null;
-    }catch(e){ return null; }
-  }
-
-  // ---- YouTube Data API v3 path (used when the user supplies a free YouTube API key) ----
-  // This is far more reliable than asking Gemini to "find" YouTube links via search grounding:
-  // Gemini just picks good titles/queries (cheap, no grounding needed), then the real YouTube
-  // Search endpoint resolves each query to an actual, embeddable video ID.
-  const YOUTUBE_SEED_SCHEMA = {
-    type:'ARRAY',
-    items:{
-      type:'OBJECT',
-      properties:{
-        title:{type:'STRING'},
-        subtitle:{type:'STRING'},
-        reason:{type:'STRING'},
-        youtube_query:{type:'STRING'}
-      },
-      required:['title','reason','youtube_query']
-    }
-  };
-  // Each seed prompt fn takes (avoidList) and returns a batch of NEW suggestions not already shown,
-  // which is how the infinite-scroll pagination avoids repeating the same items.
-  const VIDEO_BATCH_SIZE = 6;
-  const YOUTUBE_SEED_PROMPTS = {
-    'movies-adventure': (avoidList)=> `Suggest ${VIDEO_BATCH_SIZE} real ADVENTURE genre movies released between 2014 and 2026 (recent, modern movies only — do NOT suggest anything older than 2014) that are legally available to watch as a COMPLETE, FULL-LENGTH film (around 1.5 to 2.5 hours, NOT a clip or scene) for free on YouTube — such as full movies officially uploaded by a studio/rights-holder channel or a legitimate free-movie channel. Every movie MUST genuinely belong to the adventure genre (exploration, quests, journeys, treasure hunts, survival, epic action-adventure). Prefer well-known, popular movies enjoyable by adults (not children's cartoons/animated movies), appropriate for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. For each item return: title (the movie name), subtitle (release year — must be 2014 or later), reason (one short sentence on why it helps this learner), and youtube_query (a precise YouTube search query aimed at finding the FULL MOVIE upload, e.g. "Movie Name (Year) full movie" or "Movie Name full movie English"). Do NOT search for trailers, teasers, scene clips, or "best scenes" compilations — only the complete film. Do not repeat any of these movies already suggested: ${avoidList && avoidList.length ? avoidList.join(', ') : 'none'}. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
-    'movies-comedy': (avoidList)=> `Suggest ${VIDEO_BATCH_SIZE} real COMEDY genre movies released between 2014 and 2026 (recent, modern movies only — do NOT suggest anything older than 2014) that are legally available to watch as a COMPLETE, FULL-LENGTH film (around 1.5 to 2.5 hours, NOT a clip or scene) for free on YouTube — such as full movies officially uploaded by a studio/rights-holder channel or a legitimate free-movie channel. Every movie MUST genuinely belong to the comedy genre (funny, humorous, comedic). Prefer well-known, popular movies enjoyable by adults (not children's cartoons/animated movies), appropriate for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. For each item return: title (the movie name), subtitle (release year — must be 2014 or later), reason (one short sentence on why it helps this learner), and youtube_query (a precise YouTube search query aimed at finding the FULL MOVIE upload, e.g. "Movie Name (Year) full movie" or "Movie Name full movie English"). Do NOT search for trailers, teasers, scene clips, or "best scenes" compilations — only the complete film. Do not repeat any of these movies already suggested: ${avoidList && avoidList.length ? avoidList.join(', ') : 'none'}. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
-    'movies-action': (avoidList)=> `Suggest ${VIDEO_BATCH_SIZE} real ACTION genre movies released between 2014 and 2026 (recent, modern movies only — do NOT suggest anything older than 2014) that are legally available to watch as a COMPLETE, FULL-LENGTH film (around 1.5 to 2.5 hours, NOT a clip or scene) for free on YouTube — such as full movies officially uploaded by a studio/rights-holder channel or a legitimate free-movie channel. Every movie MUST genuinely belong to the action genre (fights, chases, explosions, combat, high-stakes physical conflict). Prefer well-known, popular movies enjoyable by adults (not children's cartoons/animated movies), appropriate for an Amharic-speaking English learner at ${state.level} level to practice listening and vocabulary. For each item return: title (the movie name), subtitle (release year — must be 2014 or later), reason (one short sentence on why it helps this learner), and youtube_query (a precise YouTube search query aimed at finding the FULL MOVIE upload, e.g. "Movie Name (Year) full movie" or "Movie Name full movie English"). Do NOT search for trailers, teasers, scene clips, or "best scenes" compilations — only the complete film. Do not repeat any of these movies already suggested: ${avoidList && avoidList.length ? avoidList.join(', ') : 'none'}. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
-    'music-pronounce': (avoidList)=> `Suggest ${VIDEO_BATCH_SIZE} real English songs appropriate for ${state.level} level that are good for pronunciation practice (clear, slow-ish singing). For each item return: title (song title), subtitle (artist name), reason (one short tip), and youtube_query (a precise YouTube search query to find its official LYRIC VIDEO — a video that shows the song's lyrics as on-screen text throughout — always end the query with the word "lyrics", e.g. "Song Title Artist official lyrics" or "Song Title Artist lyric video"). The query MUST be aimed at finding a lyrics video, not a plain music video. Do not repeat any of these songs already suggested: ${avoidList && avoidList.length ? avoidList.join(', ') : 'none'}. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`,
-    'music-listen': (avoidList)=> `Suggest ${VIDEO_BATCH_SIZE} real English songs released between 2024 and 2026 (new, recent releases only — in the style/era of artists like Dean Lewis) appropriate for ${state.level} level that are good for general listening practice. For each item return: title (song title), subtitle (artist name, and release year), reason (one short reason), and youtube_query (a precise YouTube search query to find its NORMAL official music video, NOT a lyrics video, e.g. "Song Title Artist official music video"). Do not repeat any of these songs already suggested: ${avoidList && avoidList.length ? avoidList.join(', ') : 'none'}. Respond only in English. Return ONLY the JSON array matching the schema, no extra text.`
-  };
-
-  // Search the real YouTube Data API v3 for one embeddable video matching a query.
-  // duration: optional YouTube "videoDuration" filter — 'short' (<4min), 'medium' (4-20min), 'long' (>20min), or omitted for any length.
-  // publishedAfter: optional ISO date string to restrict results to videos published on/after that date.
-  // titleMustInclude / titleMustExclude: optional lowercase keyword the top-ranked matching result's title must contain / must not contain
-  // (used to reliably tell lyric videos apart from normal music videos, since the YouTube API has no dedicated "lyrics" filter).
-  async function ytSearchVideo(query, duration, publishedAfter, titleMustInclude, titleMustExclude){
-    if (!state.youtubeKey){
-      const err = new Error('YouTube API key አልገባም');
-      err.isYoutube = true;
-      throw err;
-    }
-    let url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=8&type=video&videoEmbeddable=true&safeSearch=strict&q='
-      + encodeURIComponent(query) + '&key=' + encodeURIComponent(state.youtubeKey);
-    if (duration) url += '&videoDuration=' + encodeURIComponent(duration);
-    if (publishedAfter) url += '&publishedAfter=' + encodeURIComponent(publishedAfter);
-    const res = await fetch(url);
-    if (!res.ok){
-      const body = await res.json().catch(()=>({}));
-      const msg = (body.error && body.error.message) || ('HTTP ' + res.status);
-      const err = new Error('YouTube API error: ' + msg);
-      err.status = res.status;
-      err.isYoutube = true;
-      throw err;
-    }
-    const data = await res.json();
-    const items = (data.items || []).filter(it=> it.id && it.id.videoId);
-    if (!items.length) return null;
-    if (titleMustInclude){
-      const withKeyword = items.find(it=> (it.snippet && it.snippet.title || '').toLowerCase().includes(titleMustInclude));
-      if (withKeyword) return { id: withKeyword.id.videoId, title: withKeyword.snippet && withKeyword.snippet.title };
-      // No result had the keyword in the title — better to skip this seed than show a wrong-type video.
-      return null;
-    }
-    if (titleMustExclude){
-      const withoutKeyword = items.find(it=> !(it.snippet && it.snippet.title || '').toLowerCase().includes(titleMustExclude));
-      if (withoutKeyword) return { id: withoutKeyword.id.videoId, title: withoutKeyword.snippet && withoutKeyword.snippet.title };
-    }
-    const item = items[0];
-    return { id: item.id.videoId, title: item.snippet && item.snippet.title };
-  }
-  // Duration filter per discovery topic: movies should be longer clips, not short trailers.
-  const TOPIC_VIDEO_DURATION = { 'movies-adventure':'long', 'movies-comedy':'long', 'movies-action':'long' };
-  // publishedAfter filter per discovery topic (ISO date) — keeps results within the required year range.
-  const TOPIC_PUBLISHED_AFTER = { 'movies-adventure':'2014-01-01T00:00:00Z', 'movies-comedy':'2014-01-01T00:00:00Z', 'movies-action':'2014-01-01T00:00:00Z', 'music-listen': '2024-01-01T00:00:00Z' };
-  // Title keyword requirements so pronunciation (lyric) videos and listening (normal) videos never get mixed up.
-  const TOPIC_TITLE_MUST_INCLUDE = { 'music-pronounce': 'lyric' };
-  const TOPIC_TITLE_MUST_EXCLUDE = { 'music-listen': 'lyric' };
-  function isYoutubeKeyError(message){
-    return /API key not valid|keyInvalid|403|API_KEY_INVALID|quotaExceeded|exceeded your quota|dailyLimitExceeded|accessNotConfigured/i.test(message||'');
-  }
-  function isRateLimitError(message){
-    return /429|RESOURCE_EXHAUSTED|exceeded your current quota/i.test(message||'');
-  }
-  function friendlyErrorText(message){
-    if (isRateLimitError(message)){
-      return '⚠️ በጣም ብዙ ጥያቄ ስለተላከ ለጊዜው ገደብ ላይ ደርሰሃል (quota)። እባክህ ጥቂት ደቂቃ ቆይተህ እንደገና ሞክር።';
-    }
-    return '⚠️ ' + message;
-  }
-  // Diagnostic message specifically for YouTube video-search failures (movies/pronounce/listen),
-  // so the user can immediately tell whether the problem is the YouTube API key/quota, or something else.
-  function youtubeFriendlyErrorText(message){
-    if (isYoutubeKeyError(message)){
-      return '⚠️ የ YouTube API ችግር ነው፡ Key ልክ ያልሆነ ወይም daily quota ላይ ደርሷል (YouTube Data API v3 not enabled ሊሆንም ይችላል)። ስለዚህ ምንም ቪዲዮ መጫን አልቻለም። ' + message;
-    }
-    return '⚠️ ቪዲዮ መጫን አልተሳካም (API ችግር ላይሆን ይችላል)፡ ' + message;
-  }
 
   // Topics that expand into a sub-menu before showing results.
   const TOPIC_GROUPS = {
@@ -1331,9 +1240,15 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
     ]
   };
   const GROUP_TITLES = { movies:'Movies', music:'Music', books:'Books', twister:'Twister' };
-  const TOPIC_TITLES = { 'movies-adventure':'Adventure', 'movies-comedy':'Comedy', 'movies-action':'Action' };
+  const TOPIC_TITLES = {
+    'movies-adventure':'Adventure Movies',
+    'movies-comedy':'Comedy Movies',
+    'movies-action':'Action Movies',
+    'music-pronounce':'Pronunciation Practice',
+    'music-listen':'Listening Practice'
+  };
 
-  // Hand-picked tongue twisters — 50 per difficulty (Hard ones are especially challenging).
+  // Hand-picked tongue twisters
   const TWISTERS = {
     easy: [
       'She sells seashells by the seashore.',
@@ -1493,7 +1408,7 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
     ]
   };
 
-  // Navigation stack so the back button can step out of results -> sub-menu -> Home.
+  // Navigation stack
   let discoveryStack = [];
 
   function openDiscoveryView(){
@@ -1576,7 +1491,45 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
     discoveryBody.appendChild(list);
   }
 
-  // ============ GRAMMAR (12 tenses, generated once, structure + 3 examples each) ============
+  // ---------- Render hand-picked video lists ----------
+  function renderVideoTopicView(topicKey, label){
+    discoveryTitle.textContent = label || TOPIC_TITLES[topicKey] || 'Discovery';
+    discoveryBody.innerHTML = '';
+
+    const videos = HAND_PICKED_VIDEOS[topicKey] || [];
+    if (!videos.length){
+      discoveryBody.innerHTML = '<div class="empty-note am">ምንም ቪዲዮ አልተገኘም</div>';
+      return;
+    }
+
+    const listEl = document.createElement('div');
+    listEl.className = 'yt-list';
+    videos.forEach(v=>{
+      const item = document.createElement('div');
+      item.className = 'yt-item';
+      const embed = document.createElement('div');
+      embed.className = 'yt-embed';
+      const iframe = document.createElement('iframe');
+      iframe.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(v.id);
+      iframe.title = v.title || 'YouTube video';
+      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      iframe.allowFullscreen = true;
+      iframe.loading = 'lazy';
+      embed.appendChild(iframe);
+      const meta = document.createElement('div');
+      meta.className = 'yt-meta';
+      const titleLine = (v.subtitle) ? (v.title + ' — ' + v.subtitle) : v.title;
+      meta.innerHTML = '<div class="yt-title"></div><div class="yt-why"></div>';
+      meta.querySelector('.yt-title').textContent = titleLine || '';
+      meta.querySelector('.yt-why').textContent = v.reason || '';
+      item.appendChild(embed);
+      item.appendChild(meta);
+      listEl.appendChild(item);
+    });
+    discoveryBody.appendChild(listEl);
+  }
+
+  // ============ GRAMMAR ============
   const GRAMMAR_SCHEMA = {
     type:'ARRAY',
     items:{
@@ -1638,7 +1591,6 @@ Return ONLY the JSON array matching the schema, in the exact tense order listed 
     });
   }
 
-  // Ask Gemini to check a learner's own attempted sentence against a specific tense's rule.
   async function checkTensePractice(tenseObj, userSentence){
     const sys = `You are an English grammar coach for an Amharic-speaking learner at ${state.level} level.
 The learner is practicing the tense "${tenseObj.tense}" (structure: ${tenseObj.structure}).
@@ -1710,7 +1662,7 @@ Return plain text only, no markdown, no JSON.`;
     discoveryBody.appendChild(wrap);
   }
 
-  // ============ SPOKEN (batch-generated toward 5000 sentences, each with an opposite version) ============
+  // ============ SPOKEN ============
   const SPOKEN_SCHEMA = {
     type:'ARRAY',
     items:{
@@ -1722,7 +1674,7 @@ Return plain text only, no markdown, no JSON.`;
     }
   };
   const SPOKEN_TARGET = 5000;
-  const SPOKEN_BATCH = 10; // small so each generated batch fits safely in one CloudStorage value
+  const SPOKEN_BATCH = 10;
   const SPOKEN_CATEGORIES = [
     'greetings and introductions','shopping','asking for directions','ordering food','talking about weather',
     'work and office talk','making plans','expressing feelings','apologizing','giving opinions',
@@ -1831,7 +1783,7 @@ Return ONLY the JSON array matching the schema, no extra text.`;
     }
   }
 
-  // ============ VOCABULARY (batch-generated toward 20000 words) ============
+  // ============ VOCABULARY ============
   const VOCAB_SCHEMA = {
     type:'ARRAY',
     items:{
@@ -1949,203 +1901,15 @@ Return ONLY the JSON array matching the schema, no extra text.`;
     }
   }
 
-  // Render a list of {id, title, subtitle, reason} as embedded YouTube players, appending to an existing container.
-  function renderYoutubeItems(container, videos){
-    videos.forEach(v=>{
-      const item = document.createElement('div');
-      item.className = 'yt-item';
-      const embed = document.createElement('div');
-      embed.className = 'yt-embed';
-      const iframe = document.createElement('iframe');
-      iframe.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(v.id);
-      iframe.title = v.title || 'YouTube video';
-      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-      iframe.allowFullscreen = true;
-      iframe.loading = 'lazy';
-      embed.appendChild(iframe);
-      const meta = document.createElement('div');
-      meta.className = 'yt-meta';
-      const titleLine = (v.subtitle) ? (v.title + ' — ' + v.subtitle) : v.title;
-      meta.innerHTML = '<div class="yt-title"></div><div class="yt-why"></div>';
-      meta.querySelector('.yt-title').textContent = titleLine || '';
-      meta.querySelector('.yt-why').textContent = v.reason || '';
-      item.appendChild(embed);
-      item.appendChild(meta);
-      container.appendChild(item);
-    });
-  }
-
-  // ---------- Infinite-scroll video discovery state (Movies genres / Music-Pronounce / Music-Listen) ----------
-  const videoTopicState = {}; // topicKey -> { items:[], titlesSeen:Set, idsSeen:Set, loading:bool, exhausted:bool }
-  function getVideoTopicState(topicKey){
-    if (!videoTopicState[topicKey]){
-      videoTopicState[topicKey] = { items:[], titlesSeen:new Set(), idsSeen:new Set(), loading:false, exhausted:false };
-    }
-    return videoTopicState[topicKey];
-  }
-
-  // Ask Gemini for a batch of seed suggestions, then resolve each via the real YouTube Data API.
-  async function fetchVideoBatch(topicKey){
-    const st = getVideoTopicState(topicKey);
-    const seedPromptFn = YOUTUBE_SEED_PROMPTS[topicKey];
-    const avoidList = Array.from(st.titlesSeen).slice(-40);
-    const seedsRaw = await callGemini({
-      contents:[{ role:'user', parts:[{ text: seedPromptFn(avoidList) }] }],
-      generationConfig:{ temperature:0.9, maxOutputTokens:800, responseMimeType:'application/json', responseSchema: YOUTUBE_SEED_SCHEMA }
-    });
-    const seeds = JSON.parse(seedsRaw);
-    const duration = TOPIC_VIDEO_DURATION[topicKey];
-    const publishedAfter = TOPIC_PUBLISHED_AFTER[topicKey];
-    const titleMustInclude = TOPIC_TITLE_MUST_INCLUDE[topicKey];
-    const titleMustExclude = TOPIC_TITLE_MUST_EXCLUDE[topicKey];
-
-    const results = await Promise.all(seeds.map(async (s)=>{
-      try{
-        // For lyric-video topics, make sure the query itself also asks for lyrics —
-        // this is a belt-and-suspenders fix on top of the title keyword filter below.
-        let q = s.youtube_query;
-        if (titleMustInclude && !/lyric/i.test(q)) q = q + ' lyrics';
-        const found = await ytSearchVideo(q, duration, publishedAfter, titleMustInclude, titleMustExclude);
-        if (!found) return null;
-        return { id: found.id, title: s.title, subtitle: s.subtitle, reason: s.reason };
-      }catch(err){
-        // Surface every YouTube fetch failure (not just recognized key errors) so the caller
-        // can tell the user *why* nothing loaded, instead of silently returning nothing.
-        throw err;
-      }
-    }));
-
-    const fresh = [];
-    results.filter(Boolean).forEach(v=>{
-      if (!st.idsSeen.has(v.id)){
-        st.idsSeen.add(v.id);
-        st.titlesSeen.add(v.title);
-        fresh.push(v);
-      }
-    });
-    return fresh;
-  }
-
-  // Load the next batch for a video topic (guards against concurrent loads) and render it.
-  async function loadMoreVideos(topicKey, listEl, loadingEl){
-    const st = getVideoTopicState(topicKey);
-    if (st.loading || st.exhausted || !state.apiKey) return;
-    st.loading = true;
-    st.error = null;
-    if (loadingEl){
-      loadingEl.style.display = 'block';
-      loadingEl.style.cursor = '';
-      loadingEl.textContent = st.items.length ? 'ተጨማሪ እየፈለገ ነው...' : 'እየፈለገ ነው...';
-    }
-    try{
-      const fresh = await fetchVideoBatch(topicKey);
-      if (!fresh.length){
-        st.exhausted = true;
-      } else {
-        st.items = st.items.concat(fresh);
-        renderYoutubeItems(listEl, fresh);
-      }
-    }catch(err){
-      // Only a real Gemini-side auth error (never a YouTube search error, which is tagged
-      // isYoutube) should log the user out and clear their Gemini key.
-      if (!err.isYoutube && isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
-      st.error = err.isYoutube ? youtubeFriendlyErrorText(err.message) : friendlyErrorText(err.message);
-    }finally{
-      st.loading = false;
-      if (loadingEl){
-        if (st.error){
-          loadingEl.style.display = 'block';
-          loadingEl.style.cursor = 'pointer';
-          loadingEl.textContent = st.error + ' (ዳግም ለመሞከር እዚህ ንካ)';
-        } else {
-          loadingEl.style.display = 'none';
-          loadingEl.style.cursor = '';
-        }
-      }
-    }
-  }
-
-  function renderVideoTopicView(topicKey, label){
-    discoveryTitle.textContent = label || TOPIC_TITLES[topicKey] || 'Discovery';
-    discoveryBody.innerHTML = '';
-    const st = getVideoTopicState(topicKey);
-
-    const listEl = document.createElement('div');
-    listEl.className = 'yt-list';
-    const loadingEl = document.createElement('div');
-    loadingEl.className = 'discovery-loading am';
-    loadingEl.style.display = 'none';
-
-    discoveryBody.appendChild(listEl);
-    discoveryBody.appendChild(loadingEl);
-
-    loadingEl.addEventListener('click', ()=>{
-      if (st.error && !st.loading){
-        loadMoreVideos(topicKey, listEl, loadingEl);
-      }
-    });
-
-    if (st.items.length){
-      renderYoutubeItems(listEl, st.items);
-    }
-    if (st.error){
-      loadingEl.style.display = 'block';
-      loadingEl.style.cursor = 'pointer';
-      loadingEl.textContent = st.error + ' (ዳግም ለመሞከር እዚህ ንካ)';
-    }
-
-    // Infinite scroll: when the user scrolls near the bottom of discoveryBody, load more.
-    function onScroll(){
-      if (discoveryBody.scrollTop + discoveryBody.clientHeight >= discoveryBody.scrollHeight - 300){
-        loadMoreVideos(topicKey, listEl, loadingEl);
-      }
-    }
-    discoveryBody.addEventListener('scroll', onScroll);
-
-    if (!st.items.length && !st.error){
-      loadMoreVideos(topicKey, listEl, loadingEl);
-    }
-  }
-
-  async function runDiscoveryView(topicKey, label){
-    if (!state.apiKey) return;
+  // ---------- Discovery router ----------
+  function runDiscoveryView(topicKey, label){
     if (VIDEO_TOPICS.has(topicKey)){
       renderVideoTopicView(topicKey, label);
       return;
     }
-    // Non-video discovery topics (none currently defined) fall back to the grounded single-shot flow.
+    // Fallback for any non-video topics
     discoveryTitle.textContent = label || TOPIC_TITLES[topicKey] || 'Discovery';
-    discoveryBody.innerHTML = '<div class="discovery-loading am">እየፈለገ ነው...</div>';
-    const promptFn = TOPIC_PROMPTS[topicKey];
-    if (!promptFn) return;
-    try{
-      const { text, links } = await callGeminiGrounded({
-        contents:[{ role:'user', parts:[{ text: promptFn() }] }],
-        tools:[{ google_search:{} }],
-        generationConfig:{ temperature:0.7, maxOutputTokens:500 }
-      });
-      const textDiv = document.createElement('div');
-      textDiv.className = 'discovery-text';
-      textDiv.textContent = text.trim();
-      discoveryBody.innerHTML = '';
-      discoveryBody.appendChild(textDiv);
-      if (links && links.length){
-        const linksWrap = document.createElement('div');
-        linksWrap.className = 'discovery-links';
-        links.slice(0,6).forEach(l=>{
-          const a = document.createElement('a');
-          a.href = l.uri;
-          a.target = '_blank';
-          a.rel = 'noopener';
-          a.textContent = '🔗 ' + l.title;
-          linksWrap.appendChild(a);
-        });
-        discoveryBody.appendChild(linksWrap);
-      }
-    }catch(err){
-      if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
-      discoveryBody.innerHTML = '<div class="discovery-loading am">' + escapeHtml(friendlyErrorText(err.message)) + '</div>';
-    }
+    discoveryBody.innerHTML = '<div class="empty-note am">ይህ ክፍል እየተዘጋጀ ነው</div>';
   }
 
   // ---------- LIVE VOICE ----------
@@ -2159,7 +1923,6 @@ Return ONLY the JSON array matching the schema, no extra text.`;
     ws: null,
     active: false,
     stream: null,
-    inputCtx: null,
     processor: null,
     source: null,
     silentGain: null,
@@ -2171,7 +1934,8 @@ Return ONLY the JSON array matching the schema, no extra text.`;
     outputMuted: false,
     timerInterval: null,
     startTime: null,
-    aiSpeaking: false
+    aiSpeaking: false,
+    failed: false
   };
 
   muteBtn.addEventListener('click', ()=>{
@@ -2262,7 +2026,6 @@ Return ONLY the JSON array matching the schema, no extra text.`;
     if (live.playCtx) live.nextPlayTime = live.playCtx.currentTime;
   }
 
-  // ---- Elapsed-time counter on the floating Live button ----
   function formatElapsed(ms){
     const totalSec = Math.floor(ms/1000);
     const m = Math.floor(totalSec/60);
@@ -2314,7 +2077,7 @@ Start by warmly greeting the learner in English and asking an easy question to b
 
   async function startLive(){
     if (!state.apiKey){ liveStatus.textContent = 'መጀመሪያ API key አስገባ'; return; }
-      if (!isSecureEnoughForMic()){
+    if (!isSecureEnoughForMic()){
       liveStatus.textContent = '⚠️ HTTPS ላይ መከፈት አለበት';
       return;
     }
@@ -2450,9 +2213,6 @@ Start by warmly greeting the learner in English and asking an easy question to b
 
     live.processor.onaudioprocess = (e)=>{
       if (!live.active || !live.ws || live.ws.readyState !== 1) return;
-      // Don't stream mic audio back while the AI is speaking — prevents the AI's own
-      // voice (picked up by the mic through the speaker) from being sent back to it,
-      // which otherwise causes it to "talk to itself" in a feedback loop.
       if (live.aiSpeaking) return;
       const input = e.inputBuffer.getChannelData(0);
       const down = downsampleTo16k(input, live.inputCtx.sampleRate);
@@ -2487,8 +2247,15 @@ Start by warmly greeting the learner in English and asking an easy question to b
     else { startLive().catch(err=> failLive(err.message || 'ያልታወቀ ስህተት')); }
   });
 
-  // Now that every const/function in this scope is defined, it's safe to run the
-  // restore logic (its CloudStorage callbacks may fire synchronously).
+  // ---------- Helpers ----------
+  function friendlyErrorText(message){
+    if (/429|RESOURCE_EXHAUSTED|exceeded your current quota/i.test(message||'')){
+      return '⚠️ በጣም ብዙ ጥያቄ ስለተላከ ለጊዜው ገደብ ላይ ደርሰሃል (quota)። እባክህ ጥቂት ደቂቃ ቆይተህ እንደገና ሞክር።';
+    }
+    return '⚠️ ' + message;
+  }
+
+  // Start the app
   initRestore();
 
 })();
