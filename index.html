@@ -487,7 +487,7 @@
     <div class="hint am">Key ከሌለህ <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a> ላይ በነፃ ማግኘት ትችላለህ። Key ያለው በዚህ መሳሪያ ላይ ብቻ ተቀምጦ ይቆያል።</div>
 
     <button class="cta am" id="startBtn" disabled>ጀምር</button>
-    <div style="text-align:center; font-size:10.5px; opacity:0.35; margin-top:14px;">build: fixes-batch-11 · v26</div>
+    <div style="text-align:center; font-size:10.5px; opacity:0.35; margin-top:14px;">build: fixes-batch-12 · v27</div>
   </div>
 
   <!-- MAIN APP -->
@@ -2224,7 +2224,7 @@ Start by warmly greeting the learner in English and asking an easy question to b
         live.stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount:1, echoCancellation:true, noiseSuppression:true } });
       }catch(err){
         failLive('የማይክ ፍቃድ ተከልክሏል');
-        return;
+            return;
       }
 
       const wsUrl = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=' + encodeURIComponent(state.apiKey);
@@ -2334,6 +2334,14 @@ Start by warmly greeting the learner in English and asking an easy question to b
 
   function beginMicStreaming(){
     live.inputCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // FIX: newly-created AudioContexts can start "suspended" on some
+    // browsers/WebViews (esp. iOS) when created after an async gap
+    // (WebSocket connect + setupComplete round trip) instead of directly
+    // inside the click gesture. If suspended, onaudioprocess never fires,
+    // so no mic audio is ever sent — the model has nothing to respond to,
+    // even though the UI still shows "listening". Explicitly resume it.
+    live.inputCtx.resume().catch(()=>{});
+
     live.source = live.inputCtx.createMediaStreamSource(live.stream);
     live.processor = live.inputCtx.createScriptProcessor(4096, 1, 1);
     live.silentGain = live.inputCtx.createGain();
@@ -2390,3 +2398,4 @@ Start by warmly greeting the learner in English and asking an easy question to b
 </script>
 </body>
   </html>
+ 
