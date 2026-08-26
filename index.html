@@ -1530,7 +1530,9 @@ Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markd
     else { discoveryStack[discoveryStack.length-1](); }
   }
   discoveryBackBtn.addEventListener('click', discoveryBack);
-
+document.getElementById('teachersBtn').addEventListener('click', ()=>{
+    discoveryNavigate(()=> runDiscoveryView('teachers'));
+  });
   homeGrid.querySelectorAll('.home-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const topic = btn.dataset.topic;
@@ -2035,6 +2037,10 @@ Return ONLY the JSON array matching the schema, no extra text.`;
 
   // ---------- Discovery router ----------
   function runDiscoveryView(topicKey, label){
+    if (topicKey === 'teachers'){
+      renderTeachersView();
+      return;
+  }
     if (MOVIES[topicKey]){
       renderMovieTopicView(topicKey, label);
       return;
