@@ -1628,7 +1628,36 @@ document.getElementById('teachersBtn').addEventListener('click', ()=>{
     });
     discoveryBody.appendChild(listEl);
   }
-
+function renderTeachersView(){
+    discoveryTitle.textContent = 'Teachers';
+    discoveryBody.innerHTML = '';
+    if (!TEACHERS.length){
+      discoveryBody.innerHTML = '<div class="empty-note am">ምንም ቪዲዮ አልተገኘም</div>';
+      return;
+    }
+    const wrap = document.createElement('div');
+    wrap.className = 'card-stack';
+    TEACHERS.forEach(t=>{
+      const el = document.createElement('div');
+      el.style.background = 'var(--ink-2)';
+      el.style.border = '1px solid var(--line)';
+      el.style.borderRadius = '16px';
+      el.style.overflow = 'hidden';
+      el.innerHTML = `
+        <div style="padding:14px 16px 8px;">
+          <div class="word" style="font-size:16px;">${escapeHtml(t.title)}</div>
+          <div class="pos">${escapeHtml(t.name)}</div>
+        </div>
+        <div style="position:relative; width:100%; padding-top:56.25%;">
+          <iframe src="https://drive.google.com/file/d/${t.driveId}/preview"
+            style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;"
+            allow="autoplay" allowfullscreen></iframe>
+        </div>
+      `;
+      wrap.appendChild(el);
+    });
+    discoveryBody.appendChild(wrap);
+  }
   // ---------- Render song lists (title + artist + YouTube link, round blue play icon) ----------
   function renderSongTopicView(topicKey, label){
     discoveryTitle.textContent = label || TOPIC_TITLES[topicKey] || 'Music';
