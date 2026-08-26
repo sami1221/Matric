@@ -705,7 +705,35 @@ const TEACHERS = [
     });
     discoveryBody.appendChild(wrap);
   }
-
+function renderTeacherDetailView(key){
+    const t = TEACHERS.find(x=>x.key===key);
+    discoveryTitle.textContent = t ? t.name : 'Teacher';
+    discoveryBody.innerHTML = '';
+    if (!t){ discoveryBody.innerHTML = '<div class="empty-note am">አልተገኘም</div>'; return; }
+    const wrap = document.createElement('div');
+    wrap.className = 'card-stack';
+    const el = document.createElement('div');
+    el.style.background = 'var(--ink-2)';
+    el.style.border = '1px solid var(--line)';
+    el.style.borderRadius = '16px';
+    el.style.overflow = 'hidden';
+    el.innerHTML = `
+      <div style="padding:14px 16px 8px; display:flex; align-items:center; gap:10px;">
+        <img src="${t.logo}" style="width:36px;height:36px;border-radius:8px;object-fit:cover;">
+        <div>
+          <div class="word" style="font-size:16px;">${escapeHtml(t.title)}</div>
+          <div class="pos">${escapeHtml(t.name)}</div>
+        </div>
+      </div>
+      <div style="position:relative; width:100%; padding-top:56.25%;">
+        <iframe src="https://drive.google.com/file/d/${t.driveId}/preview"
+          style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;"
+          allow="autoplay" allowfullscreen></iframe>
+      </div>
+    `;
+    wrap.appendChild(el);
+    discoveryBody.appendChild(wrap);
+}
   const SONGS_PRONOUNCE = [
     {title:'Let Her Go', artist:'Passenger'}, {title:'Wake Me Up', artist:'Avicii'},
     {title:'Riptide', artist:'Vance Joy'}, {title:'The A Team', artist:'Ed Sheeran'},
