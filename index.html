@@ -1,0 +1,2592 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ቋንቋ — English Journal</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Noto+Sans+Ethiopic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16213E;
+    --ink-2:#1F2E52;
+    --parchment:#F6EFDD;
+    --parchment-dim:#EAE1C8;
+    --ochre:#D4A24C;
+    --ochre-dark:#B5822F;
+    --teal:#3E7C59;
+    --coral:#C4573B;
+    --line: rgba(246,239,221,0.14);
+    --shadow: 0 10px 30px rgba(10,14,32,0.35);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background: var(--ink);
+    color: var(--parchment);
+    font-family:'Inter', 'Noto Sans Ethiopic', sans-serif;
+    overflow:hidden;
+  }
+  .am{ font-family:'Noto Sans Ethiopic','Inter',sans-serif; }
+  h1,h2,h3,.display{
+    font-family:'Fraunces','Noto Sans Ethiopic', serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+  }
+  #app{
+    height:100dvh;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ---------- Onboarding ---------- */
+  #onboarding{
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:28px 24px;
+    background:
+      radial-gradient(circle at 85% -10%, rgba(212,162,76,0.18), transparent 45%),
+      var(--ink);
+  }
+  .brand-mark{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:8px;
+  }
+  .stamp{
+    width:46px;height:46px;
+    border-radius:50%;
+    border:2px solid var(--ochre);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:18px;
+    color:var(--ochre);
+    transform:rotate(-8deg);
+    flex-shrink:0;
+  }
+  .brand-mark .title{
+    font-size:22px;
+    line-height:1.1;
+  }
+  .brand-mark .sub{
+    font-size:12.5px;
+    opacity:0.6;
+    margin-top:2px;
+  }
+  .lead{
+    font-size:14.5px;
+    line-height:1.6;
+    opacity:0.75;
+    margin:18px 0 26px;
+  }
+  .field-label{
+    font-size:12.5px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    opacity:0.55;
+    margin:18px 0 10px;
+  }
+  .level-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:10px;
+  }
+  .level-card{
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 8px;
+    text-align:center;
+    cursor:pointer;
+    transition:transform .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .level-card .em{ font-size:20px; display:block; margin-bottom:6px;}
+  .level-card .lbl{ font-size:12.5px; font-weight:600; }
+  .level-card .lbl-am{ font-size:11px; opacity:0.55; margin-top:2px;}
+  .level-card.selected{
+    border-color:var(--ochre);
+    background: rgba(212,162,76,0.12);
+    transform:translateY(-2px);
+  }
+  input.key-input{
+    width:100%;
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:14px 14px;
+    color:var(--parchment);
+    font-size:14px;
+    font-family:'Inter',monospace;
+  }
+  input.key-input::placeholder{ color:rgba(246,239,221,0.35); }
+  .hint{
+    font-size:12px;
+    opacity:0.5;
+    margin-top:8px;
+    line-height:1.5;
+  }
+  .hint a{ color:var(--ochre); text-decoration:none; }
+  .cta{
+    margin-top:26px;
+    background:var(--ochre);
+    color:var(--ink);
+    border:none;
+    border-radius:14px;
+    padding:16px;
+    font-size:15px;
+    font-weight:700;
+    font-family:'Inter',sans-serif;
+    cursor:pointer;
+    box-shadow: var(--shadow);
+  }
+  .cta:disabled{ opacity:0.4; }
+  .cta:active{ transform:scale(0.98); }
+
+  /* ---------- Main shell ---------- */
+  #main{ display:none; height:100%; flex-direction:column; }
+  header.topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px 18px 12px;
+    border-bottom:1px solid var(--line);
+    flex-shrink:0;
+  }
+  header.topbar .who{ display:flex; align-items:center; gap:10px; }
+  header.topbar .stamp{ width:34px; height:34px; font-size:13px; }
+  header.topbar .lvl-name{ font-size:14px; font-weight:600; }
+  header.topbar .lvl-sub{ font-size:11px; opacity:0.5; }
+  .gear{
+    background:none; border:none; color:var(--parchment);
+    opacity:0.6; font-size:19px; cursor:pointer; padding:6px;
+  }
+
+  main.view{
+    flex:1;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    display:none;
+    flex-direction:column;
+  }
+  main.view.active{ display:flex; }
+
+  /* ---- Chat ---- */
+  #chatMessages{ flex:1; padding:16px 16px 8px; display:flex; flex-direction:column; gap:10px; }
+  .msg{ max-width:82%; padding:11px 14px; border-radius:16px; font-size:14px; line-height:1.5; }
+  .msg.user{ align-self:flex-end; background:var(--ochre); color:var(--ink); border-bottom-right-radius:5px; }
+  .msg.bot{ align-self:flex-start; background:var(--ink-2); border:1px solid var(--line); border-bottom-left-radius:5px; }
+  .msg.system{ align-self:center; font-size:12px; opacity:0.5; text-align:center; }
+  .typing{ align-self:flex-start; display:flex; gap:4px; padding:12px 14px; }
+  .typing span{ width:6px; height:6px; border-radius:50%; background:var(--parchment); opacity:0.4; animation:blink 1.2s infinite; }
+  .typing span:nth-child(2){ animation-delay:.2s; }
+  .typing span:nth-child(3){ animation-delay:.4s; }
+  @keyframes blink{ 0%,80%,100%{opacity:.25} 40%{opacity:.8} }
+  .composer{
+    display:flex; gap:8px; padding:12px 14px calc(env(safe-area-inset-bottom,0px) + 12px);
+    border-top:1px solid var(--line); flex-shrink:0; background:var(--ink);
+  }
+  .composer textarea{
+    flex:1; resize:none; background:var(--ink-2); border:1px solid var(--line);
+    border-radius:14px; color:var(--parchment); padding:11px 14px; font-size:14px;
+    font-family:'Inter',sans-serif; max-height:90px;
+  }
+  .send-btn{
+    width:44px; height:44px; border-radius:50%; border:none; background:var(--ochre);
+    color:var(--ink); font-size:18px; cursor:pointer; flex-shrink:0;
+  }
+  .send-btn:disabled{ opacity:0.35; }
+
+  /* ---- Cards ---- */
+  #cardsView .pad{ padding:16px; }
+  .topic-row{ display:flex; gap:8px; }
+  .topic-row input{
+    flex:1; background:var(--ink-2); border:1px solid var(--line); border-radius:12px;
+    padding:12px 14px; color:var(--parchment); font-size:14px;
+  }
+  .btn-solid{
+    background:var(--ochre); color:var(--ink); border:none; border-radius:12px;
+    padding:12px 16px; font-weight:700; font-size:13.5px; cursor:pointer; white-space:nowrap;
+  }
+  .btn-solid:disabled{ opacity:0.4; }
+  .card-stack{ margin-top:18px; display:flex; flex-direction:column; gap:12px; }
+  .flash{
+    background:var(--ink-2); border:1px solid var(--line); border-radius:16px;
+    padding:18px; cursor:pointer; position:relative; overflow:hidden;
+  }
+  .flash::before{
+    content:''; position:absolute; top:0; left:0; width:4px; height:100%; background:var(--teal);
+  }
+  .flash .word{ font-family:'Fraunces',serif; font-size:20px; font-weight:600; }
+  .flash .pos{ font-size:11px; opacity:0.5; text-transform:uppercase; letter-spacing:0.05em; margin-top:2px;}
+  .flash .back{ margin-top:12px; padding-top:12px; border-top:1px dashed var(--line); display:none; }
+  .flash.flipped .back{ display:block; }
+  .flash .am-word{ font-size:15px; color:var(--ochre); font-weight:600; }
+  .flash .example{ font-size:13px; opacity:0.75; margin-top:8px; line-height:1.5; font-style:italic; }
+  .flash .tap-hint{ font-size:11px; opacity:0.4; margin-top:10px; }
+  .empty-note{ text-align:center; opacity:0.45; font-size:13px; margin-top:40px; line-height:1.6; }
+
+  /* ---- Fix ---- */
+  #fixView .pad{ padding:16px; display:flex; flex-direction:column; gap:12px; }
+  textarea.fix-input{
+    background:var(--ink-2); border:1px solid var(--line); border-radius:14px;
+    padding:14px; color:var(--parchment); font-size:14px; font-family:'Inter',sans-serif;
+    min-height:110px; resize:vertical;
+  }
+  .result-card{
+    background:var(--ink-2); border:1px solid var(--line); border-radius:16px; padding:16px;
+    display:none; flex-direction:column; gap:12px;
+  }
+  .result-card.show{ display:flex; }
+  .result-label{ font-size:11px; text-transform:uppercase; letter-spacing:0.06em; opacity:0.5; }
+  .corrected{ font-size:15px; line-height:1.6; padding:12px; background:rgba(62,124,89,0.15); border-left:3px solid var(--teal); border-radius:8px; }
+  .explain{ font-size:13.5px; line-height:1.65; opacity:0.85; }
+  .explain .am{ display:block; }
+
+  /* ---- Live ---- */
+  #liveMessages .msg{ max-width:88%; }
+  .live-note{
+    font-size:11.5px; opacity:0.5; text-align:center; line-height:1.5; padding:0 10px;
+  }
+  .live-mic-btn{
+    width:76px; height:76px; border-radius:50%; border:none; background:var(--ochre);
+    color:var(--ink); font-size:30px; cursor:pointer; display:flex; align-items:center;
+    justify-content:center; box-shadow:var(--shadow); transition:transform .15s ease, background .2s ease;
+  }
+  .live-mic-btn.connecting{ background:var(--parchment-dim); opacity:0.7; }
+  .live-mic-btn.live{
+    background:var(--coral);
+    animation:pulseMic 1.4s infinite;
+  }
+  @keyframes pulseMic{
+    0%{ box-shadow:0 0 0 0 rgba(196,87,59,0.55); }
+    70%{ box-shadow:0 0 0 18px rgba(196,87,59,0); }
+    100%{ box-shadow:0 0 0 0 rgba(196,87,59,0); }
+  }
+  .live-status{ font-size:13px; opacity:0.65; }
+  .live-status.speaking{ color:var(--ochre); opacity:1; font-weight:600; }
+
+  /* ---- bottom nav ---- */
+  nav.tabbar{
+    display:flex; border-top:1px solid var(--line); flex-shrink:0;
+    padding-bottom:env(safe-area-inset-bottom,0px); background:var(--ink);
+  }
+  nav.tabbar button{
+    flex:1; background:none; border:none; color:var(--parchment); opacity:0.45;
+    padding:10px 4px 8px; display:flex; flex-direction:column; align-items:center; gap:4px;
+    font-size:10.5px; font-family:'Noto Sans Ethiopic','Inter',sans-serif; cursor:pointer;
+  }
+  nav.tabbar button .ic{ font-size:19px; }
+  nav.tabbar button.active{ opacity:1; color:var(--ochre); }
+
+  ::-webkit-scrollbar{ width:0; height:0; }
+
+  /* ---------- Home ---------- */
+  #homeView .home-pad{
+    padding:20px 18px 16px; text-align:center;
+    flex:1; display:flex; flex-direction:column; min-height:100%;
+  }
+  .hero-wrap{
+    flex:1;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .welcome-title{
+    font-family:'Fraunces','Noto Sans Ethiopic',serif;
+    font-style:italic; font-weight:500;
+    font-size:8.5vw; opacity:0.65; margin:0 0 2px; letter-spacing:0.01em;
+  }
+  .brand-title{
+    font-family:'Fraunces','Noto Sans Ethiopic',serif;
+    font-weight:700; font-size:15vw; line-height:1.06; margin:0;
+    color:var(--ochre); text-shadow:0 6px 30px rgba(212,162,76,0.22);
+  }
+  .home-grid{
+    margin-top:16px;
+    display:grid; grid-template-columns:repeat(4,1fr); gap:8px; text-align:center;
+    flex-shrink:0;
+  }
+  .home-btn{
+    background:var(--ink-2); border:1px solid var(--line); border-radius:12px;
+    padding:10px 4px; cursor:pointer; display:flex; flex-direction:column; gap:4px;
+    min-height:auto; justify-content:center; align-items:center;
+    transition:transform .15s ease, border-color .15s ease;
+  }
+  .home-btn:active{ transform:scale(0.97); }
+  .home-btn .ic{ font-size:16px; display:flex; align-items:center; justify-content:center; }
+  .home-btn .ic svg{ display:block; }
+  .home-btn .lbl{ font-size:10.5px; font-weight:700; font-family:'Inter',sans-serif; }
+  .sub-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:4px; }
+  .sub-btn{
+    background:var(--ink-2); border:1px solid var(--line); border-radius:12px;
+    padding:14px 10px; text-align:center; cursor:pointer; font-size:13.5px; font-weight:600;
+  }
+  .sub-btn:active{ transform:scale(0.97); }
+  .discovery-loading{ text-align:center; opacity:0.5; font-size:13px; padding:20px 0; }
+  .discovery-text{ font-size:14px; line-height:1.65; opacity:0.9; white-space:pre-wrap; }
+  .discovery-links{ margin-top:14px; display:flex; flex-direction:column; gap:8px; }
+  .discovery-links a{
+    display:block; background:var(--ink-2); border:1px solid var(--line); border-radius:10px;
+    padding:10px 12px; color:var(--ochre); text-decoration:none; font-size:13px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .twister-list{ display:flex; flex-direction:column; gap:10px; }
+  .twister-item{
+    background:var(--ink-2); border:1px solid var(--line); border-radius:12px;
+    padding:12px 14px; font-size:14.5px; line-height:1.5; font-style:italic;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+  }
+  .twister-item .tw-text{ flex:1; }
+
+  /* ---------- Floating live button ---------- */
+  .floating-live-btn{
+    position:fixed; left:calc(100% - 76px); top:calc(100% - 220px);
+    width:60px; height:60px; border-radius:50%; border:none; background:var(--coral);
+    color:var(--parchment); cursor:grab; z-index:40;
+    box-shadow:var(--shadow); display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:2px; touch-action:none; user-select:none;
+  }
+  .floating-live-btn .ic{ font-size:19px; line-height:1; }
+  .floating-live-btn .lbl{ font-size:9px; font-weight:700; font-family:'Inter',sans-serif; line-height:1; letter-spacing:0.02em; }
+  .floating-live-btn.dragging{ cursor:grabbing; opacity:0.85; transition:none; }
+  .floating-live-btn.active{ background:var(--ochre); color:var(--ink); }
+
+  /* ---------- Settings modal ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(10,14,32,0.72); z-index:60;
+    display:none; align-items:flex-end; justify-content:center;
+  }
+  .modal-overlay.show{ display:flex; }
+  .modal-panel{
+    width:100%; max-width:480px; background:var(--ink); border-top-left-radius:22px; border-top-right-radius:22px;
+    padding:22px 20px calc(env(safe-area-inset-bottom,0px) + 22px); box-shadow:var(--shadow);
+  }
+  .modal-title{ font-size:17px; margin-bottom:16px; }
+  .modal-close{
+    margin-top:20px; width:100%; background:var(--ink-2); color:var(--parchment); border:1px solid var(--line);
+    border-radius:12px; padding:13px; font-size:14px; font-weight:600; cursor:pointer;
+  }
+
+  /* ---------- Live header/mute ---------- */
+  .live-header{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px 0; }
+  .live-back{ background:none; border:none; color:var(--parchment); font-size:30px; cursor:pointer; opacity:0.8; line-height:1; padding:4px 8px 4px 0; position:relative; top:-3px; }
+  .mute-btn{
+    background:var(--ink-2); border:1px solid var(--line); color:var(--parchment);
+    width:44px; height:44px; border-radius:50%; font-size:19px; cursor:pointer;
+  }
+  .live-controls-row{ display:flex; align-items:center; gap:16px; }
+
+  /* ---------- YouTube link cards in Discovery ---------- */
+  .yt-list{ display:flex; flex-direction:column; gap:14px; margin-top:14px; }
+  .yt-item{
+    background:var(--ink-2); border:1px solid var(--line); border-radius:14px; overflow:hidden;
+    display:block; text-decoration:none; color:inherit; padding:14px;
+  }
+  .yt-item:active{ transform:scale(0.98); }
+  .yt-top-row{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+  .yt-title{ font-size:15px; font-weight:700; line-height:1.4; font-family:'Fraunces',serif; }
+  .yt-sub{ font-size:12px; opacity:0.6; margin-top:2px; }
+  .yt-play-ic{
+    flex-shrink:0; width:34px; height:34px;
+    display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--parchment);
+  }
+  /* Movie play button: square, bright red, white triangle */
+  .yt-play-ic.movie-play{
+    border-radius:8px;
+    background:#FF2D2D;
+    color:#FFFFFF;
+  }
+  /* Music play button: round, blue */
+  .yt-play-ic.music-play{
+    border-radius:50%;
+    background:#2D6CFF;
+    color:#FFFFFF;
+  }
+  .yt-cast{ margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); }
+  .yt-cast-label{ font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; opacity:0.5; margin-bottom:4px; }
+  .yt-cast-names{ font-size:12.5px; opacity:0.8; line-height:1.6; }
+  .yt-meta{ padding:10px 12px 12px; }
+
+  /* ---------- Grammar / Spoken / Vocabulary (books group) ---------- */
+  .gram-card .back{ display:block !important; }
+  .gram-row{ font-size:13.5px; line-height:1.5; margin-bottom:10px; }
+  .gram-row:last-child{ margin-bottom:0; }
+  .gen-controls{ display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+  .gen-progress{ font-size:12.5px; opacity:0.65; }
+  .spoken-item .opp{ margin-top:8px; padding-top:8px; border-top:1px dashed var(--line); opacity:0.85; not-italic; font-style:normal; }
+  .spoken-item .am-word{ font-size:13.5px; color:var(--ochre); font-weight:600; font-style:normal; margin-top:4px; }
+  .vocab-list{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:0 14px;
+    width:100%;
+  }
+  .vocab-item{
+    display:flex; flex-direction:column; gap:2px;
+    padding:14px 4px; border-bottom:1px solid var(--line);
+  }
+  .vocab-item .vword{ font-weight:700; font-family:'Fraunces',serif; font-size:20px; line-height:1.2; }
+  .vocab-item .vmean{ color:var(--ochre); font-size:16px; font-weight:600; }
+
+  /* ---- Grammar practice box ---- */
+  .practice-box{ margin-top:14px; padding-top:14px; border-top:1px dashed var(--line); }
+  .practice-label{ font-size:11px; text-transform:uppercase; letter-spacing:0.06em; opacity:0.5; margin-bottom:8px; }
+  .practice-input{
+    width:100%; background:var(--ink); border:1px solid var(--line); border-radius:10px;
+    padding:10px 12px; color:var(--parchment); font-size:13.5px; font-family:'Inter',sans-serif;
+    min-height:56px; resize:vertical;
+  }
+  .practice-btn{
+    margin-top:8px; background:var(--teal); color:var(--parchment); border:none; border-radius:10px;
+    padding:9px 14px; font-size:12.5px; font-weight:700; cursor:pointer;
+  }
+  .practice-btn:disabled{ opacity:0.4; }
+  .practice-feedback{
+    margin-top:10px; padding:10px 12px; border-radius:10px; font-size:13px; line-height:1.6;
+    background:rgba(212,162,76,0.1); border-left:3px solid var(--ochre); display:none;
+  }
+  .practice-feedback.show{ display:block; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ONBOARDING -->
+  <div id="onboarding">
+    <div class="brand-mark">
+      <div class="stamp">EJ</div>
+      <div>
+        <div class="title display">English Journal</div>
+        <div class="sub am">በEVA የታገዘ የእንግሊዝኛ መምህርህ</div>
+      </div>
+    </div>
+    <p class="lead am">እንግሊዝኛ ቋንቋን በቀላሉ ተማር — ቃላት ክምችት (vocabulary)፣ የአረፍተ ነገር አሰራር (sentence structure)፣ ትክክለኛ አጠራር (pronunciation)፣ እና የውይይት ክህሎትህን በደረጃህ ልክ አሻሽል።</p>
+
+    <div class="field-label am">የደረጃህ ምረጥ</div>
+    <div class="level-grid" id="levelGrid">
+      <div class="level-card" data-level="beginner">
+        <span class="em">🌱</span>
+        <div class="lbl">Beginner</div>
+      </div>
+      <div class="level-card" data-level="intermediate">
+        <span class="em">🌿</span>
+        <div class="lbl">Intermediate</div>
+      </div>
+      <div class="level-card" data-level="advanced">
+        <span class="em">🌳</span>
+        <div class="lbl">Advanced</div>
+      </div>
+    </div>
+
+    <div class="field-label am">የGemini API Key</div>
+    <input type="password" class="key-input" id="apiKeyInput" placeholder="AIza...">
+    <div class="hint am">Key ከሌለህ <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a> ላይ በነፃ ማግኘት ትችላለህ። Key ያለው በዚህ መሳሪያ ላይ ብቻ ተቀምጦ ይቆያል።</div>
+
+    <button class="cta am" id="startBtn" disabled>ጀምር</button>
+    <div style="text-align:center; font-size:10.5px; opacity:0.35; margin-top:14px;">build: fixes-batch-12 · v27</div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="main">
+    <header class="topbar">
+      <div class="who">
+        <div class="stamp" id="topStamp">🌱</div>
+        <div>
+          <div class="lvl-name" id="topLevelName">Beginner</div>
+          <div class="lvl-sub am">የእንግሊዝኛ ጉዞህ</div>
+        </div>
+      </div>
+      <button class="gear" id="settingsBtn">⚙</button>
+    </header>
+
+    <!-- HOME -->
+    <main class="view active" id="homeView">
+      <div class="home-pad">
+        <div class="hero-wrap">
+          <div class="welcome-title display">Welcome to</div>
+          <div class="brand-title display">EVA<br>English Language Learning</div>
+        </div>
+        <div id="teachersBtn" style="width:76px; margin:0 auto 18px; background:var(--ink-2); border:1px solid var(--line); border-radius:14px; padding:10px 4px; cursor:pointer; display:flex; flex-direction:column; gap:4px; align-items:center;">
+          <span style="font-size:20px;">🎓</span>
+          <span style="font-size:10.5px; font-weight:700; font-family:'Inter',sans-serif;">Teachers</span>
+  </div>
+        <div class="home-grid" id="homeGrid">
+          <div class="home-btn" data-topic="movies">
+            <span class="ic">🎬</span>
+            <span class="lbl">Movies</span>
+          </div>
+          <div class="home-btn" data-topic="music">
+            <span class="ic">🎵</span>
+            <span class="lbl">Music</span>
+          </div>
+          <div class="home-btn" data-topic="twister">
+            <span class="ic">👅</span>
+            <span class="lbl">Twister</span>
+          </div>
+          <div class="home-btn" data-topic="books">
+            <span class="ic">📚</span>
+            <span class="lbl">Books</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- CHAT -->
+    <main class="view" id="chatView">
+      <div id="chatMessages"></div>
+      <div class="composer">
+        <textarea id="chatInput" rows="1" placeholder="በእንግሊዝኛ ፃፍ ወይም ጥያቄ ጠይቅ..."></textarea>
+        <button class="send-btn" id="chatSend">➤</button>
+      </div>
+    </main>
+
+    <!-- CARDS -->
+    <main class="view" id="cardsView">
+      <div class="pad">
+        <div class="topic-row">
+          <input type="text" id="topicInput" placeholder="ርዕስ (ለምሳሌ: food, travel, work)">
+          <button class="btn-solid" id="genCardsBtn">Words &amp; Usage</button>
+        </div>
+        <div class="card-stack" id="cardStack"></div>
+      </div>
+    </main>
+
+    <!-- FIX -->
+    <main class="view" id="fixView">
+      <div class="pad">
+        <div class="field-label am">የእንግሊዝኛ ፅሁፍህን እዚህ ለጥፍ</div>
+        <p class="lead am" style="margin:0 0 4px;">አንድ sentence ወይም paragraph በእንግሊዝኛ ላክ — ስህተቶች (grammar, spelling, word choice) በራስ-ሰር ይታረሙልሃል፣ እና ለምን እንደተስተካከለ ማብራሪያ በአማርኛ ታገኛለህ።</p>
+        <textarea class="fix-input" id="fixInput" placeholder="Type or paste an English sentence or paragraph..."></textarea>
+        <button class="btn-solid am" id="fixBtn" style="align-self:flex-start;">አርም</button>
+        <div class="result-card" id="fixResult">
+          <div>
+            <div class="result-label am">የተስተካከለ</div>
+            <div class="corrected" id="fixCorrected"></div>
+          </div>
+          <div>
+            <div class="result-label am">ማብራሪያ</div>
+            <div class="explain am" id="fixExplain"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- LIVE VOICE -->
+    <main class="view" id="liveView">
+      <div class="live-header">
+        <button class="live-back" id="liveBackBtn">←</button>
+        <div class="live-status am" id="liveStatus" style="margin:0;">ለመጀመር ንካ</div>
+        <span style="width:20px;"></span>
+      </div>
+      <div id="liveMessages" style="flex:1; padding:16px 16px 8px; display:flex; flex-direction:column; gap:10px; overflow-y:auto;"></div>
+      <div style="padding:14px 16px calc(env(safe-area-inset-bottom,0px) + 16px); display:flex; flex-direction:column; align-items:center; gap:12px; border-top:1px solid var(--line);">
+        <div class="live-controls-row">
+          <button class="mute-btn" id="muteBtn">🔊</button>
+          <button class="live-mic-btn" id="liveMicBtn">🎙️</button>
+          <span style="width:44px;"></span>
+        </div>
+      </div>
+    </main>
+
+    <!-- DISCOVERY (Movies / Music / Twister / Books) -->
+    <main class="view" id="discoveryView">
+      <div class="live-header">
+        <button class="live-back" id="discoveryBackBtn">←</button>
+        <div class="lvl-name" id="discoveryTitle" style="margin:0;">Discovery</div>
+        <span style="width:20px;"></span>
+      </div>
+      <div class="pad" id="discoveryBody" style="flex:1; overflow-y:auto;"></div>
+    </main>
+
+    <nav class="tabbar">
+      <button class="tab-btn active" data-view="homeView">
+        <span class="ic">🏠</span> Home
+      </button>
+      <button class="tab-btn" data-view="chatView">
+        <span class="ic">💬</span> Chat
+      </button>
+      <button class="tab-btn" data-view="cardsView">
+        <span class="ic">📇</span> Vocabulary
+      </button>
+      <button class="tab-btn" data-view="fixView">
+        <span class="ic">✏️</span> Fix
+      </button>
+    </nav>
+
+    <button class="floating-live-btn" id="floatingLiveBtn">
+      <span class="ic">🎙️</span>
+      <span class="lbl" id="floatingLiveLabel">Live</span>
+    </button>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-panel">
+      <div class="modal-title display">Level</div>
+      <div class="level-grid" id="settingsLevelGrid">
+        <div class="level-card" data-level="beginner">
+          <span class="em">🌱</span>
+          <div class="lbl">Beginner</div>
+        </div>
+        <div class="level-card" data-level="intermediate">
+          <span class="em">🌿</span>
+          <div class="lbl">Intermediate</div>
+        </div>
+        <div class="level-card" data-level="advanced">
+          <span class="em">🌳</span>
+          <div class="lbl">Advanced</div>
+        </div>
+      </div>
+      <button class="modal-close am" id="settingsCloseBtn">ዝጋ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const tg = window.Telegram && window.Telegram.WebApp;
+  if (tg) { tg.ready(); tg.expand(); }
+
+  // ============================================
+  // MOVIE + SONG LIBRARIES
+  // Movies below are curated, freely-watchable YouTube uploads
+  // (each has an explicit "link" pointing straight at that video).
+  // Songs keep using a YouTube search link since we don't pin an
+  // exact free upload for each track.
+  // ============================================
+  function ytSearchUrl(query){
+    return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(query);
+  }
+
+  const MOVIES = {
+    'movies-adventure': [
+      {title:'Impossible to Turn Off', year:'', cast:[], link:'https://youtu.be/0KNIA3lIdjk'},
+      {title:'The Wild Justice', year:'', cast:[], link:'https://youtu.be/2Ip8ovX7Fm4'},
+      {title:'A Disaster Throws Them', year:'', cast:[], link:'https://youtu.be/rUM245Ulgdg'}
+    ],
+    'movies-comedy': [
+      {title:'Bromates', year:'', cast:[], link:'https://youtu.be/MTjKBwIhJ20'},
+      {title:'Crazy Friends', year:'', cast:[], link:'https://youtu.be/dXiLaNVaRyw'},
+      {title:'Growing Ups', year:'', cast:[], link:'https://youtu.be/tHg3mVoK210'}
+    ],
+    'movies-action': [
+      {title:'Prison', year:'', cast:[], link:'https://youtu.be/0s8ry-22gjA'},
+      {title:'Trucker', year:2014, cast:[], link:'https://youtu.be/NRpp23Zkv7Y'},
+      {title:'The Deadliest', year:'', cast:[], link:'https://youtu.be/jjGKLkkEU4M'},
+      {title:'Final Assignment', year:'', cast:[], link:'https://youtu.be/WpvK8VWMvHk'}
+    ]
+  };
+  const TEACHERS = {
+    maraki:   { label:'Maraki English' },
+    learneta: { label:'Learneta academy' }
+  };
+
+  // ---------- Firebase (shared teacher video list) ----------
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyDdVl9Fwtwh-CN8a79YjszB-10AD63uuEg",
+    authDomain: "english-journal-5480d.firebaseapp.com",
+    databaseURL: "https://english-journal-5480d-default-rtdb.firebaseio.com",
+    projectId: "english-journal-5480d",
+    storageBucket: "english-journal-5480d.firebasestorage.app",
+    messagingSenderId: "951083642",
+    appId: "1:951083642:web:273b7bb9c7e026e6d351c3"
+  };
+  let fbDb = null;
+  try{
+    if (window.firebase && firebase.initializeApp){
+      firebase.initializeApp(FIREBASE_CONFIG);
+      fbDb = firebase.database();
+    }
+  }catch(e){ console.error('Firebase init failed', e); }
+
+  // ---------- Cloudinary (video hosting) ----------
+  const CLOUDINARY_CLOUD_NAME = 'cxj5yqpb';
+  const CLOUDINARY_UPLOAD_PRESET = 'english_journal_teachers';
+  const CLOUDINARY_UPLOAD_URL = 'https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD_NAME + '/video/upload';
+  const SONGS_PRONOUNCE = [
+    {title:'Let Her Go', artist:'Passenger'}, {title:'Wake Me Up', artist:'Avicii'},
+    {title:'Riptide', artist:'Vance Joy'}, {title:'The A Team', artist:'Ed Sheeran'},
+    {title:'Skinny Love', artist:'Bon Iver'}, {title:'Hey There Delilah', artist:'Plain White T\u2019s'},
+    {title:'Grenade', artist:'Bruno Mars'}, {title:'Someone Like You', artist:'Adele'},
+    {title:'Stay With Me', artist:'Sam Smith'}, {title:'I\u2019m Yours', artist:'Jason Mraz'},
+    {title:'Photograph', artist:'Ed Sheeran'}, {title:'Perfect', artist:'Ed Sheeran'},
+    {title:'Thinking Out Loud', artist:'Ed Sheeran'}, {title:'All of Me', artist:'John Legend'},
+    {title:'Say You Won\u2019t Let Go', artist:'James Arthur'}, {title:'When I Was Your Man', artist:'Bruno Mars'},
+    {title:'Fix You', artist:'Coldplay'}, {title:'The Scientist', artist:'Coldplay'},
+    {title:'Yellow', artist:'Coldplay'}, {title:'Chasing Cars', artist:'Snow Patrol'},
+    {title:'Halo', artist:'Beyonce'}, {title:'Set Fire to the Rain', artist:'Adele'},
+    {title:'Rolling in the Deep', artist:'Adele'}, {title:'Hello', artist:'Adele'},
+    {title:'Counting Stars', artist:'OneRepublic'}, {title:'Apologize', artist:'OneRepublic'},
+    {title:'Demons', artist:'Imagine Dragons'}, {title:'Believer', artist:'Imagine Dragons'},
+    {title:'Radioactive', artist:'Imagine Dragons'}, {title:'Ho Hey', artist:'The Lumineers'},
+    {title:'Ophelia', artist:'The Lumineers'}, {title:'Budapest', artist:'George Ezra'},
+    {title:'Shotgun', artist:'George Ezra'}, {title:'Home', artist:'Edward Sharpe & The Magnetic Zeros'},
+    {title:'Little Talks', artist:'Of Monsters and Men'}, {title:'Iris', artist:'Goo Goo Dolls'},
+    {title:'Chandelier', artist:'Sia'}, {title:'Never Give Up', artist:'Sia'},
+    {title:'Say Something', artist:'A Great Big World'}, {title:'Stay', artist:'Rihanna'},
+    {title:'Diamonds', artist:'Rihanna'}, {title:'Cheerleader', artist:'OMI'},
+    {title:'Sugar', artist:'Maroon 5'}, {title:'Memories', artist:'Maroon 5'},
+    {title:'Girls Like You', artist:'Maroon 5'}, {title:'Shape of You', artist:'Ed Sheeran'},
+    {title:'Castle on the Hill', artist:'Ed Sheeran'}, {title:'Someone You Loved', artist:'Lewis Capaldi'},
+    {title:'Before You Go', artist:'Lewis Capaldi'}, {title:'7 Years', artist:'Lukas Graham'},
+    {title:'Ain\u2019t Nobody', artist:'Felix Jaehn'}, {title:'Location', artist:'Khalid'},
+    {title:'Young Dumb & Broke', artist:'Khalid'}, {title:'Talking to the Moon', artist:'Bruno Mars'},
+    {title:'Just the Way You Are', artist:'Bruno Mars'}, {title:'Count on Me', artist:'Bruno Mars'},
+    {title:'A Thousand Years', artist:'Christina Perri'}, {title:'Jar of Hearts', artist:'Christina Perri'},
+    {title:'Love Story', artist:'Taylor Swift'}, {title:'Lover', artist:'Taylor Swift'},
+    {title:'Cardigan', artist:'Taylor Swift'}, {title:'Willow', artist:'Taylor Swift'},
+    {title:'Drops of Jupiter', artist:'Train'}, {title:'Hey, Soul Sister', artist:'Train'},
+    {title:'Viva la Vida', artist:'Coldplay'}, {title:'Clocks', artist:'Coldplay'},
+    {title:'Bad Day', artist:'Daniel Powter'}, {title:'True Colors', artist:'Cyndi Lauper'},
+    {title:'You Are Not Alone', artist:'Michael Jackson'}, {title:'Heal the World', artist:'Michael Jackson'},
+    {title:'Fields of Gold', artist:'Sting'}, {title:'Shape of My Heart', artist:'Sting'},
+    {title:'Wonderwall', artist:'Oasis'}, {title:'Don\u2019t Look Back in Anger', artist:'Oasis'},
+    {title:'Chasing Pavements', artist:'Adele'}, {title:'Turning Tables', artist:'Adele'},
+    {title:'Angels', artist:'Robbie Williams'}, {title:'Feel', artist:'Robbie Williams'},
+    {title:'Beautiful Day', artist:'U2'}, {title:'With or Without You', artist:'U2'},
+    {title:'Take Me to Church', artist:'Hozier'}, {title:'Work Song', artist:'Hozier'},
+    {title:'Landslide', artist:'Fleetwood Mac'}, {title:'Dreams', artist:'Fleetwood Mac'},
+    {title:'Bubbly', artist:'Colbie Caillat'}, {title:'The Man Who Can\u2019t Be Moved', artist:'The Script'},
+    {title:'Breakeven', artist:'The Script'}, {title:'Hall of Fame', artist:'The Script'},
+    {title:'City of Stars', artist:'La La Land Cast'}, {title:'This Is Me', artist:'The Greatest Showman Cast'},
+    {title:'A Million Dreams', artist:'The Greatest Showman Cast'}, {title:'Rewrite the Stars', artist:'The Greatest Showman Cast'},
+    {title:'Let It Be', artist:'The Beatles'}, {title:'Hey Jude', artist:'The Beatles'},
+    {title:'Yesterday', artist:'The Beatles'}, {title:'Imagine', artist:'John Lennon'},
+    {title:'Tears in Heaven', artist:'Eric Clapton'}, {title:'Wonderful Tonight', artist:'Eric Clapton'},
+    {title:'Everybody Hurts', artist:'R.E.M.'}, {title:'Losing My Religion', artist:'R.E.M.'},
+    {title:'She Will Be Loved', artist:'Maroon 5'}, {title:'Payphone', artist:'Maroon 5'},
+    {title:'Firework', artist:'Katy Perry'}, {title:'The One That Got Away', artist:'Katy Perry'},
+    {title:'Just Give Me a Reason', artist:'P!nk'}, {title:'Perfect', artist:'P!nk'},
+    {title:'What About Us', artist:'P!nk'}, {title:'Try', artist:'P!nk'},
+    {title:'Skyscraper', artist:'Demi Lovato'}, {title:'Let It Go', artist:'Idina Menzel'},
+    {title:'How Far I\u2019ll Go', artist:'Auli\u2019i Cravalho'}, {title:'Speechless', artist:'Naomi Scott'},
+    {title:'A Whole New World', artist:'Zayn & Zhavia Ward'}, {title:'You\u2019ve Got a Friend in Me', artist:'Randy Newman'},
+    {title:'Remember Me', artist:'Miguel'}, {title:'Into the Unknown', artist:'Idina Menzel'},
+    {title:'Show Yourself', artist:'Idina Menzel'}, {title:'When You Believe', artist:'Whitney Houston & Mariah Carey'},
+    {title:'I Will Always Love You', artist:'Whitney Houston'}, {title:'One Sweet Day', artist:'Mariah Carey & Boyz II Men'},
+    {title:'End of the Road', artist:'Boyz II Men'}, {title:'Never Too Much', artist:'Luther Vandross'},
+    {title:'Faithfully', artist:'Journey'}, {title:'Open Arms', artist:'Journey'},
+    {title:'Total Eclipse of the Heart', artist:'Bonnie Tyler'}, {title:'Against All Odds', artist:'Phil Collins'},
+    {title:'Another Day in Paradise', artist:'Phil Collins'}, {title:'You\u2019ll Be in My Heart', artist:'Phil Collins'},
+    {title:'Home', artist:'Michael Buble'}, {title:'Everything', artist:'Michael Buble'},
+    {title:'Feeling Good', artist:'Michael Buble'}, {title:'What a Wonderful World', artist:'Louis Armstrong'},
+    {title:'La Vie en Rose', artist:'Louis Armstrong'}, {title:'Fly Me to the Moon', artist:'Frank Sinatra'},
+    {title:'My Way', artist:'Frank Sinatra'}, {title:'Unchained Melody', artist:'The Righteous Brothers'}
+  ];
+
+  const SONGS_LISTEN = [
+    {title:'Slow Dancing in the Dark', artist:'Joji'}, {title:'Say It', artist:'Joji'},
+    {title:'Be Alright', artist:'Dean Lewis'}, {title:'How Do I Say Goodbye', artist:'Dean Lewis'},
+    {title:'7 Minutes', artist:'Dean Lewis'}, {title:'Chemicals', artist:'Dean Lewis'},
+    {title:'Cold Heart', artist:'Elton John & Dua Lipa'}, {title:'Levitating', artist:'Dua Lipa'},
+    {title:'Don\u2019t Start Now', artist:'Dua Lipa'}, {title:'New Rules', artist:'Dua Lipa'},
+    {title:'Houdini', artist:'Dua Lipa'}, {title:'Training Season', artist:'Dua Lipa'},
+    {title:'Anti-Hero', artist:'Taylor Swift'}, {title:'Cruel Summer', artist:'Taylor Swift'},
+    {title:'Lavender Haze', artist:'Taylor Swift'}, {title:'Fortnight', artist:'Taylor Swift'},
+    {title:'Blank Space', artist:'Taylor Swift'}, {title:'Flowers', artist:'Miley Cyrus'},
+    {title:'Used to Be Young', artist:'Miley Cyrus'}, {title:'Vampire', artist:'Olivia Rodrigo'},
+    {title:'Drivers License', artist:'Olivia Rodrigo'}, {title:'Good 4 U', artist:'Olivia Rodrigo'},
+    {title:'Bad Idea Right?', artist:'Olivia Rodrigo'}, {title:'As It Was', artist:'Harry Styles'},
+    {title:'Watermelon Sugar', artist:'Harry Styles'}, {title:'Late Night Talking', artist:'Harry Styles'},
+    {title:'Music for a Sushi Restaurant', artist:'Harry Styles'}, {title:'Blinding Lights', artist:'The Weeknd'},
+    {title:'Save Your Tears', artist:'The Weeknd'}, {title:'Die For You', artist:'The Weeknd'},
+    {title:'Timeless', artist:'The Weeknd & Playboi Carti'}, {title:'Stay', artist:'The Kid LAROI & Justin Bieber'},
+    {title:'Ghost', artist:'Justin Bieber'}, {title:'Peaches', artist:'Justin Bieber'},
+    {title:'Espresso', artist:'Sabrina Carpenter'}, {title:'Please Please Please', artist:'Sabrina Carpenter'},
+    {title:'Taste', artist:'Sabrina Carpenter'}, {title:'Manchild', artist:'Sabrina Carpenter'},
+    {title:'Good Luck, Babe!', artist:'Chappell Roan'}, {title:'Pink Pony Club', artist:'Chappell Roan'},
+    {title:'Red Wine Supernova', artist:'Chappell Roan'}, {title:'Birds of a Feather', artist:'Billie Eilish'},
+    {title:'What Was I Made For?', artist:'Billie Eilish'}, {title:'Lunch', artist:'Billie Eilish'},
+    {title:'Bad Guy', artist:'Billie Eilish'}, {title:'Happier Than Ever', artist:'Billie Eilish'},
+    {title:'Flowers', artist:'Lauv'}, {title:'I Like Me Better', artist:'Lauv'},
+    {title:'Circles', artist:'Post Malone'}, {title:'Sunflower', artist:'Post Malone & Swae Lee'},
+    {title:'Chemical', artist:'Post Malone'}, {title:'I Had Some Help', artist:'Post Malone & Morgan Wallen'},
+    {title:'Rockin\u2019', artist:'Post Malone'}, {title:'Cruel Summer', artist:'Bananarama'},
+    {title:'Kill Bill', artist:'SZA'}, {title:'Snooze', artist:'SZA'},
+    {title:'Good Days', artist:'SZA'}, {title:'Saturn', artist:'SZA'},
+    {title:'Escapism', artist:'RAYE'}, {title:'Genesis', artist:'RAYE'},
+    {title:'Water', artist:'Tyla'}, {title:'Push 2 Start', artist:'Tyla'},
+    {title:'Padam Padam', artist:'Kylie Minogue'}, {title:'Houdini', artist:'Foster the People'},
+    {title:'Paint the Town Red', artist:'Doja Cat'}, {title:'Say So', artist:'Doja Cat'},
+    {title:'Woman', artist:'Doja Cat'}, {title:'Agora Hills', artist:'Doja Cat'},
+    {title:'Calm Down', artist:'Rema & Selena Gomez'}, {title:'Reason', artist:'Rema'},
+    {title:'Unavailable', artist:'Davido'}, {title:'Feel', artist:'Davido'},
+    {title:'Last Last', artist:'Burna Boy'}, {title:'City Boys', artist:'Burna Boy'},
+    {title:'Higher', artist:'Burna Boy'}, {title:'Ye', artist:'Burna Boy'},
+    {title:'Big Big Stylo', artist:'Wizkid'}, {title:'Essence', artist:'Wizkid'},
+    {title:'People', artist:'Libianca'}, {title:'Fall', artist:'Davido'},
+    {title:'Peru', artist:'Fireboy DML & Ed Sheeran'}, {title:'Late Night in Berlin', artist:'Ed Sheeran'},
+    {title:'Eyes Closed', artist:'Ed Sheeran'}, {title:'Bad Habits', artist:'Ed Sheeran'},
+    {title:'Perfect Night', artist:'LE SSERAFIM'}, {title:'Super Shy', artist:'NewJeans'},
+    {title:'How Sweet', artist:'NewJeans'}, {title:'Ditto', artist:'NewJeans'},
+    {title:'Seven', artist:'Jung Kook'}, {title:'Standing Next to You', artist:'Jung Kook'},
+    {title:'3D', artist:'Jung Kook'}, {title:'Dynamite', artist:'BTS'},
+    {title:'Butter', artist:'BTS'}, {title:'Left and Right', artist:'Jung Kook & Charlie Puth'},
+    {title:'APT.', artist:'ROSE & Bruno Mars'}, {title:'On the Ground', artist:'ROSE'},
+    {title:'Attention', artist:'NewJeans'}, {title:'FE!N', artist:'Travis Scott'},
+    {title:'Not Like Us', artist:'Kendrick Lamar'}, {title:'Squabble Up', artist:'Kendrick Lamar'},
+    {title:'Luther', artist:'Kendrick Lamar & SZA'}, {title:'Family Ties', artist:'Baby Keem & Kendrick Lamar'},
+    {title:'Rich Baby Daddy', artist:'Drake'}, {title:'First Person Shooter', artist:'Drake & J. Cole'},
+    {title:'IDGAF', artist:'Drake'}, {title:'A Bar Song (Tipsy)', artist:'Shaboozey'},
+    {title:'Texas Hold \u2019Em', artist:'Beyonce'}, {title:'16 Carriages', artist:'Beyonce'},
+    {title:'Cowboy Carter', artist:'Beyonce'}, {title:'Break My Soul', artist:'Beyonce'},
+    {title:'Feather', artist:'Sabrina Carpenter'}, {title:'Greedy', artist:'Tate McRae'},
+    {title:'It\u2019s OK I\u2019m OK', artist:'Tate McRae'}, {title:'Exes', artist:'Tate McRae'},
+    {title:'Somewhere Only We Know', artist:'Keane'}, {title:'Beautiful Things', artist:'Benson Boone'},
+    {title:'Slow It Down', artist:'Benson Boone'}, {title:'In the Stars', artist:'Benson Boone'},
+    {title:'Lose Control', artist:'Teddy Swims'}, {title:'The Door', artist:'Teddy Swims'},
+    {title:'Blue', artist:'Yung Kai'}, {title:'Denial Is a River', artist:'Doechii'},
+    {title:'Anxiety', artist:'Doechii'}, {title:'Ordinary', artist:'Alex Warren'},
+    {title:'Messy', artist:'Lola Young'}, {title:'Golden', artist:'HUNTR/X'},
+    {title:'Your Idol', artist:'Saja Boys'}, {title:'Undressed', artist:'Sombr'},
+    {title:'Back to Friends', artist:'Sombr'}, {title:'Beautiful That Way', artist:'RAYE'},
+    {title:'Sailor Song', artist:'Gigi Perez'}, {title:'Sympathy Is a Knife', artist:'Charli XCX'},
+    {title:'360', artist:'Charli XCX'}, {title:'Guess', artist:'Charli XCX & Billie Eilish'},
+    {title:'I Had Some Help', artist:'Post Malone'}, {title:'Fortnight', artist:'Taylor Swift & Post Malone'},
+    {title:'Beautiful Mistakes', artist:'Maroon 5 & Megan Thee Stallion'}, {title:'Die With a Smile', artist:'Lady Gaga & Bruno Mars'},
+    {title:'Abracadabra', artist:'Lady Gaga'}, {title:'Disease', artist:'Lady Gaga'},
+    {title:'Birds of a Feather', artist:'Billie Eilish'}, {title:'That\u2019s So True', artist:'Gracie Abrams'},
+    {title:'Risk', artist:'Gracie Abrams'}, {title:'I Love You, I\u2019m Sorry', artist:'Gracie Abrams'},
+    {title:'Please Please Please', artist:'Sabrina Carpenter'}, {title:'Juno', artist:'Sabrina Carpenter'}
+  ];
+
+  const state = {
+    apiKey: '',
+    level: 'beginner',
+    chatHistory: [],
+    grammarData: null,
+    spokenData: [],
+    spokenRunning: false,
+    spokenCancel: false,
+    spokenLastBatchEn: [],
+    vocabData: [],
+    vocabRunning: false,
+    vocabCancel: false,
+    vocabLastBatchWords: []
+  };
+
+  const LEVEL_META = {
+    beginner:     { emoji:'🌱', label:'Beginner',     desc:'short sentences, common words, simple grammar' },
+    intermediate: { emoji:'🌿', label:'Intermediate', desc:'everyday fluency, phrasal verbs, varied tenses' },
+    advanced:     { emoji:'🌳', label:'Advanced',      desc:'nuanced vocabulary, idioms, complex structures' }
+  };
+
+  const MODEL = 'gemini-3.1-flash-lite';
+  const GROUNDED_MODEL = 'gemini-3.5-flash';
+  const API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/';
+
+  function cloudSet(key, value){
+    try{
+      if (tg && tg.CloudStorage) tg.CloudStorage.setItem(key, value, ()=>{});
+    }catch(e){}
+  }
+  function cloudGet(key, cb){
+    try{
+      if (tg && tg.CloudStorage) { tg.CloudStorage.getItem(key, (err, val)=> cb(val||'')); return; }
+    }catch(e){}
+    cb('');
+  }
+
+  function saveChunk(chunkPrefix, chunkIndex, items){
+    cloudSet(chunkPrefix + '_' + chunkIndex, JSON.stringify(items));
+  }
+  function saveMeta(metaKey, count, chunkSize){
+    cloudSet(metaKey, JSON.stringify({ count, chunkSize }));
+  }
+  function loadChunkedCache(metaKey, chunkPrefix, cb){
+    cloudGet(metaKey, (metaVal)=>{
+      let meta = null;
+      if (metaVal){ try{ meta = JSON.parse(metaVal); }catch(e){} }
+      if (!meta || !meta.count){ cb([]); return; }
+      const chunkCount = Math.ceil(meta.count / meta.chunkSize);
+      if (chunkCount <= 0){ cb([]); return; }
+      const results = new Array(chunkCount);
+      let remaining = chunkCount;
+      for (let i=0;i<chunkCount;i++){
+        cloudGet(chunkPrefix + '_' + i, (val)=>{
+          try{ results[i] = val ? JSON.parse(val) : []; }catch(e){ results[i] = []; }
+          remaining--;
+          if (remaining === 0) cb([].concat(...results));
+        });
+      }
+    });
+  }
+
+  // ---------- Onboarding ----------
+  const levelGrid = document.getElementById('levelGrid');
+  const apiKeyInput = document.getElementById('apiKeyInput');
+  const startBtn = document.getElementById('startBtn');
+
+  levelGrid.querySelectorAll('.level-card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      levelGrid.querySelectorAll('.level-card').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');
+      state.level = card.dataset.level;
+    });
+  });
+  levelGrid.querySelector('[data-level="beginner"]').classList.add('selected');
+
+  function refreshStartBtn(){
+    startBtn.disabled = apiKeyInput.value.trim().length < 10;
+  }
+  apiKeyInput.addEventListener('input', refreshStartBtn);
+
+  startBtn.addEventListener('click', ()=>{
+    state.apiKey = apiKeyInput.value.trim();
+    cloudSet('gemini_key', state.apiKey);
+    cloudSet('level', state.level);
+    launchApp();
+  });
+
+  let restoredLevel = false;
+  let restoredKey = false;
+  let savedKey = '';
+
+  function tryAutoLaunch(){
+    if (!restoredLevel || !restoredKey) return;
+    if (savedKey && savedKey.trim().length >= 10){
+      state.apiKey = savedKey.trim();
+      launchApp();
+    }
+  }
+
+  function initRestore(){
+    cloudGet('level', (lvl)=>{
+      if (lvl && LEVEL_META[lvl]){
+        state.level = lvl;
+        levelGrid.querySelectorAll('.level-card').forEach(c=>c.classList.toggle('selected', c.dataset.level===lvl));
+      }
+      restoredLevel = true;
+      tryAutoLaunch();
+    });
+    cloudGet('gemini_key', (key)=>{
+      savedKey = key || '';
+      restoredKey = true;
+      if (savedKey){
+        apiKeyInput.value = savedKey;
+        refreshStartBtn();
+      }
+      tryAutoLaunch();
+    });
+  }
+
+  function launchApp(){
+    document.getElementById('onboarding').style.display = 'none';
+    document.getElementById('main').style.display = 'flex';
+    document.getElementById('topStamp').textContent = LEVEL_META[state.level].emoji;
+    document.getElementById('topLevelName').textContent = LEVEL_META[state.level].label;
+    if (state.chatHistory.length === 0){
+      addMsg('bot', greetingFor(state.level));
+    }
+  }
+
+  function greetingFor(level){
+    const g = {
+      beginner: "Hello! 👋 I'm your English coach. Let's talk about simple, everyday things. Tell me — what's your name and what do you do?",
+      intermediate: "Hi there! Ready to practice? Tell me about your day, or ask me anything — I'll gently correct mistakes as we go.",
+      advanced: "Hello! Let's have a real conversation — pick any topic, and I'll challenge your vocabulary and push back on your ideas a little."
+    };
+    return g[level];
+  }
+
+  function invalidateKeyAndReopen(msg){
+    state.apiKey = '';
+    savedKey = '';
+    cloudSet('gemini_key', '');
+    document.getElementById('main').style.display = 'none';
+    document.getElementById('onboarding').style.display = 'flex';
+    apiKeyInput.value = '';
+    refreshStartBtn();
+    const hint = document.querySelector('#onboarding .hint');
+    if (hint) hint.innerHTML = '⚠️ Key ልክ ያልሆነ ይመስላል፣ እባክህ ትክክለኛ Gemini API Key እንደገና አስገባ። <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a>';
+  }
+  function isKeyError(message){
+    return /API_KEY_INVALID|API key not valid|400|401|403/i.test(message||'');
+  }
+
+  // ---------- Settings modal ----------
+  const settingsModal = document.getElementById('settingsModal');
+  const settingsLevelGrid = document.getElementById('settingsLevelGrid');
+  document.getElementById('settingsBtn').addEventListener('click', ()=>{
+    settingsLevelGrid.querySelectorAll('.level-card').forEach(c=>c.classList.toggle('selected', c.dataset.level===state.level));
+    settingsModal.classList.add('show');
+  });
+  document.getElementById('settingsCloseBtn').addEventListener('click', ()=>{
+    settingsModal.classList.remove('show');
+  });
+  settingsModal.addEventListener('click', (e)=>{
+    if (e.target === settingsModal){
+      settingsModal.classList.remove('show');
+    }
+  });
+  settingsLevelGrid.querySelectorAll('.level-card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      settingsLevelGrid.querySelectorAll('.level-card').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');
+      state.level = card.dataset.level;
+      cloudSet('level', state.level);
+      document.getElementById('topStamp').textContent = LEVEL_META[state.level].emoji;
+      document.getElementById('topLevelName').textContent = LEVEL_META[state.level].label;
+    });
+  });
+
+  // ---------- Tabs ----------
+  let lastTabView = 'homeView';
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('main.view').forEach(v=>v.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.view).classList.add('active');
+      lastTabView = btn.dataset.view;
+      document.getElementById('floatingLiveBtn').classList.remove('active');
+    });
+  });
+
+  // ---------- Floating live button ----------
+  const floatingLiveBtn = document.getElementById('floatingLiveBtn');
+  const floatingLiveLabel = document.getElementById('floatingLiveLabel');
+
+  function openLiveView(){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('main.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('liveView').classList.add('active');
+    floatingLiveBtn.classList.add('active');
+  }
+
+  (function makeDraggable(el){
+    let dragging = false;
+    let moved = false;
+    let startX = 0, startY = 0, startLeft = 0, startTop = 0;
+
+    function clamp(val, min, max){ return Math.max(min, Math.min(max, val)); }
+
+    function onPointerDown(e){
+      dragging = true;
+      moved = false;
+      const rect = el.getBoundingClientRect();
+      startLeft = rect.left;
+      startTop = rect.top;
+      startX = e.clientX;
+      startY = e.clientY;
+      el.classList.add('dragging');
+      el.setPointerCapture(e.pointerId);
+    }
+    function onPointerMove(e){
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) moved = true;
+      let newLeft = startLeft + dx;
+      let newTop = startTop + dy;
+      newLeft = clamp(newLeft, 4, window.innerWidth - el.offsetWidth - 4);
+      newTop = clamp(newTop, 4, window.innerHeight - el.offsetHeight - 4);
+      el.style.left = newLeft + 'px';
+      el.style.top = newTop + 'px';
+    }
+    function onPointerUp(e){
+      if (!dragging) return;
+      dragging = false;
+      el.classList.remove('dragging');
+      try{ el.releasePointerCapture(e.pointerId); }catch(err){}
+      if (!moved){
+        openLiveView();
+      }
+    }
+
+    el.addEventListener('pointerdown', onPointerDown);
+    el.addEventListener('pointermove', onPointerMove);
+    el.addEventListener('pointerup', onPointerUp);
+    el.addEventListener('pointercancel', onPointerUp);
+  })(floatingLiveBtn);
+
+  document.getElementById('liveBackBtn').addEventListener('click', ()=>{
+    document.querySelectorAll('main.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById(lastTabView).classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===lastTabView));
+    floatingLiveBtn.classList.remove('active');
+  });
+
+  // ---------- Gemini call helper ----------
+  async function callGemini(payload){
+    const url = API_BASE + MODEL + ':generateContent?key=' + encodeURIComponent(state.apiKey);
+    const res = await fetch(url, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok){
+      const errText = await res.text();
+      const err = new Error('API error ' + res.status + ': ' + errText);
+      err.status = res.status;
+      throw err;
+    }
+    const data = await res.json();
+    const cand = data.candidates && data.candidates[0];
+    if (!cand || !cand.content || !cand.content.parts) throw new Error('Empty response');
+    return cand.content.parts.map(p=>p.text||'').join('');
+  }
+
+  // ---------- CHAT ----------
+  const chatMessages = document.getElementById('chatMessages');
+  const chatInput = document.getElementById('chatInput');
+  const chatSend = document.getElementById('chatSend');
+
+  function addMsg(role, text){
+    const div = document.createElement('div');
+    div.className = 'msg ' + role;
+    div.textContent = text;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    return div;
+  }
+  function addTyping(){
+    const div = document.createElement('div');
+    div.className = 'typing';
+    div.innerHTML = '<span></span><span></span><span></span>';
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    return div;
+  }
+
+  async function sendChat(){
+    const text = chatInput.value.trim();
+    if (!text || !state.apiKey) return;
+    addMsg('user', text);
+    state.chatHistory.push({role:'user', text});
+    chatInput.value = '';
+    chatSend.disabled = true;
+    const typingEl = addTyping();
+
+    const sys = `You are a friendly, patient English tutor for a native Amharic speaker at ${state.level.toUpperCase()} level (${LEVEL_META[state.level].desc}).
+Rules:
+- Reply only in English, matching the learner's level. Never write in Amharic.
+- If the learner makes a grammar or word-choice mistake, gently point it out in one short line (prefix with "📝") in English before continuing the conversation naturally.
+- Keep replies conversational and short (2-5 sentences).
+- Occasionally ask a follow-up question to keep the conversation going.
+- If the learner writes in Amharic, reply in English, encourage them to try English, and give them the English phrase to use.`;
+
+    const contents = state.chatHistory.slice(-12).map(m=>({
+      role: m.role === 'user' ? 'user' : 'model',
+      parts:[{text:m.text}]
+    }));
+
+    try{
+      const replyText = await callGemini({
+        systemInstruction:{ parts:[{text:sys}] },
+        contents,
+        generationConfig:{ temperature:0.8, maxOutputTokens:400 }
+      });
+      typingEl.remove();
+      addMsg('bot', replyText.trim());
+      state.chatHistory.push({role:'model', text: replyText.trim()});
+    }catch(err){
+      typingEl.remove();
+      if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
+      addMsg('system', friendlyErrorText(err.message));
+    }finally{
+      chatSend.disabled = false;
+    }
+  }
+  chatSend.addEventListener('click', sendChat);
+  chatInput.addEventListener('keydown', (e)=>{
+    if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendChat(); }
+  });
+  chatInput.addEventListener('input', ()=>{
+    chatInput.style.height = 'auto';
+    chatInput.style.height = Math.min(chatInput.scrollHeight, 90) + 'px';
+  });
+
+  // ---------- CARDS ----------
+  const topicInput = document.getElementById('topicInput');
+  const genCardsBtn = document.getElementById('genCardsBtn');
+  const cardStack = document.getElementById('cardStack');
+
+  const cardSchema = {
+    type:'ARRAY',
+    items:{
+      type:'OBJECT',
+      properties:{
+        word:{type:'STRING'},
+        part_of_speech:{type:'STRING'},
+        amharic:{type:'STRING'},
+        example:{type:'STRING'}
+      },
+      required:['word','part_of_speech','amharic','example']
+    }
+  };
+
+  async function generateCards(){
+    if (!state.apiKey) return;
+    const topic = topicInput.value.trim() || 'everyday life';
+    genCardsBtn.disabled = true;
+    genCardsBtn.textContent = '...';
+
+    const sys = `You create English vocabulary flashcards for a ${state.level} Amharic-speaking learner.
+Generate exactly 5 useful English words or short phrases related to the topic "${topic}", appropriate for ${state.level} level.
+For each: give the word, its part of speech, an accurate Amharic translation, and a natural example sentence in English using the word.
+Return ONLY the JSON array matching the schema.`;
+
+    try{
+      const raw = await callGemini({
+        systemInstruction:{ parts:[{text:sys}] },
+        contents:[{ role:'user', parts:[{text:`Topic: ${topic}`}] }],
+        generationConfig:{
+          temperature:0.9,
+          responseMimeType:'application/json',
+          responseSchema: cardSchema
+        }
+      });
+      const cards = JSON.parse(raw);
+      renderCards(cards);
+    }catch(err){
+      if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
+      cardStack.innerHTML = '<div class="empty-note am">' + escapeHtml(friendlyErrorText(err.message)) + '</div>';
+    }finally{
+      genCardsBtn.disabled = false;
+      genCardsBtn.textContent = 'Words & Usage';
+    }
+  }
+
+  function renderCards(cards){
+    cardStack.innerHTML = '';
+    if (!cards || !cards.length){ return; }
+    cards.forEach(c=>{
+      const el = document.createElement('div');
+      el.className = 'flash';
+      el.innerHTML = `
+        <div class="word">${escapeHtml(c.word)}</div>
+        <div class="pos">${escapeHtml(c.part_of_speech||'')}</div>
+        <div class="back">
+          <div class="am-word">${escapeHtml(c.amharic)}</div>
+          <div class="example">"${escapeHtml(c.example)}"</div>
+        </div>
+        <div class="tap-hint am">ለመመልከት ንካ</div>
+      `;
+      el.addEventListener('click', ()=> el.classList.toggle('flipped'));
+      cardStack.appendChild(el);
+    });
+  }
+
+  function escapeHtml(s){
+    const d = document.createElement('div');
+    d.textContent = s == null ? '' : s;
+    return d.innerHTML;
+  }
+
+  genCardsBtn.addEventListener('click', generateCards);
+
+  // ---------- FIX ----------
+  const fixInput = document.getElementById('fixInput');
+  const fixBtn = document.getElementById('fixBtn');
+  const fixResult = document.getElementById('fixResult');
+  const fixCorrected = document.getElementById('fixCorrected');
+  const fixExplain = document.getElementById('fixExplain');
+
+  async function runFix(){
+    const text = fixInput.value.trim();
+    if (!text || !state.apiKey) return;
+    fixBtn.disabled = true;
+    fixBtn.textContent = '...';
+
+    const sys = `You are an English writing coach for an Amharic-speaking learner at ${state.level} level.
+Given the learner's English text:
+1. Correct grammar, spelling, and word choice while keeping their original meaning and voice. This corrected text must be in English only.
+2. Then write an explanation IN AMHARIC (a little English is fine for quoting the exact words) that:
+   a. Starts by restating in Amharic what you understood the learner was trying to say, in the form "ማለት የፈለከው: '...' ብለህ ነው" (state your interpretation of their intended meaning before explaining anything).
+   b. Then, for EACH individual mistake found (spelling, word order/ድርድር, grammar, word choice — go through them one by one, do not skip any), clearly point out: exactly what was wrong (quote the wrong word/phrase), what the correct form is (quote it), and briefly why in Amharic.
+   c. Be thorough — if there are multiple separate mistakes in the text, explain every one of them separately, not just the main one.
+Return ONLY valid JSON: {"corrected": "...", "explanation": "..."} with no markdown formatting.`;
+
+    try{
+      const raw = await callGemini({
+        systemInstruction:{ parts:[{text:sys}] },
+        contents:[{ role:'user', parts:[{text}] }],
+        generationConfig:{
+          temperature:0.4,
+          responseMimeType:'application/json',
+          responseSchema:{
+            type:'OBJECT',
+            properties:{ corrected:{type:'STRING'}, explanation:{type:'STRING'} },
+            required:['corrected','explanation']
+          }
+        }
+      });
+      const parsed = JSON.parse(raw);
+      fixCorrected.textContent = parsed.corrected;
+      fixExplain.textContent = parsed.explanation;
+      fixResult.classList.add('show');
+    }catch(err){
+      if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
+      fixCorrected.textContent = '';
+      fixExplain.textContent = friendlyErrorText(err.message);
+      fixResult.classList.add('show');
+    }finally{
+      fixBtn.disabled = false;
+      fixBtn.textContent = 'አርም';
+    }
+  }
+  fixBtn.addEventListener('click', runFix);
+
+  // ---------- HOME DISCOVERY ----------
+  const homeGrid = document.getElementById('homeGrid');
+  const discoveryView = document.getElementById('discoveryView');
+  const discoveryTitle = document.getElementById('discoveryTitle');
+  const discoveryBody = document.getElementById('discoveryBody');
+  const discoveryBackBtn = document.getElementById('discoveryBackBtn');
+
+  const TOPIC_GROUPS = {
+    movies: [
+      { key:'movies-adventure', label:'Adventure' },
+      { key:'movies-comedy', label:'Comedy' },
+      { key:'movies-action', label:'Action' }
+    ],
+    music: [
+      { key:'music-pronounce', label:'Pronounce' },
+      { key:'music-listen', label:'Listen' }
+    ],
+    books: [
+      { key:'grammar', label:'Grammar' },
+      { key:'spoken', label:'Spoken' },
+      { key:'vocabulary', label:'Vocabulary' }
+    ],
+    twister: [
+      { key:'twister-easy', label:'Easy' },
+      { key:'twister-medium', label:'Medium' },
+      { key:'twister-hard', label:'Hard' }
+    ]
+  };
+  const GROUP_TITLES = { movies:'Movies', music:'Music', books:'Books', twister:'Twister' };
+  const TOPIC_TITLES = {
+    'movies-adventure':'Adventure Movies',
+    'movies-comedy':'Comedy Movies',
+    'movies-action':'Action Movies',
+    'music-pronounce':'Pronunciation Practice',
+    'music-listen':'Listening Practice'
+  };
+
+  // Hand-picked tongue twisters
+  const TWISTERS = {
+    easy: [
+      'She sells seashells by the seashore.',
+      'Red lorry, yellow lorry.',
+      'How much wood would a woodchuck chuck?',
+      'Six thick thistle sticks.',
+      'A big black bear sat on a big black rug.',
+      'Peter Piper picked a peck of pickled peppers.',
+      'Betty bought a bit of butter.',
+      'A cup of coffee in a copper cup.',
+      'Black bug bit a big black bear.',
+      'Toy boat, toy boat, toy boat.',
+      'The cat sat on the mat.',
+      'Big blue bug bit big blue balloon.',
+      'Green glass globes glow greatly.',
+      'Nine nice night nurses nursing nicely.',
+      'Sheep should sleep in a shed.',
+      'Two tiny turtles took a train.',
+      'Ray likes rainy days in May.',
+      'My mom makes mini muffins Monday.',
+      'The bright blue bird flew by.',
+      'Five fast fish flip and flap.',
+      'Pack my box with five dozen jugs.',
+      'Sunny snails smile slowly.',
+      'Little Lily likes lilac lollipops.',
+      'Ten tan tigers tap on trees.',
+      'Wendy wanted a warm winter walk.',
+      'Nick knits nice knitted hats.',
+      'The frog jumped over the log.',
+      'A happy hippo hums a happy hymn.',
+      'Sam saw seven silly seals.',
+      'Do drop by and try the pie.',
+      'The kind king kept his crown.',
+      'Frank feeds four furry foxes.',
+      'Baby birds build big nests.',
+      'Slow snails slide on smooth stones.',
+      'Cindy sings sweet simple songs.',
+      'Two toads talk and toads talk too.',
+      'The tall man ran to the van.',
+      'My dad has a bad plan.',
+      'Six sick sheep sit still.',
+      'Pretty pink pigs play in puddles.',
+      'Jolly Jim jumps for joy.',
+      'The dog dug a deep hole.',
+      'Fluffy clouds float far away.',
+      'Round rocks roll down the road.',
+      'Kate bakes a cake at eight.',
+      'The bee buzzed by the busy barn.',
+      'Milk and cookies make me merry.',
+      'Cool cats catch cool cars.',
+      'A wise owl watches at night.',
+      'Blue whales swim in the wide sea.'
+    ],
+    medium: [
+      "Fuzzy Wuzzy was a bear. Fuzzy Wuzzy had no hair.",
+      'I scream, you scream, we all scream for ice cream.',
+      'A proper copper coffee pot.',
+      'Betty Botter bought some butter.',
+      'Fred fed Ted bread, and Ted fed Fred bread.',
+      'Six slippery snails slid slowly seaward.',
+      'A skunk sat on a stump and thunk the stump stunk.',
+      'How can a clam cram in a clean cream can?',
+      'Which witch wished which wicked wish?',
+      'I saw Susie sitting in a shoeshine shop.',
+      'Can you can a can as a canner can can a can?',
+      'Sheena leads, Sheila needs.',
+      'Rory the warrior and Roger the worrier were reared wrongly in a rural brewery.',
+      'A tutor who tooted the flute tried to tutor two tooters to toot.',
+      'Greek grapes, Greek grapes, Greek grapes.',
+      'The great Greek grape growers grow great Greek grapes.',
+      'A big bug bit a big black bug and the big black bug bled black blood.',
+      'The thirty-three thieves thought that they thrilled the throne throughout Thursday.',
+      'I wish to wash my Irish wristwatch.',
+      'A tree toad loved a she-toad who lived up in a tree.',
+      'She stood on the balcony inexplicably mimicking him hiccupping and amicably welcoming him home.',
+      'How many boards could the Mongols hoard if the Mongol hordes got bored?',
+      'Crisp crusts crackle crunchily.',
+      'Flash message, flash message, flash message.',
+      'Give papa a cup of proper coffee in a copper coffee cup.',
+      'Lesser leather never weathered wetter weather better.',
+      "Willie's really weary; will he rest awhile?",
+      'Three free throws for the tree, free of charge.',
+      'Nine nervous newts knew nothing new.',
+      'Truly rural, truly rural, truly rural.',
+      'Six sleek swans swam swiftly southwards.',
+      'A synonym for cinnamon is a cinnamon synonym.',
+      "The chic Sheikh's sixth sheep is sick.",
+      'Ed had edited it before Ted edited it.',
+      'A big black bug bit a big black dog on his big black nose.',
+      'Preshrunk silk shirts, preshrunk silk shirts.',
+      'The seething sea ceaseth and thus the seething sea sufficeth us.',
+      'A loyal warrior will rarely worry why we rule.',
+      'Peggy Babcock, Peggy Babcock, Peggy Babcock.',
+      'Wayne went to Wales to watch walruses.',
+      'Six shrewd sharks sensed six sick swans swimming.',
+      'The bootblack bought the black boot back.',
+      'A proper copper coffee pot has a proper copper handle.',
+      'Freshly fried flying fish, freshly fried flying fish.',
+      'Nine nice mice nibble nuts nightly.',
+      "Nick's chicks click their tongues quickly.",
+      'Nervous novice nurses know no nonsense.',
+      'The sixth Swedish sailor swiftly signaled the ship.',
+      'Nine numb neighbors nap near noon.',
+      'How much dew does a dewdrop drop if dewdrops do drop dew?'
+    ],
+    hard: [
+      "The sixth sick sheikh's sixth sheep's sick.",
+      'Irish wristwatch, Swiss wristwatch.',
+      'Pad kid poured curd pulled cold.',
+      'Which wristwatches are Swiss wristwatches?',
+      'Toy boat, toy boat, toy boat.',
+      "The sixth sick sheik's sixth sheep's sick, so the sixth sick sheik's sheep sought a slick, quick-thinking sheikh.",
+      'Irish wristwatch, Swiss wristwatch, Irish wristwatch, Swiss wristwatch.',
+      'Pad kid poured curd pulled cold, pad kid poured curd pulled cold.',
+      'A proper copper coffee pot with a copper coffee proper top.',
+      'Six sick slick slim sycamore saplings.',
+      'Strange strategic statistics, strange strategic statistics.',
+      'The epitome of an itty-bitty pretty city committee.',
+      'Unique New York, unique New York, unique New York, you know you need unique New York.',
+      'Rubber baby buggy bumpers, rubber baby buggy bumpers.',
+      'She stood upon a balcony, inimicably mimicking him hiccupping, while amicably welcoming him in.',
+      "Send toast to ten tense stout saints' ten tests.",
+      'A skunk sat on a stump and thunk the stump stunk, but the stump thunk the skunk stunk.',
+      'Ed had edited it, and Ed had edited it, then edited it again.',
+      'Chop shop stock, chop shop stock, chop shop stock.',
+      "A big black bug's blood runs blue and black, a black bug's blood, a bug's black blood.",
+      'Flesh of freshly fried flying fish, flesh of freshly fried flying fish.',
+      'A synonymous cinnamon aluminum tin, a synonymous cinnamon aluminum tin.',
+      'The thirty-three thieves thought that they thrilled the throne throughout Thursday, thirty-three thousand times.',
+      'Six shrewd sharks sensed six sick swans swiftly swimming southward.',
+      'Wretched Rita rode a rattling, rusty red-and-white rickshaw.',
+      'The seething sea ceaseth and thus the seething sea sufficeth us, the sea ceaseth thus.',
+      'Silly Sally swiftly shooed seven silly sheep, seven silly sheep silly Sally shooed.',
+      'How much dew would a dewdrop drop if a dewdrop did drop dew, and would a dewdrop drop the dew it dropped?',
+      'Nine nimble noblemen nibbled nuts, nine nimble noblemen nibbled nuts nightly.',
+      'The great Greek grape growers grow great Greek grapes, and great Greek grapes grow greatly for great Greek grape growers.',
+      'A tutor who tooted the flute tried to tutor two tooters to toot, said the two to the tutor, is it harder to toot or to tutor two tooters to toot?',
+      "Willy's real rear wheel, really weary Willy's real rear wheel.",
+      'Crisp crinkled crusts crackle crunchily, crisp crinkled crusts crackle crunchily.',
+      "The bloke's back brake block broke, the bloke's back brake block broke.",
+      'Strict strong stretchy strings strung straight, strict strong stretchy strings strung straight.',
+      'Peggy Babcock, Peggy Babcock, Peggy Babcock, Peggy Babcock, Peggy Babcock.',
+      'Truly rural, truly rural, truly rural, truly rural.',
+      'Freddie fed Theodore Bear fresh food Thursday, Theodore Bear fed Freddie fresh food too.',
+      'Which witch switched the Swiss wristwatches, which Swiss witch wristwatches were switched?',
+      'Six thick thistle sticks, six thick thistles stick, thick thistle sticks stick thickly.',
+      'Fresh French fried fly fritters, fresh French fried fly fritters, fresh French fried fly fritters.',
+      'Lesser leather never weathered wetter weather better than better leather weathered wet weather.',
+      'A loyal royal warrior worries wearily while rarely wondering why we rule so rigidly.',
+      "The chic sheikh's sixth sheep seemed sicker, seemingly sicker than the sheikh's sixth sick sheep.",
+      'Nine nervous newts knew nothing new, nine nervous newts knew nothing new nightly.',
+      'Toy boat, toy boat, toy boat, toy boat, toy boat, toy boat.',
+      'Preshrunk silk shirts, preshrunk silk shirts, preshrunk silk shirts, preshrunk silk shirts.',
+      'The bootblack brought the black boot back, black boot back the bootblack brought.',
+      "A big bug's blood, a black bug's blood, a big black bug's blood runs thick and blue and black.",
+      "Send toast to ten tense stout saints' ten testy, stout saints tested ten toasts sent."
+    ]
+  };
+
+  let discoveryStack = [];
+
+  function openDiscoveryView(){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('main.view').forEach(v=>v.classList.remove('active'));
+    discoveryView.classList.add('active');
+    discoveryTitle.onclick = null;
+  }
+  function closeDiscoveryView(){
+    document.querySelectorAll('main.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('homeView').classList.add('active');
+    document.querySelector('.tab-btn[data-view="homeView"]').classList.add('active');
+    discoveryStack = [];
+  }
+  function discoveryNavigate(renderFn){
+    discoveryStack.push(renderFn);
+    openDiscoveryView();
+    renderFn();
+  }
+  function discoveryBack(){
+    discoveryStack.pop();
+    if (discoveryStack.length === 0){ closeDiscoveryView(); }
+    else { discoveryStack[discoveryStack.length-1](); }
+  }
+  discoveryBackBtn.addEventListener('click', discoveryBack);
+  document.getElementById('teachersBtn').addEventListener('click', ()=>{
+    discoveryNavigate(()=> renderTeachersGroupView());
+  });
+  homeGrid.querySelectorAll('.home-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const topic = btn.dataset.topic;
+      if (TOPIC_GROUPS[topic]){
+        discoveryNavigate(()=> renderGroupView(topic));
+      } else {
+        discoveryNavigate(()=> runDiscoveryView(topic));
+      }
+    });
+  });
+
+  function renderGroupView(groupKey){
+    discoveryTitle.textContent = GROUP_TITLES[groupKey] || '';
+    const items = TOPIC_GROUPS[groupKey];
+    const wrap = document.createElement('div');
+    wrap.className = 'sub-grid';
+    items.forEach(it=>{
+      const b = document.createElement('div');
+      b.className = 'sub-btn';
+      b.textContent = it.label;
+      b.addEventListener('click', ()=>{
+        discoveryNavigate(()=>{
+          if (groupKey === 'twister'){
+            renderTwisterView(it.key, it.label);
+          } else if (groupKey === 'books'){
+            if (it.key === 'grammar') runGrammarView();
+            else if (it.key === 'spoken') renderSpokenBody();
+            else if (it.key === 'vocabulary') renderVocabBody();
+          } else {
+            runDiscoveryView(it.key, it.label);
+          }
+        });
+      });
+      wrap.appendChild(b);
+    });
+    discoveryBody.innerHTML = '';
+    discoveryBody.appendChild(wrap);
+  }
+
+  function renderTwisterView(key, label){
+    const level = key.replace('twister-','');
+    discoveryTitle.textContent = 'Twister' + (label ? ' — ' + label : '');
+    const list = document.createElement('div');
+    list.className = 'twister-list';
+    (TWISTERS[level]||[]).forEach(t=>{
+      const item = document.createElement('div');
+      item.className = 'twister-item';
+      const textSpan = document.createElement('span');
+      textSpan.className = 'tw-text';
+      textSpan.textContent = t;
+      item.appendChild(textSpan);
+      list.appendChild(item);
+    });
+    discoveryBody.innerHTML = '';
+    discoveryBody.appendChild(list);
+  }
+
+  // ---------- Render movie lists (title + direct video link, square red play icon) ----------
+  function renderMovieTopicView(topicKey, label){
+    discoveryTitle.textContent = label || TOPIC_TITLES[topicKey] || 'Movies';
+    discoveryBody.innerHTML = '';
+    const movies = MOVIES[topicKey] || [];
+    if (!movies.length){
+      discoveryBody.innerHTML = '<div class="empty-note am">ምንም ፊልም አልተገኘም</div>';
+      return;
+    }
+    const listEl = document.createElement('div');
+    listEl.className = 'yt-list';
+    movies.forEach(m=>{
+      const a = document.createElement('a');
+      a.className = 'yt-item';
+      a.href = m.link || ytSearchUrl(m.title + ' ' + (m.year||'') + ' full movie');
+      a.target = '_blank';
+      a.rel = 'noopener';
+      const hasCast = m.cast && m.cast.length;
+      a.innerHTML = `
+        <div class="yt-top-row">
+          <div>
+            <div class="yt-title"></div>
+            <div class="yt-sub"></div>
+          </div>
+          <div class="yt-play-ic movie-play">▶</div>
+        </div>
+        ${hasCast ? `<div class="yt-cast">
+          <div class="yt-cast-label am">ተዋንያን</div>
+          <div class="yt-cast-names"></div>
+        </div>` : ''}
+      `;
+      a.querySelector('.yt-title').textContent = m.title;
+      a.querySelector('.yt-sub').textContent = m.year || '';
+      if (hasCast) a.querySelector('.yt-cast-names').textContent = m.cast.join(', ');
+      listEl.appendChild(a);
+    });
+    discoveryBody.appendChild(listEl);
+  }
+
+  function renderTeachersGroupView(){
+    discoveryTitle.textContent = 'Teachers';
+    discoveryBody.innerHTML = '';
+    const wrap = document.createElement('div');
+    wrap.className = 'sub-grid';
+    Object.keys(TEACHERS).forEach(key=>{
+      const b = document.createElement('div');
+      b.className = 'sub-btn';
+      b.textContent = TEACHERS[key].label;
+      b.addEventListener('click', ()=>{
+        discoveryNavigate(()=> renderTeacherVideosView(key));
+      });
+      wrap.appendChild(b);
+    });
+    discoveryBody.appendChild(wrap);
+  }
+
+  function teacherVideosRef(key){
+    if (!fbDb) return null;
+    return fbDb.ref('teachers/' + key + '/videos');
+  }
+
+  // ---------- Simple admin PIN gate for uploading teacher videos ----------
+  const ADMIN_PIN = '2580'; // <-- ይህን ቁጥር ወደ ፈለከው ቀይረው
+  let isAdminUnlocked = false;
+  function checkAdminUnlock(cb){
+    if (isAdminUnlocked){ cb(true); return; }
+    cloudGet('admin_unlocked', (val)=>{
+      if (val === '1'){ isAdminUnlocked = true; cb(true); return; }
+      cb(false);
+    });
+  }
+  function promptAdminUnlock(onResult){
+    const entered = prompt('የአድሚን PIN አስገባ');
+    if (entered === null) { onResult(false); return; }
+    if (entered === ADMIN_PIN){
+      isAdminUnlocked = true;
+      cloudSet('admin_unlocked', '1');
+      onResult(true);
+    } else {
+      alert('የተሳሳተ PIN');
+      onResult(false);
+    }
+  }
+
+  function renderTeacherVideoCard(v){
+    const el = document.createElement('div');
+    el.style.background = 'var(--ink-2)';
+    el.style.border = '1px solid var(--line)';
+    el.style.borderRadius = '16px';
+    el.style.overflow = 'hidden';
+    el.innerHTML = `
+      <div style="padding:14px 16px 8px;">
+        <div class="word" style="font-size:16px;"></div>
+      </div>
+      <video controls playsinline style="width:100%; display:block; background:#000;"></video>
+    `;
+    el.querySelector('.word').textContent = v.title || 'Video';
+    el.querySelector('video').src = v.url;
+    return el;
+  }
+
+  function renderTeacherVideosView(key){
+    const teacher = TEACHERS[key];
+    discoveryTitle.textContent = teacher.label;
+    discoveryBody.innerHTML = '';
+
+    const addWrap = document.createElement('div');
+    addWrap.style.marginBottom = '14px';
+    discoveryBody.appendChild(addWrap);
+
+    const list = document.createElement('div');
+    list.className = 'card-stack';
+    discoveryBody.appendChild(list);
+
+    // Hidden admin unlock: tap the teacher title 5 times within 2s
+    let titleTapCount = 0;
+    let titleTapTimer = null;
+    discoveryTitle.onclick = ()=>{
+      titleTapCount++;
+      if (titleTapTimer) clearTimeout(titleTapTimer);
+      titleTapTimer = setTimeout(()=>{ titleTapCount = 0; }, 2000);
+      if (titleTapCount >= 5){
+        titleTapCount = 0;
+        clearTimeout(titleTapTimer);
+        promptAdminUnlock((ok)=>{ if (ok) renderAdminControls(true); });
+      }
+    };
+
+    function renderAdminControls(unlocked){
+      if (!unlocked){
+        addWrap.innerHTML = '';
+        return;
+      }
+      addWrap.innerHTML = `
+        <button class="btn-solid am" id="teacherAddVideoBtn">+ ቪዲዮ ጨምር</button>
+        <input type="file" id="teacherVideoFile" accept="video/*" style="display:none;">
+        <div id="teacherUploadStatus" class="am" style="margin-top:8px; font-size:12.5px; opacity:0.7;"></div>
+      `;
+      const addBtn = document.getElementById('teacherAddVideoBtn');
+      const fileInput = document.getElementById('teacherVideoFile');
+      const statusEl = document.getElementById('teacherUploadStatus');
+
+      addBtn.addEventListener('click', ()=> fileInput.click());
+      fileInput.addEventListener('change', async ()=>{
+        const file = fileInput.files && fileInput.files[0];
+        if (!file) return;
+        const title = prompt('የቪዲዮው ርዕስ (ለምሳሌ: Lesson 1)') || file.name;
+        addBtn.disabled = true;
+        statusEl.textContent = 'እየተጫነ ነው... ትንሽ ጊዜ ይወስዳል';
+        try{
+          const form = new FormData();
+          form.append('file', file);
+          form.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+          const res = await fetch(CLOUDINARY_UPLOAD_URL, { method:'POST', body: form });
+          if (!res.ok) throw new Error('Upload failed: ' + res.status);
+          const data = await res.json();
+          const videoUrl = data.secure_url;
+          const ref = teacherVideosRef(key);
+          if (ref){
+            await ref.push({ title, url: videoUrl, ts: Date.now() });
+          }
+          statusEl.textContent = '✅ ተጨምሯል!';
+          fileInput.value = '';
+          loadAndRenderTeacherVideos(key, list, statusEl);
+        }catch(err){
+          statusEl.textContent = '⚠️ ' + (err.message || 'ስህተት ተፈጥሯል');
+        }finally{
+          addBtn.disabled = false;
+        }
+      });
+    }
+
+    checkAdminUnlock((unlocked)=> renderAdminControls(unlocked));
+    loadAndRenderTeacherVideos(key, list, null);
+  }
+
+  function loadAndRenderTeacherVideos(key, list, statusEl){
+    list.innerHTML = '<div class="discovery-loading am">እየተጫነ ነው...</div>';
+    const ref = teacherVideosRef(key);
+    if (!ref){
+      list.innerHTML = '<div class="empty-note am">የቪዲዮ ዳታቤዝ ጋር መገናኘት አልተቻለም</div>';
+      return;
+    }
+    ref.once('value').then(snap=>{
+      list.innerHTML = '';
+      const val = snap.val();
+      if (!val){
+        list.innerHTML = '<div class="empty-note am">ምንም ቪዲዮ አልተገኘም — "+ ቪዲዮ ጨምር" ተጠቅመህ የመጀመሪያውን ጨምር</div>';
+        return;
+      }
+      const items = Object.values(val).sort((a,b)=>(a.ts||0)-(b.ts||0));
+      items.forEach(v=> list.appendChild(renderTeacherVideoCard(v)));
+    }).catch(err=>{
+      list.innerHTML = '<div class="empty-note am">⚠️ ' + escapeHtml(err.message||'ስህተት') + '</div>';
+    });
+  }
+  // ---------- Render song lists (title + artist + YouTube link, round blue play icon) ----------
+  function renderSongTopicView(topicKey, label){
+    discoveryTitle.textContent = label || TOPIC_TITLES[topicKey] || 'Music';
+    discoveryBody.innerHTML = '';
+    const songs = topicKey === 'music-pronounce' ? SONGS_PRONOUNCE : SONGS_LISTEN;
+    const searchSuffix = topicKey === 'music-pronounce' ? 'lyrics' : 'official video';
+    if (!songs.length){
+      discoveryBody.innerHTML = '<div class="empty-note am">ምንም ዘፈን አልተገኘም</div>';
+      return;
+    }
+    const listEl = document.createElement('div');
+    listEl.className = 'yt-list';
+    songs.forEach(s=>{
+      const a = document.createElement('a');
+      a.className = 'yt-item';
+      a.href = ytSearchUrl(s.title + ' ' + s.artist + ' ' + searchSuffix);
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.innerHTML = `
+        <div class="yt-top-row">
+          <div>
+            <div class="yt-title"></div>
+            <div class="yt-sub"></div>
+          </div>
+          <div class="yt-play-ic music-play">▶</div>
+        </div>
+      `;
+      a.querySelector('.yt-title').textContent = s.title;
+      a.querySelector('.yt-sub').textContent = s.artist;
+      listEl.appendChild(a);
+    });
+    discoveryBody.appendChild(listEl);
+  }
+
+  // ============ GRAMMAR ============
+  const GRAMMAR_SCHEMA = {
+    type:'ARRAY',
+    items:{
+      type:'OBJECT',
+      properties:{
+        tense:{type:'STRING'},
+        structure:{type:'STRING'},
+        positive_en:{type:'STRING'},
+        positive_am:{type:'STRING'},
+        negative_en:{type:'STRING'},
+        negative_am:{type:'STRING'},
+        question_en:{type:'STRING'},
+        question_am:{type:'STRING'}
+      },
+      required:['tense','structure','positive_en','positive_am','negative_en','negative_am','question_en','question_am']
+    }
+  };
+  function grammarPrompt(){
+    return `List all 12 English verb tenses in this exact order: Present Simple, Present Continuous, Present Perfect, Present Perfect Continuous, Past Simple, Past Continuous, Past Perfect, Past Perfect Continuous, Future Simple, Future Continuous, Future Perfect, Future Perfect Continuous.
+For each tense, give:
+- structure: the grammar formula (e.g. "Subject + am/is/are + verb-ing")
+- one positive example sentence in English (positive_en) with its accurate Amharic translation (positive_am)
+- one negative example sentence in English (negative_en) with its accurate Amharic translation (negative_am)
+- one question (interrogative) example sentence in English (question_en) with its accurate Amharic translation (question_am)
+Make the examples appropriate for a ${state.level} level Amharic-speaking learner (${LEVEL_META[state.level].desc}).
+Return ONLY the JSON array matching the schema, in the exact tense order listed above, no extra text.`;
+  }
+
+  async function runGrammarView(){
+    discoveryTitle.textContent = 'Grammar';
+    if (state.grammarData){ renderGrammarList(state.grammarData); return; }
+    discoveryBody.innerHTML = '<div class="discovery-loading am">እየተጫነ ነው...</div>';
+    cloudGet('grammar_data', async (cachedVal)=>{
+      if (cachedVal){
+        try{
+          const cached = JSON.parse(cachedVal);
+          if (cached && cached.length){
+            state.grammarData = cached;
+            renderGrammarList(cached);
+            return;
+          }
+        }catch(e){}
+      }
+      if (!state.apiKey) return;
+      discoveryBody.innerHTML = '<div class="discovery-loading am">እየተዘጋጀ ነው...</div>';
+      try{
+        const raw = await callGemini({
+          contents:[{ role:'user', parts:[{ text: grammarPrompt() }] }],
+          generationConfig:{ temperature:0.6, maxOutputTokens:4000, responseMimeType:'application/json', responseSchema: GRAMMAR_SCHEMA }
+        });
+        const data = JSON.parse(raw);
+        state.grammarData = data;
+        cloudSet('grammar_data', JSON.stringify(data));
+        renderGrammarList(data);
+      }catch(err){
+        if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
+        discoveryBody.innerHTML = '<div class="discovery-loading am">' + escapeHtml(friendlyErrorText(err.message)) + '</div>';
+      }
+    });
+  }
+
+  async function checkTensePractice(tenseObj, userSentence){
+    const sys = `You are an English grammar coach for an Amharic-speaking learner at ${state.level} level.
+The learner is practicing the tense "${tenseObj.tense}" (structure: ${tenseObj.structure}).
+They wrote this sentence attempting to use that tense: "${userSentence}"
+Check it carefully:
+- Is it correctly formed in the "${tenseObj.tense}" tense? Check verb form, auxiliary verbs, word order, spelling, and word choice.
+- Respond in AMHARIC (a little English is fine when quoting their exact words).
+- If it is correct: praise them briefly in Amharic and confirm why it correctly follows the "${tenseObj.tense}" rule (structure: ${tenseObj.structure}).
+- If it has mistake(s): for EACH mistake, quote the wrong part, give the correct form, and explain briefly in Amharic why it violates the "${tenseObj.tense}" rule specifically. Then show the fully corrected sentence in English.
+Keep the whole response concise (a few sentences), but do not skip any mistake found.
+Return plain text only, no markdown, no JSON.`;
+    return await callGemini({
+      systemInstruction:{ parts:[{text:sys}] },
+      contents:[{ role:'user', parts:[{text:userSentence}] }],
+      generationConfig:{ temperature:0.3, maxOutputTokens:400 }
+    });
+  }
+
+  function renderGrammarList(data){
+    discoveryBody.innerHTML = '';
+    const wrap = document.createElement('div');
+    wrap.className = 'card-stack';
+    data.forEach(t=>{
+      const el = document.createElement('div');
+      el.className = 'flash gram-card';
+      el.innerHTML = `
+        <div class="word">${escapeHtml(t.tense)}</div>
+        <div class="pos">${escapeHtml(t.structure)}</div>
+        <div class="back">
+          <div class="gram-row"><b>+</b> ${escapeHtml(t.positive_en)}<div class="am-word">${escapeHtml(t.positive_am)}</div></div>
+          <div class="gram-row"><b>−</b> ${escapeHtml(t.negative_en)}<div class="am-word">${escapeHtml(t.negative_am)}</div></div>
+          <div class="gram-row"><b>?</b> ${escapeHtml(t.question_en)}<div class="am-word">${escapeHtml(t.question_am)}</div></div>
+          <div class="practice-box" onclick="event.stopPropagation()">
+            <div class="practice-label am">የራስህን ዓረፍተ ነገር ሞክር</div>
+            <textarea class="practice-input" placeholder="Write your own sentence using this tense..."></textarea>
+            <button class="practice-btn am">አረጋግጥ</button>
+            <div class="practice-feedback am"></div>
+          </div>
+        </div>
+      `;
+      const practiceBox = el.querySelector('.practice-box');
+      const practiceInput = el.querySelector('.practice-input');
+      const practiceBtn = el.querySelector('.practice-btn');
+      const practiceFeedback = el.querySelector('.practice-feedback');
+      practiceBox.addEventListener('click', (e)=> e.stopPropagation());
+      practiceInput.addEventListener('click', (e)=> e.stopPropagation());
+      practiceBtn.addEventListener('click', async (e)=>{
+        e.stopPropagation();
+        const sentence = practiceInput.value.trim();
+        if (!sentence || !state.apiKey) return;
+        practiceBtn.disabled = true;
+        practiceBtn.textContent = '...';
+        practiceFeedback.classList.add('show');
+        practiceFeedback.textContent = 'እየተመረመረ ነው...';
+        try{
+          const feedback = await checkTensePractice(t, sentence);
+          practiceFeedback.textContent = feedback.trim();
+        }catch(err){
+          if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
+          practiceFeedback.textContent = friendlyErrorText(err.message);
+        }finally{
+          practiceBtn.disabled = false;
+          practiceBtn.textContent = 'አረጋግጥ';
+        }
+      });
+      el.addEventListener('click', ()=> el.classList.toggle('flipped'));
+      wrap.appendChild(el);
+    });
+    discoveryBody.appendChild(wrap);
+  }
+
+  // ============ SPOKEN ============
+  const SPOKEN_SCHEMA = {
+    type:'ARRAY',
+    items:{
+      type:'OBJECT',
+      properties:{
+        en:{type:'STRING'}, am:{type:'STRING'}, opposite_en:{type:'STRING'}, opposite_am:{type:'STRING'}
+      },
+      required:['en','am','opposite_en','opposite_am']
+    }
+  };
+  const SPOKEN_TARGET = 5000;
+  const SPOKEN_BATCH = 10;
+  const SPOKEN_CATEGORIES = [
+    'greetings and introductions','shopping','asking for directions','ordering food','talking about weather',
+    'work and office talk','making plans','expressing feelings','apologizing','giving opinions',
+    'phone conversations','travel and airport','doctor visit','family and daily routine','shopping for clothes',
+    'asking for help','giving advice','talking about hobbies','describing people','time and scheduling',
+    'complaints and problems','celebrations','money and banking','technology and internet','sports talk',
+    'weather and seasons','school and study','job interviews','social media','common idioms in conversation'
+  ];
+  function spokenPrompt(batchIndex, avoidList){
+    const cat = SPOKEN_CATEGORIES[batchIndex % SPOKEN_CATEGORIES.length];
+    return `Generate exactly ${SPOKEN_BATCH} short, common, everyday spoken English sentences used often in real conversation, on the topic/category "${cat}", appropriate for a ${state.level} Amharic-speaking learner.
+For each sentence provide:
+- en: the English sentence
+- am: its accurate Amharic translation
+- opposite_en: a natural opposite or contrasting/negated version of the same sentence in English
+- opposite_am: the accurate Amharic translation of that opposite sentence
+Do not repeat any of these sentences already used: ${avoidList && avoidList.length ? avoidList.join(' | ') : 'none'}.
+Return ONLY the JSON array matching the schema, no extra text.`;
+  }
+
+  function renderSpokenBody(){
+    discoveryTitle.textContent = 'Spoken';
+    if (state.spokenData.length){ renderSpokenControls(); return; }
+    discoveryBody.innerHTML = '<div class="discovery-loading am">እየተጫነ ነው...</div>';
+    loadChunkedCache('spoken_meta', 'spoken_chunk', (cached)=>{
+      state.spokenData = cached || [];
+      renderSpokenControls();
+    });
+  }
+
+  function renderSpokenControls(){
+    discoveryBody.innerHTML = '';
+
+    const controls = document.createElement('div');
+    controls.className = 'gen-controls';
+    const btn = document.createElement('button');
+    btn.className = 'btn-solid am';
+    btn.textContent = state.spokenData.length ? 'ቀጥል' : 'ጀምር';
+    if (state.spokenData.length >= SPOKEN_TARGET) btn.disabled = true;
+    const progress = document.createElement('div');
+    progress.className = 'gen-progress am';
+    progress.textContent = state.spokenData.length + ' / ' + SPOKEN_TARGET;
+    controls.appendChild(btn);
+    controls.appendChild(progress);
+    discoveryBody.appendChild(controls);
+
+    const list = document.createElement('div');
+    list.className = 'twister-list';
+    discoveryBody.appendChild(list);
+    renderSpokenItems(list, state.spokenData, 0);
+
+    btn.addEventListener('click', ()=>{
+      if (state.spokenRunning){
+        state.spokenCancel = true;
+        state.spokenRunning = false;
+        btn.textContent = 'ቀጥል';
+        return;
+      }
+      if (!state.apiKey) return;
+      state.spokenCancel = false;
+      state.spokenRunning = true;
+      btn.textContent = 'አቁም';
+      runSpokenLoop(btn, progress, list);
+    });
+  }
+
+  function renderSpokenItems(list, items, startIdx){
+    for (let i=startIdx; i<items.length; i++){
+      const it = items[i];
+      const div = document.createElement('div');
+      div.className = 'twister-item spoken-item';
+      div.style.fontStyle = 'normal';
+      div.innerHTML = `<div>${escapeHtml(it.en)}</div><div class="am-word">${escapeHtml(it.am)}</div><div class="opp">↔ ${escapeHtml(it.opposite_en)}</div><div class="am-word">${escapeHtml(it.opposite_am)}</div>`;
+      list.appendChild(div);
+    }
+  }
+
+  async function runSpokenLoop(btn, progressEl, list){
+    while (state.spokenData.length < SPOKEN_TARGET && !state.spokenCancel){
+      const batchIdx = Math.floor(state.spokenData.length / SPOKEN_BATCH);
+      try{
+        const raw = await callGemini({
+          contents:[{ role:'user', parts:[{ text: spokenPrompt(batchIdx, state.spokenLastBatchEn) }] }],
+          generationConfig:{ temperature:0.9, maxOutputTokens:2800, responseMimeType:'application/json', responseSchema: SPOKEN_SCHEMA }
+        });
+        const batch = JSON.parse(raw);
+        const startIdx = state.spokenData.length;
+        state.spokenData = state.spokenData.concat(batch);
+        state.spokenLastBatchEn = batch.map(b=>b.en).slice(0, SPOKEN_BATCH);
+        saveChunk('spoken_chunk', batchIdx, batch);
+        saveMeta('spoken_meta', state.spokenData.length, SPOKEN_BATCH);
+        renderSpokenItems(list, state.spokenData, startIdx);
+        progressEl.textContent = state.spokenData.length + ' / ' + SPOKEN_TARGET;
+      }catch(err){
+        if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
+        progressEl.textContent = friendlyErrorText(err.message);
+        break;
+      }
+    }
+    state.spokenRunning = false;
+    if (state.spokenData.length >= SPOKEN_TARGET){
+      btn.textContent = 'ተጠናቋል';
+      btn.disabled = true;
+    } else {
+      btn.textContent = 'ቀጥል';
+    }
+  }
+
+  // ============ VOCABULARY ============
+  const VOCAB_SCHEMA = {
+    type:'ARRAY',
+    items:{
+      type:'OBJECT',
+      properties:{ word:{type:'STRING'}, meaning_am:{type:'STRING'} },
+      required:['word','meaning_am']
+    }
+  };
+  const VOCAB_TARGET = 20000;
+  const VOCAB_BATCH = 40;
+  const VOCAB_CATEGORIES = [
+    'daily life','food and cooking','travel','emotions','business and work','technology','health',
+    'nature and weather','family and relationships','education','shopping','sports','hobbies',
+    'transportation','time and calendar','money and finance','communication','clothing','home and furniture',
+    'city and places','feelings and personality','science','environment','law and government',
+    'arts and entertainment','cooking verbs','common phrasal verbs','idioms','adjectives describing people',
+    'common verbs','common nouns','question words and connectors','directions','jobs and careers',
+    'celebrations and holidays','animals','colors and shapes','music and art','farming and agriculture',
+    'medicine and the body'
+  ];
+  function vocabPrompt(batchIndex, avoidList){
+    const cat = VOCAB_CATEGORIES[batchIndex % VOCAB_CATEGORIES.length];
+    return `Generate exactly ${VOCAB_BATCH} useful English vocabulary words (single words or short common phrases) on the topic/category "${cat}", appropriate for a ${state.level} Amharic-speaking learner.
+For each word provide:
+- word: the English word or phrase
+- meaning_am: its accurate Amharic meaning/translation
+Do not repeat any of these words already used: ${avoidList && avoidList.length ? avoidList.join(', ') : 'none'}.
+Return ONLY the JSON array matching the schema, no extra text.`;
+  }
+
+  function renderVocabBody(){
+    discoveryTitle.textContent = 'Vocabulary';
+    if (state.vocabData.length){ renderVocabControls(); return; }
+    discoveryBody.innerHTML = '<div class="discovery-loading am">እየተጫነ ነው...</div>';
+    loadChunkedCache('vocab_meta', 'vocab_chunk', (cached)=>{
+      state.vocabData = cached || [];
+      renderVocabControls();
+    });
+  }
+
+  function renderVocabControls(){
+    discoveryBody.innerHTML = '';
+
+    const controls = document.createElement('div');
+    controls.className = 'gen-controls';
+    const btn = document.createElement('button');
+    btn.className = 'btn-solid am';
+    btn.textContent = state.vocabData.length ? 'ቀጥል' : 'ጀምር';
+    if (state.vocabData.length >= VOCAB_TARGET) btn.disabled = true;
+    const progress = document.createElement('div');
+    progress.className = 'gen-progress am';
+    progress.textContent = state.vocabData.length + ' / ' + VOCAB_TARGET;
+    controls.appendChild(btn);
+    controls.appendChild(progress);
+    discoveryBody.appendChild(controls);
+
+    const list = document.createElement('div');
+    list.className = 'vocab-list';
+    discoveryBody.appendChild(list);
+    renderVocabItems(list, state.vocabData, 0);
+
+    btn.addEventListener('click', ()=>{
+      if (state.vocabRunning){
+        state.vocabCancel = true;
+        state.vocabRunning = false;
+        btn.textContent = 'ቀጥል';
+        return;
+      }
+      if (!state.apiKey) return;
+      state.vocabCancel = false;
+      state.vocabRunning = true;
+      btn.textContent = 'አቁም';
+      runVocabLoop(btn, progress, list);
+    });
+  }
+
+  function renderVocabItems(list, items, startIdx){
+    for (let i=startIdx; i<items.length; i++){
+      const it = items[i];
+      const div = document.createElement('div');
+      div.className = 'vocab-item';
+      div.innerHTML = `<span class="vword">${escapeHtml(it.word)}</span><span class="vmean">${escapeHtml(it.meaning_am)}</span>`;
+      list.appendChild(div);
+    }
+  }
+
+  async function runVocabLoop(btn, progressEl, list){
+    while (state.vocabData.length < VOCAB_TARGET && !state.vocabCancel){
+      const batchIdx = Math.floor(state.vocabData.length / VOCAB_BATCH);
+      try{
+        const raw = await callGemini({
+          contents:[{ role:'user', parts:[{ text: vocabPrompt(batchIdx, state.vocabLastBatchWords) }] }],
+          generationConfig:{ temperature:0.9, maxOutputTokens:2800, responseMimeType:'application/json', responseSchema: VOCAB_SCHEMA }
+        });
+        const batch = JSON.parse(raw);
+        const startIdx = state.vocabData.length;
+        state.vocabData = state.vocabData.concat(batch);
+        state.vocabLastBatchWords = batch.map(b=>b.word).slice(0, VOCAB_BATCH);
+        saveChunk('vocab_chunk', batchIdx, batch);
+        saveMeta('vocab_meta', state.vocabData.length, VOCAB_BATCH);
+        renderVocabItems(list, state.vocabData, startIdx);
+        progressEl.textContent = state.vocabData.length + ' / ' + VOCAB_TARGET;
+      }catch(err){
+        if (isKeyError(err.message)){ invalidateKeyAndReopen(); return; }
+        progressEl.textContent = friendlyErrorText(err.message);
+        break;
+      }
+    }
+    state.vocabRunning = false;
+    if (state.vocabData.length >= VOCAB_TARGET){
+      btn.textContent = 'ተጠናቋል';
+      btn.disabled = true;
+    } else {
+      btn.textContent = 'ቀጥል';
+    }
+  }
+
+  // ---------- Discovery router ----------
+  function runDiscoveryView(topicKey, label){
+    if (MOVIES[topicKey]){
+      renderMovieTopicView(topicKey, label);
+      return;
+    }
+    if (topicKey === 'music-pronounce' || topicKey === 'music-listen'){
+      renderSongTopicView(topicKey, label);
+      return;
+    }
+    discoveryTitle.textContent = label || TOPIC_TITLES[topicKey] || 'Discovery';
+    discoveryBody.innerHTML = '<div class="empty-note am">ይህ ክፍል እየተዘጋጀ ነው</div>';
+  }
+
+  // ---------- LIVE VOICE ----------
+  const LIVE_MODEL = 'models/gemini-3.1-flash-live-preview';
+  const liveMessages = document.getElementById('liveMessages');
+  const liveMicBtn = document.getElementById('liveMicBtn');
+  const liveStatus = document.getElementById('liveStatus');
+  const muteBtn = document.getElementById('muteBtn');
+
+  const live = {
+    ws: null,
+    active: false,
+    stream: null,
+    processor: null,
+    source: null,
+    silentGain: null,
+    playCtx: null,
+    nextPlayTime: 0,
+    pendingSources: [],
+    currentUserBubble: null,
+    currentBotBubble: null,
+    outputMuted: false,
+    timerInterval: null,
+    startTime: null,
+    aiSpeaking: false,
+    failed: false
+  };
+
+  muteBtn.addEventListener('click', ()=>{
+    live.outputMuted = !live.outputMuted;
+    muteBtn.textContent = live.outputMuted ? '🔈' : '🔊';
+    if (live.outputMuted) clearPendingAudio();
+  });
+
+  function isSecureEnoughForMic(){
+    return location.protocol === 'https:' || location.hostname === 'localhost';
+  }
+
+  function addLiveMsg(role, text){
+    const div = document.createElement('div');
+    div.className = 'msg ' + role;
+    div.textContent = text;
+    liveMessages.appendChild(div);
+    liveMessages.scrollTop = liveMessages.scrollHeight;
+    return div;
+  }
+
+  function b64ToInt16(b64){
+    const bin = atob(b64);
+    const len = bin.length;
+    const bytes = new Uint8Array(len);
+    for (let i=0;i<len;i++) bytes[i] = bin.charCodeAt(i);
+    return new Int16Array(bytes.buffer);
+  }
+
+  function floatTo16BitB64(float32Arr){
+    const int16 = new Int16Array(float32Arr.length);
+    for (let i=0;i<float32Arr.length;i++){
+      let s = Math.max(-1, Math.min(1, float32Arr[i]));
+      int16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+    }
+    const bytes = new Uint8Array(int16.buffer);
+    let binary = '';
+    for (let i=0;i<bytes.length;i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  }
+
+  function downsampleTo16k(buffer, inRate){
+    if (inRate === 16000) return buffer;
+    const ratio = inRate / 16000;
+    const newLen = Math.round(buffer.length / ratio);
+    const result = new Float32Array(newLen);
+    for (let i=0;i<newLen;i++){
+      result[i] = buffer[Math.floor(i * ratio)];
+    }
+    return result;
+  }
+
+  function playPcmChunk(b64, sampleRate){
+    if (live.outputMuted) return;
+    if (!live.playCtx){
+      live.playCtx = new (window.AudioContext || window.webkitAudioContext)();
+      live.nextPlayTime = live.playCtx.currentTime;
+    }
+    const int16 = b64ToInt16(b64);
+    const float32 = new Float32Array(int16.length);
+    for (let i=0;i<int16.length;i++) float32[i] = int16[i] / 32768;
+    const buffer = live.playCtx.createBuffer(1, float32.length, sampleRate);
+    buffer.getChannelData(0).set(float32);
+    const src = live.playCtx.createBufferSource();
+    src.buffer = buffer;
+    src.connect(live.playCtx.destination);
+    const startAt = Math.max(live.nextPlayTime, live.playCtx.currentTime + 0.02);
+    src.start(startAt);
+    live.nextPlayTime = startAt + buffer.duration;
+    live.pendingSources.push(src);
+    live.aiSpeaking = true;
+    liveStatus.textContent = 'እየተናገረ...';
+    liveStatus.classList.add('speaking');
+    src.onended = ()=>{
+      live.pendingSources = live.pendingSources.filter(s=>s!==src);
+      if (live.pendingSources.length === 0){
+        live.aiSpeaking = false;
+        liveStatus.textContent = 'እያዳመጠ...';
+        liveStatus.classList.remove('speaking');
+      }
+    };
+  }
+
+  function clearPendingAudio(){
+    live.pendingSources.forEach(s=>{ try{ s.stop(); }catch(e){} });
+    live.pendingSources = [];
+    live.aiSpeaking = false;
+    if (live.playCtx) live.nextPlayTime = live.playCtx.currentTime;
+  }
+
+  function formatElapsed(ms){
+    const totalSec = Math.floor(ms/1000);
+    const m = Math.floor(totalSec/60);
+    const s = totalSec % 60;
+    return m + ':' + String(s).padStart(2,'0');
+  }
+  function startLiveTimer(){
+    live.startTime = Date.now();
+    floatingLiveLabel.textContent = '0:00';
+    if (live.timerInterval) clearInterval(live.timerInterval);
+    live.timerInterval = setInterval(()=>{
+      floatingLiveLabel.textContent = formatElapsed(Date.now() - live.startTime);
+    }, 1000);
+  }
+  function stopLiveTimer(){
+    if (live.timerInterval){ clearInterval(live.timerInterval); live.timerInterval = null; }
+    floatingLiveLabel.textContent = 'Live';
+  }
+
+  function buildLiveSystemPrompt(){
+    return `You are a friendly English speaking-practice coach for a native Amharic speaker at ${state.level.toUpperCase()} level (${LEVEL_META[state.level].desc}).
+Speak clearly and at a pace appropriate for this level. Have a natural spoken conversation in English only — never switch to Amharic, even if the learner seems lost; simplify your English instead.
+If the learner makes a clear grammar or pronunciation-related mistake, briefly and kindly correct it out loud in English, then continue the conversation.
+Keep your turns fairly short (a few sentences) so the conversation stays interactive.
+Start by warmly greeting the learner in English and asking an easy question to begin.`;
+  }
+
+  function failLive(text){
+    live.failed = true;
+    if (isKeyError(text)){
+      stopLive();
+      invalidateKeyAndReopen();
+      return;
+    }
+    liveStatus.textContent = '⚠️ ' + text;
+    liveStatus.classList.remove('speaking');
+    liveMicBtn.classList.remove('connecting','live');
+    live.active = false;
+    stopLiveTimer();
+    if (live.connectTimeout){ clearTimeout(live.connectTimeout); live.connectTimeout=null; }
+    if (live.progressInterval){ clearInterval(live.progressInterval); live.progressInterval=null; }
+    if (live.processor){ try{ live.processor.disconnect(); }catch(e){} live.processor=null; }
+    if (live.source){ try{ live.source.disconnect(); }catch(e){} live.source=null; }
+    if (live.silentGain){ try{ live.silentGain.disconnect(); }catch(e){} live.silentGain=null; }
+    if (live.inputCtx){ try{ live.inputCtx.close(); }catch(e){} live.inputCtx=null; }
+    if (live.stream){ live.stream.getTracks().forEach(t=>t.stop()); live.stream=null; }
+    if (live.ws){ try{ live.ws.close(); }catch(e){} live.ws=null; }
+  }
+
+  async function startLive(){
+    if (!state.apiKey){ liveStatus.textContent = 'መጀመሪያ API key አስገባ'; return; }
+    if (!isSecureEnoughForMic()){
+      liveStatus.textContent = '⚠️ HTTPS ላይ መከፈት አለበት';
+      return;
+    }
+    liveMicBtn.classList.add('connecting');
+    liveStatus.textContent = 'እየተገናኘ...';
+    live.failed = false;
+
+    try{
+      if (!live.playCtx){
+        live.playCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      try{ await live.playCtx.resume(); }catch(e){}
+      live.nextPlayTime = live.playCtx.currentTime;
+
+      try{
+        live.stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount:1, echoCancellation:true, noiseSuppression:true } });
+      }catch(err){
+        failLive('የማይክ ፍቃድ ተከልክሏል');
+            return;
+      }
+
+      const wsUrl = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=' + encodeURIComponent(state.apiKey);
+      live.ws = new WebSocket(wsUrl);
+
+      live.connectTimeout = setTimeout(()=>{
+        if (!live.active){
+          const rs = live.ws ? live.ws.readyState : -1;
+          const rsNames = {0:'CONNECTING',1:'OPEN',2:'CLOSING',3:'CLOSED'};
+          failLive('ጊዜው አለፈ (timeout) — readyState: ' + (rsNames[rs]||rs) + '. ኔትወርክህን አረጋግጥ ወይም እንደገና ሞክር');
+        }
+      }, 10000);
+
+      let elapsed = 0;
+      live.progressInterval = setInterval(()=>{
+        if (live.active){ clearInterval(live.progressInterval); return; }
+        elapsed += 1;
+        const rs = live.ws ? live.ws.readyState : -1;
+        const rsNames = {0:'CONNECTING',1:'OPEN(no setupComplete yet)',2:'CLOSING',3:'CLOSED'};
+        liveStatus.textContent = 'እየተገናኘ... ' + elapsed + 's — ' + (rsNames[rs]||rs);
+      }, 1000);
+
+      live.ws.onopen = ()=>{
+        live.ws.send(JSON.stringify({
+          setup:{
+            model: LIVE_MODEL,
+            generationConfig:{
+              responseModalities:['AUDIO'],
+              speechConfig:{ voiceConfig:{ prebuiltVoiceConfig:{ voiceName:'Puck' } } }
+            },
+            systemInstruction:{ parts:[{ text: buildLiveSystemPrompt() }] },
+            inputAudioTranscription:{},
+            outputAudioTranscription:{},
+            realtimeInputConfig:{ automaticActivityDetection:{ disabled:false } }
+          }
+        }));
+      };
+
+      live.ws.onmessage = async (event)=>{
+        let raw = event.data;
+        if (raw instanceof Blob){
+          try{ raw = await raw.text(); }catch(e){ return; }
+        }
+        let msg;
+        try{ msg = JSON.parse(raw); }catch(e){ return; }
+
+        if (msg.setupComplete){
+          if (live.connectTimeout){ clearTimeout(live.connectTimeout); live.connectTimeout=null; }
+          liveMicBtn.classList.remove('connecting');
+          liveMicBtn.classList.add('live');
+          liveStatus.textContent = 'እያዳመጠ...';
+          live.active = true;
+          startLiveTimer();
+          beginMicStreaming();
+          return;
+        }
+
+        if (msg.error){
+          failLive(msg.error.message || 'API error');
+          return;
+        }
+
+        const sc = msg.serverContent;
+        if (!sc){
+          return;
+        }
+
+        if (sc.interrupted) clearPendingAudio();
+
+        if (sc.modelTurn && sc.modelTurn.parts){
+          sc.modelTurn.parts.forEach(part=>{
+            if (part.inlineData && part.inlineData.data){
+              const rate = /rate=(\d+)/.exec(part.inlineData.mimeType||'');
+              playPcmChunk(part.inlineData.data, rate ? parseInt(rate[1]) : 24000);
+            }
+          });
+        }
+
+        if (sc.inputTranscription && sc.inputTranscription.text){
+          if (!live.currentUserBubble) live.currentUserBubble = addLiveMsg('user', '');
+          live.currentUserBubble.textContent += sc.inputTranscription.text;
+        }
+        if (sc.outputTranscription && sc.outputTranscription.text){
+          if (!live.currentBotBubble) live.currentBotBubble = addLiveMsg('bot', '');
+          live.currentBotBubble.textContent += sc.outputTranscription.text;
+        }
+        if (sc.turnComplete){
+          live.currentUserBubble = null;
+          live.currentBotBubble = null;
+        }
+      };
+
+      live.ws.onerror = ()=>{
+        if (!live.active) failLive('የግንኙነት ስህተት (WebSocket)');
+      };
+      live.ws.onclose = (ev)=>{
+        if (!live.active && !live.failed){
+          failLive('ግንኙነት ተዘግቷል (code ' + ev.code + (ev.reason ? ': ' + ev.reason : '') + ')');
+        } else if (live.active){
+          stopLive();
+        }
+      };
+    }catch(err){
+      failLive(err.message || 'ያልታወቀ ስህተት');
+    }
+  }
+
+  function beginMicStreaming(){
+    live.inputCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // FIX: newly-created AudioContexts can start "suspended" on some
+    // browsers/WebViews (esp. iOS) when created after an async gap
+    // (WebSocket connect + setupComplete round trip) instead of directly
+    // inside the click gesture. If suspended, onaudioprocess never fires,
+    // so no mic audio is ever sent — the model has nothing to respond to,
+    // even though the UI still shows "listening". Explicitly resume it.
+    live.inputCtx.resume().catch(()=>{});
+
+    live.source = live.inputCtx.createMediaStreamSource(live.stream);
+    live.processor = live.inputCtx.createScriptProcessor(4096, 1, 1);
+    live.silentGain = live.inputCtx.createGain();
+    live.silentGain.gain.value = 0;
+
+    live.processor.onaudioprocess = (e)=>{
+      if (!live.active || !live.ws || live.ws.readyState !== 1) return;
+      if (live.aiSpeaking) return;
+      const input = e.inputBuffer.getChannelData(0);
+      const down = downsampleTo16k(input, live.inputCtx.sampleRate);
+      const b64 = floatTo16BitB64(down);
+      live.ws.send(JSON.stringify({
+        realtimeInput:{ audio:{ data: b64, mimeType:'audio/pcm;rate=16000' } }
+      }));
+    };
+
+    live.source.connect(live.processor);
+    live.processor.connect(live.silentGain);
+    live.silentGain.connect(live.inputCtx.destination);
+  }
+
+  function stopLive(){
+    live.active = false;
+    stopLiveTimer();
+    liveMicBtn.classList.remove('live','connecting');
+    liveStatus.textContent = 'ለመጀመር ንካ';
+    liveStatus.classList.remove('speaking');
+    clearPendingAudio();
+    if (live.processor){ try{ live.processor.disconnect(); }catch(e){} live.processor=null; }
+    if (live.source){ try{ live.source.disconnect(); }catch(e){} live.source=null; }
+    if (live.silentGain){ try{ live.silentGain.disconnect(); }catch(e){} live.silentGain=null; }
+    if (live.inputCtx){ try{ live.inputCtx.close(); }catch(e){} live.inputCtx=null; }
+    if (live.stream){ live.stream.getTracks().forEach(t=>t.stop()); live.stream=null; }
+    if (live.ws){ try{ live.ws.close(); }catch(e){} live.ws=null; }
+  }
+
+  liveMicBtn.addEventListener('click', ()=>{
+    if (live.active || live.ws){ stopLive(); }
+    else { startLive().catch(err=> failLive(err.message || 'ያልታወቀ ስህተት')); }
+  });
+
+  // ---------- Helpers ----------
+  function friendlyErrorText(message){
+    if (/429|RESOURCE_EXHAUSTED|exceeded your current quota/i.test(message||'')){
+      return '⚠️ በጣም ብዙ ጥያቄ ስለተላከ ለጊዜው ገደብ ላይ ደርሰሃል (quota)። እባክህ ጥቂት ደቂቃ ቆይተህ እንደገና ሞክር።';
+    }
+    return '⚠️ ' + message;
+  }
+
+  // Start the app
+  initRestore();
+
+})();
+</script>
+</body>
+  </html>
